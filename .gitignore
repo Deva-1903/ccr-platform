@@ -1,0 +1,14 @@
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# runtime data (DB, uploaded corpora, results) — never commit research data
+backend/data/
+
+# node
+node_modules/
+
+# os
+.DS_Store

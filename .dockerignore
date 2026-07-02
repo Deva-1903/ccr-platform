@@ -1,0 +1,11 @@
+.git
+.gitignore
+backend/.venv
+backend/data
+backend/tests
+backend/.pytest_cache
+**/__pycache__
+frontend
+sample_data
+scripts
+*.md
