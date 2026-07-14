@@ -1,0 +1,79 @@
+# Model registry - single source of model truth (design doc §13).
+# Drives: UI dropdown, backend validation, warnings, run metadata, generated scripts.
+# NOTE: revisions marked "PIN_ME" must be resolved to a commit hash before Phase 1 exit
+# (huggingface_hub: model_info(id).sha) - parity tests depend on pinned revisions.
+
+models:
+  - id: all-minilm-l6-v2
+    provider_model_id: sentence-transformers/all-MiniLM-L6-v2
+    display_name: "MiniLM L6 v2 (default - CCR reference model)"
+    revision: PIN_ME
+    default: true
+    supported_languages: ["en"]
+    embedding_dimension: 384
+    max_seq_length: 256
+    quality_tier: fast
+    speed_tier: fast
+    usage_config:
+      requires_prefix: false
+      symmetric_similarity_prefix: null
+      pooling: sentence_transformers_default   # descriptive only - never reimplement
+      normalize_embeddings: true
+    operational_config:
+      expected_time_per_1k_texts_cpu: benchmark_required
+      worker_ram_min_gb: 2
+      lazy_load: false
+    warnings: []
+
+  - id: e5-large-v2
+    provider_model_id: intfloat/e5-large-v2
+    display_name: "E5 Large v2 (strong English - slower)"
+    revision: PIN_ME
+    default: false
+    supported_languages: ["en"]
+    embedding_dimension: 1024
+    max_seq_length: 512
+    quality_tier: strong
+    speed_tier: slow
+    usage_config:
+      requires_prefix: true
+      symmetric_similarity_prefix: "query: "
+      construct_prefix: "query: "
+      text_prefix: "query: "
+      pooling: average_pool                    # descriptive only - never reimplement
+      normalize_embeddings: true
+    operational_config:
+      expected_time_per_1k_texts_cpu: benchmark_required
+      worker_ram_min_gb: 4
+      worker_ram_recommended_gb: 8
+      lazy_load: true
+      max_resident_models: 1
+    warnings:
+      - "Substantially slower and heavier than MiniLM."
+      - "Scores are not comparable across model families."
+
+  - id: multilingual-e5-base
+    provider_model_id: intfloat/multilingual-e5-base
+    display_name: "Multilingual E5 Base (50+ languages)"
+    revision: PIN_ME
+    default: false
+    supported_language_set: xlm_roberta_100    # resolved in language_sets.py
+    embedding_dimension: 768
+    max_seq_length: 512
+    quality_tier: balanced
+    speed_tier: medium
+    usage_config:
+      requires_prefix: true
+      symmetric_similarity_prefix: "query: "
+      construct_prefix: "query: "
+      text_prefix: "query: "
+      pooling: average_pool                    # descriptive only - never reimplement
+      normalize_embeddings: true
+    operational_config:
+      expected_time_per_1k_texts_cpu: benchmark_required
+      worker_ram_min_gb: 4
+      lazy_load: true
+      max_resident_models: 1
+    warnings:
+      - "Quality varies by language, especially lower-resource languages."
+      - "Scores are not comparable across model families."

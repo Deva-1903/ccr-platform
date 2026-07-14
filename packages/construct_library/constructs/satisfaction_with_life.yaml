@@ -1,0 +1,25 @@
+# Construct: versioned, append-only. Edits create a NEW version (see registries rule).
+construct_id: satisfaction_with_life
+version: 1
+name: Satisfaction with Life
+language: en
+category: well-being
+description: Global cognitive judgment of one's life satisfaction (SWLS).
+citation: "Diener, E., Emmons, R. A., Larsen, R. J., & Griffin, S. (1985). The Satisfaction with Life Scale. Journal of Personality Assessment, 49(1)."
+verification_status: needs_verification   # verify item wording verbatim against the publication
+items:
+  - item_id: swl_1
+    text: "In most ways my life is close to my ideal."
+    reverse_scored: false
+  - item_id: swl_2
+    text: "The conditions of my life are excellent."
+    reverse_scored: false
+  - item_id: swl_3
+    text: "I am satisfied with my life."
+    reverse_scored: false
+  - item_id: swl_4
+    text: "So far I have gotten the important things I want in life."
+    reverse_scored: false
+  - item_id: swl_5
+    text: "If I could live my life over, I would change almost nothing."
+    reverse_scored: false

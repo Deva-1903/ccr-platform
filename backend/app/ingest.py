@@ -1,4 +1,4 @@
-"""Corpus ingestion — tolerant of real-world research files.
+"""Corpus ingestion - tolerant of real-world research files.
 
 Researchers upload CSVs exported from Qualtrics, Excel, R, SPSS, and
 scrapers: BOMs, latin-1 encodings, semicolon/tab delimiters, ragged rows.
@@ -34,7 +34,7 @@ def load_corpus(path: str | Path) -> tuple[pd.DataFrame, dict]:
     """Parse CSV/XLSX into a DataFrame.
 
     Returns (df, parse_info) where parse_info records the format,
-    encoding, and delimiter actually used — stored with the corpus and
+    encoding, and delimiter actually used - stored with the corpus and
     echoed into every run's reproducibility metadata.
     """
     p = Path(path)
@@ -48,40 +48,62 @@ def load_corpus(path: str | Path) -> tuple[pd.DataFrame, dict]:
 
     last_error: Exception | None = None
     for encoding in _ENCODINGS:
-        # First attempt: delimiter sniffing (handles ',', ';', '\t', '|').
-        # The python engine is slower but supports sniffing + bad-line skips;
-        # fine at lab scale. Falls back to plain comma parsing for files the
-        # sniffer chokes on (e.g., single-column CSVs).
-        for sep, sep_label in ((None, "sniffed"), (",", ",")):
-            try:
-                df = pd.read_csv(
-                    p,
-                    encoding=encoding,
-                    sep=sep,
-                    engine="python",
-                    on_bad_lines="skip",
+        # Delimiter detection restricted to REAL delimiter candidates (, ; tab |).
+        # Unrestricted sniffing famously "detects" spaces in single-column files
+        # of natural-language sentences, exploding the header into word-columns.
+        try:
+            sep = _detect_delimiter(p, encoding)
+            df = pd.read_csv(
+                p,
+                encoding=encoding,
+                sep=sep,
+                engine="python",
+                on_bad_lines="skip",
+            )
+            info = {
+                "format": "csv",
+                "encoding": encoding,
+                "delimiter": {"\t": "tab"}.get(sep, sep),
+            }
+            if encoding == "latin-1":
+                info["note"] = (
+                    "File was not valid UTF-8; decoded as latin-1. "
+                    "Verify non-ASCII characters rendered correctly."
                 )
-                info = {
-                    "format": "csv",
-                    "encoding": encoding,
-                    "delimiter": _describe_sep(df, sep_label),
-                }
-                if encoding == "latin-1":
-                    info["note"] = (
-                        "File was not valid UTF-8; decoded as latin-1. "
-                        "Verify non-ASCII characters rendered correctly."
-                    )
-                return _validate(df), info
-            except IngestError:
-                raise
-            except Exception as exc:  # try next (sep, encoding) combination
-                last_error = exc
+            return _validate(df), info
+        except IngestError:
+            raise
+        except Exception as exc:  # try next encoding
+            last_error = exc
 
     raise IngestError(f"Could not parse CSV file: {last_error}")
 
 
-def _describe_sep(df: pd.DataFrame, sep_label: str) -> str:
-    return sep_label
+_DELIMITER_CANDIDATES = (",", ";", "\t", "|")
+
+
+def _detect_delimiter(p: Path, encoding: str) -> str:
+    """Pick the candidate delimiter most consistent across the first lines.
+
+    Single-column files (no candidate present) default to ',' - a comma parse
+    of a delimiter-free file yields one column, which is exactly right.
+    """
+    try:
+        with open(p, encoding=encoding, errors="strict") as fh:
+            lines = [line for line, _ in zip(fh, range(20)) if line.strip()]
+    except UnicodeDecodeError:
+        raise ValueError(f"not decodable as {encoding}")
+    if not lines:
+        return ","
+
+    def score(delim: str) -> tuple[int, int]:
+        counts = [line.count(delim) for line in lines]
+        present = min(counts) > 0
+        consistent = len(set(counts)) == 1
+        return (int(present) + int(present and consistent), counts[0])
+
+    best = max(_DELIMITER_CANDIDATES, key=score)
+    return best if score(best)[0] > 0 else ","
 
 
 def _validate(df: pd.DataFrame) -> pd.DataFrame:
@@ -89,7 +111,7 @@ def _validate(df: pd.DataFrame) -> pd.DataFrame:
         raise IngestError("The file parsed but contains no data rows.")
     if len(df) > max_rows():
         raise IngestError(
-            f"File has {len(df):,} rows — above this instance's "
+            f"File has {len(df):,} rows - above this instance's "
             f"{max_rows():,}-row limit. Split the corpus or run locally."
         )
     df.columns = [str(c) for c in df.columns]

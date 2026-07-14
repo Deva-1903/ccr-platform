@@ -1,4 +1,4 @@
-"""Database setup — SQLite via SQLAlchemy.
+"""Database setup - SQLite via SQLAlchemy.
 
 SQLite is a deliberate choice for this deployment size (single-node, few
 concurrent writers). The models use no SQLite-specific features, so moving
@@ -54,3 +54,47 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def _sqlite_literal(value) -> str:
+    if isinstance(value, bool):
+        return "1" if value else "0"
+    if isinstance(value, (int, float)):
+        return str(value)
+    return "'" + str(value).replace("'", "''") + "'"
+
+
+def auto_migrate_sqlite(target_engine, metadata) -> list[str]:
+    """Add ORM columns missing from existing SQLite tables (additive only).
+
+    create_all() creates missing tables but never alters existing ones, so a
+    dev DB from last week 500s on this week's new column. This closes that gap
+    for the additive changes we make; anything non-additive (renames, drops,
+    type changes) waits for Alembic, which replaces this in Phase 2 alongside
+    Postgres. Columns with scalar defaults get that default; callable defaults
+    (uuid/now) are added nullable and filled by the ORM on new rows.
+    """
+    import logging
+
+    from sqlalchemy import inspect, text
+
+    added: list[str] = []
+    inspector = inspect(target_engine)
+    with target_engine.begin() as conn:
+        for table in metadata.sorted_tables:
+            if table.name not in inspector.get_table_names():
+                continue  # create_all handles brand-new tables
+            existing = {c["name"] for c in inspector.get_columns(table.name)}
+            for column in table.columns:
+                if column.name in existing:
+                    continue
+                col_type = column.type.compile(target_engine.dialect)
+                ddl = f'ALTER TABLE {table.name} ADD COLUMN "{column.name}" {col_type}'
+                default = getattr(column.default, "arg", None)
+                if default is not None and not callable(default):
+                    ddl += f" DEFAULT {_sqlite_literal(default)}"
+                conn.execute(text(ddl))
+                added.append(f"{table.name}.{column.name}")
+    if added:
+        logging.getLogger("ccr.db").warning("auto-migrated columns: %s", ", ".join(added))
+    return added

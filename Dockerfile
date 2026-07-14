@@ -1,35 +1,46 @@
-# CCR Platform — Cloud Run / container deployment.
-# The embedding model is baked into the image so the first request
-# doesn't trigger a ~90 MB download (critical for demo cold starts).
+# CCR Platform - single-container deployment (one deployable unit: FastAPI
+# serves both the JSON API and the prebuilt React SPA from backend/static).
+#
+# Build:            docker build -t ccr-platform .
+# Ephemeral demo:   docker run -p 7860:7860 ccr-platform
+# Persistent:       docker run -p 7860:7860 \
+#                     -e CCR_SESSION_SECRET=$(python -c "import secrets;print(secrets.token_hex(32))") \
+#                     -e CCR_DATA_DIR=/data -e CCR_COOKIE_SECURE=1 \
+#                     -v ccr_data:/data ccr-platform
+#
+# NOTE: run `npm run build` in frontend/ before building the image - the
+# committed backend/static is what ships (no Node stage; keeps HF Spaces
+# builds fast and the image small).
 
 FROM python:3.11-slim
 
-# Data + caches in /tmp so the container runs under any UID
-# (Hugging Face Spaces runs containers as a non-root user).
+# Defaults favor a hosted instance: retention purge on, model pre-warmed.
+# Data dir defaults to /tmp so the container runs under any UID (HF Spaces);
+# persistent deployments override CCR_DATA_DIR to a mounted volume.
 ENV PYTHONUNBUFFERED=1 \
     HF_HOME=/opt/hf-cache \
-    CCR_DATA_DIR=/tmp/ccr-data
+    CCR_DATA_DIR=/tmp/ccr-data \
+    CCR_ANON_TTL_HOURS=24 \
+    CCR_WARM_MODEL=1
 
 WORKDIR /srv
 
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download ALL offered models into the image layer — a user picking a
-# non-default model must not trigger a multi-hundred-MB download mid-job
-# (looks like a hang). Make the cache usable by any runtime UID.
+# Bake the DEFAULT model (MiniLM, ~90 MB - the CCR reference model) into the
+# image so the first run never stalls on a download. The E5 models are large
+# (1+ GB) and lazy-load into HF_HOME on first use instead; the dir stays
+# writable for any runtime UID.
 RUN python -c "from sentence_transformers import SentenceTransformer; \
-    [SentenceTransformer(m) for m in ( \
-        'sentence-transformers/all-MiniLM-L6-v2', \
-        'sentence-transformers/all-mpnet-base-v2', \
-        'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')]" \
+    SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')" \
     && chmod -R 777 /opt/hf-cache
 
 COPY backend/app ./app
 COPY backend/static ./static
+# registry.py/construct_lib.py resolve packages/ two levels above app/
+# (= "/" here), so /packages is exactly where they look.
+COPY packages /packages
 
-# Demo note: SQLite + uploads live on the container's ephemeral disk —
-# data resets on restart/redeploy. Acceptable for a demo; use
-# Postgres + S3/GCS object storage before any real use.
 EXPOSE 7860
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]

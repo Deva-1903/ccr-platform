@@ -1,0 +1,21 @@
+construct_id: collectivism_horizontal
+version: 1
+name: Collectivism (Horizontal)
+language: en
+category: cultural-orientation
+description: Interdependence, cooperation, and in-group well-being (Triandis & Gelfand horizontal collectivism).
+citation: "Triandis, H. C., & Gelfand, M. J. (1998). Converging measurement of horizontal and vertical individualism and collectivism. JPSP, 74(1)."
+verification_status: needs_verification
+items:
+  - item_id: hc_1
+    text: "If a coworker gets a prize, I would feel proud."
+    reverse_scored: false
+  - item_id: hc_2
+    text: "The well-being of my coworkers is important to me."
+    reverse_scored: false
+  - item_id: hc_3
+    text: "To me, pleasure is spending time with others."
+    reverse_scored: false
+  - item_id: hc_4
+    text: "I feel good when I cooperate with others."
+    reverse_scored: false

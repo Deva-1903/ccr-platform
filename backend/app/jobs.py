@@ -1,6 +1,6 @@
 """Background job runner.
 
-Jobs run on a dedicated single-worker executor — a deliberate right-sizing:
+Jobs run on a dedicated single-worker executor - a deliberate right-sizing:
 embedding is CPU-bound, so running jobs sequentially protects the instance's
 memory and keeps per-job throughput predictable, while job state lives in
 the DB (queued → running → completed/failed) so the API and UI never depend
@@ -15,18 +15,28 @@ rather than hanging forever in the UI.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
+import os
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 import numpy as np
 
-from .ccr import get_backend, run_ccr
+from . import registry, warnings_engine
+from .ccr import FAKE_MODEL_NAME, get_backend, run_ccr
+from .construct_lib import construct_snapshot
 from .db import DATA_DIR, SessionLocal
 from .ingest import load_corpus
-from .models import Construct, Corpus, Job
+from .models import Construct, Corpus, Job, Project
+from .reproducibility import record_environment
+from .retention import EMB_CACHE_DIR, remove_corpus_files
+from . import storage
+
+PLATFORM_VERSION = "0.2.0"
+OUTPUT_SCHEMA_VERSION = "1.0"  # bump on ANY export-column change (CLAUDE.md hard rule)
 
 logger = logging.getLogger("ccr.jobs")
 
@@ -36,15 +46,32 @@ TOP_N = 10
 SNIPPET_LEN = 220
 
 # Single worker: sequential jobs, bounded memory. See module docstring.
-_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="ccr-job")
+# Created lazily and re-creatable: a lifespan shutdown (dev reload, test
+# client closing) must not permanently kill job submission for the process.
+import threading
+
+_executor: ThreadPoolExecutor | None = None
+_executor_lock = threading.Lock()
+
+
+def _get_executor() -> ThreadPoolExecutor:
+    global _executor
+    with _executor_lock:
+        if _executor is None:
+            _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="ccr-job")
+        return _executor
 
 
 def submit_job(job_id: str) -> None:
-    _executor.submit(_run_job_logged, job_id)
+    _get_executor().submit(_run_job_logged, job_id)
 
 
 def shutdown_executor() -> None:
-    _executor.shutdown(wait=False, cancel_futures=True)
+    global _executor
+    with _executor_lock:
+        if _executor is not None:
+            _executor.shutdown(wait=False, cancel_futures=True)
+            _executor = None
 
 
 def recover_orphaned_jobs() -> int:
@@ -99,7 +126,14 @@ def run_job(job_id: str) -> None:
         items = json.loads(construct.items_json)
         parse_info = json.loads(corpus.parse_info_json or "{}")
 
-        df, _ = load_corpus(corpus.path)
+        # Materialize the corpus locally (a no-op on the local backend; a
+        # temp download when files live in object storage).
+        local_corpus, corpus_is_temp = storage.fetch_to_local(corpus.path)
+        try:
+            df, _ = load_corpus(str(local_corpus))
+        finally:
+            if corpus_is_temp:
+                local_corpus.unlink(missing_ok=True)
         if job.text_column not in df.columns:
             raise ValueError(f"Column '{job.text_column}' not found in corpus.")
 
@@ -109,33 +143,109 @@ def run_job(job_id: str) -> None:
         work_df = df.loc[mask].reset_index(drop=True)
         texts = work_df[job.text_column].astype(str).tolist()
 
+        last_progress = -1.0
+
         def progress(frac: float):
-            _set(db, job, progress=round(float(frac), 3))
+            # Throttled: commit only on >=1% movement (or completion) so large
+            # corpora don't turn the progress bar into a DB write hotspot.
+            nonlocal last_progress
+            frac = round(float(frac), 3)
+            if frac - last_progress >= 0.01 or frac >= 1.0:
+                last_progress = frac
+                _set(db, job, progress=frac)
+
+        # Model config from the registry (spec 0003); the test fake has none.
+        model_cfg = None if job.model_name == FAKE_MODEL_NAME else registry.get_model(job.model_name)
+        item_prefix = model_cfg.item_prefix if (model_cfg and model_cfg.requires_prefix) else ""
+        text_prefix = model_cfg.text_prefix if (model_cfg and model_cfg.requires_prefix) else ""
+
+        project = db.get(Project, job.project_id)
+        is_anonymous = not (project and project.owner_user_id)
+
+        # Corpus-embedding cache: the CCR workflow is many constructs against
+        # the SAME corpus, and ~97% of a run is embedding the documents. Corpora
+        # are immutable after upload, so (corpus, column, model, revision,
+        # prefix) fully determines the embeddings - reusing them is bit-identical.
+        # Disabled for the test fake (unless forced) and skipped for anonymous
+        # runs (their files are removed right after the run anyway).
+        cache_enabled = os.environ.get("CCR_EMB_CACHE", "1") == "1" and (
+            model_cfg is not None or os.environ.get("CCR_EMB_CACHE_FORCE") == "1"
+        )
+        cache_path = None
+        cached_embeddings = None
+        if cache_enabled:
+            key = hashlib.sha256(
+                f"{job.text_column}|{job.model_name}|"
+                f"{model_cfg.revision if model_cfg else 'fake'}|{text_prefix}".encode()
+            ).hexdigest()[:20]
+            cache_path = EMB_CACHE_DIR / f"{corpus.id}_{key}.npy"
+            if cache_path.exists():
+                try:
+                    candidate = np.load(cache_path)
+                    if candidate.shape[0] == len(texts):
+                        cached_embeddings = candidate
+                except Exception:
+                    cache_path.unlink(missing_ok=True)  # unreadable cache: recompute
 
         backend = get_backend(job.model_name)
-        result = run_ccr(texts, items, backend, progress_cb=progress)
+        result = run_ccr(
+            texts, items, backend,
+            progress_cb=progress, item_prefix=item_prefix, text_prefix=text_prefix,
+            doc_embeddings=cached_embeddings,
+        )
+        if (
+            cache_enabled and cache_path is not None and cached_embeddings is None
+            and not is_anonymous and result.doc_embeddings is not None
+        ):
+            try:
+                np.save(cache_path, result.doc_embeddings)
+            except Exception:
+                logger.warning("could not write embedding cache %s", cache_path)
 
-        # Data-quality warnings surfaced to the researcher, not buried in logs.
-        warnings = []
+        # Structured data-quality warnings (spec 0001) - objects, never bare strings.
+        W = warnings_engine.warning
+        warnings: list[dict] = []
         if dropped:
-            warnings.append(f"{dropped} empty text row(s) were dropped before analysis.")
+            warnings.append(W(
+                "EMPTY_ROWS_DROPPED", "info",
+                f"{dropped} empty text row(s) were dropped before analysis.", count=dropped,
+            ))
         n_dupes = len(texts) - len(set(texts))
         if n_dupes:
-            warnings.append(
-                f"{n_dupes} duplicate text(s) detected — each is scored "
-                "independently; deduplicate upstream if unintended."
-            )
-        max_seq = result.metadata.get("model_max_seq_length")
+            warnings.append(W(
+                "DUPLICATE_TEXTS", "warning",
+                f"{n_dupes} duplicate text(s) detected - each is scored independently; "
+                "deduplicate upstream if unintended.", count=n_dupes,
+            ))
+        short = warnings_engine.short_text_warning(texts)
+        if short:
+            warnings.append(short)
+        max_seq = model_cfg.max_seq_length if model_cfg else result.metadata.get("model_max_seq_length")
         if max_seq:
             char_budget = int(max_seq) * 4  # rough chars-per-token heuristic
             n_long = sum(1 for t in texts if len(t) > char_budget)
             if n_long:
-                warnings.append(
-                    f"{n_long} text(s) likely exceed the model's {max_seq}-token "
-                    "window and were truncated; consider splitting long documents."
-                )
+                warnings.append(W(
+                    "TEXTS_MAYBE_TRUNCATED", "warning",
+                    f"{n_long} text(s) likely exceed the model's {max_seq}-token window and "
+                    "were truncated; consider splitting long documents.", count=n_long,
+                ))
         if parse_info.get("note"):
-            warnings.append(parse_info["note"])
+            warnings.append(W("ENCODING_FALLBACK", "warning", parse_info["note"]))
+
+        # Language checks: corpus-level detection + model-coverage (spec 0001, design §12).
+        selected_language = (job.language or "en").lower()
+        lang_result, lang_warnings = warnings_engine.detect_corpus_language(texts, selected_language)
+        warnings.extend(lang_warnings)
+        if model_cfg:
+            mlw = warnings_engine.model_language_warning(
+                selected_language, model_cfg.id, model_cfg.supported_languages,
+                model_cfg.language_set_name,
+            )
+            if mlw:
+                warnings.append(mlw)
+        for user_warning in (model_cfg.user_warnings if model_cfg else ()):
+            warnings.append(W("MODEL_NOTE", "info", user_warning))
 
         # Export mirrors ccr_wrapper's shape: input columns + per-item
         # similarity columns + overall score, so it drops into existing
@@ -144,8 +254,9 @@ def run_job(job_id: str) -> None:
         for j in range(result.similarities.shape[1]):
             out[f"sim_item_{j + 1}"] = np.round(result.similarities[:, j], 6)
         out["ccr_score"] = np.round(result.scores, 6)
-        result_path = RESULTS_DIR / f"{job.id}.csv"
-        out.to_csv(result_path, index=False)
+        local_result = RESULTS_DIR / f"{job.id}.csv"
+        out.to_csv(local_result, index=False)
+        result_path = storage.move_local_into_storage("results", f"{job.id}.csv", local_result)
 
         scores = result.scores
         order = np.argsort(scores)
@@ -181,14 +292,45 @@ def run_job(job_id: str) -> None:
         metadata = {
             **result.metadata,
             "job_id": job.id,
+            "platform_version": PLATFORM_VERSION,
+            "output_schema_version": OUTPUT_SCHEMA_VERSION,
             "corpus_file": corpus.filename,
             "corpus_parse_info": parse_info,
             "text_column": job.text_column,
+            "language": lang_result.as_metadata(),
             "construct": construct.name,
             "construct_reference": construct.reference,
+            "construct_snapshot": construct_snapshot(construct),
+            "model_registry_id": model_cfg.id if model_cfg else job.model_name,
+            "provider_model_id": model_cfg.provider_model_id if model_cfg else job.model_name,
+            "model_revision": model_cfg.revision if model_cfg else None,
+            "scoring": {"adjustment_strategy": "none", "aggregate": "mean_all_items"},
+            "output_schema": (
+                list(work_df.columns)
+                + [f"sim_item_{j + 1}" for j in range(result.similarities.shape[1])]
+                + ["ccr_score"]
+            ),
+            "warnings": warnings,
             "n_rows_input": int(corpus.n_rows),
             "n_rows_dropped_empty": dropped,
         }
+        record_environment(metadata)  # pins exact package versions for the repro bundle
+
+        # Retention (PI decision 2026-07-10): anonymous uploads are removed the
+        # moment analysis finishes. The results summary/CSV stay downloadable
+        # until the anonymous project's TTL purge; the raw upload does not.
+        if is_anonymous:
+            remove_corpus_files(corpus)
+            corpus.path = ""
+            metadata["anonymous_corpus_removed"] = True
+            warnings.append(W(
+                "ANONYMOUS_DATA_REMOVED", "info",
+                "The uploaded file was deleted after this analysis (anonymous runs "
+                "keep no raw data). Re-running requires uploading again, or sign in "
+                "to keep datasets.",
+            ))
+            summary["warnings"] = warnings
+            metadata["warnings"] = warnings
 
         _set(
             db,

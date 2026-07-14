@@ -1,4 +1,4 @@
-"""Unit tests for the CCR engine (deterministic fake backend — no torch)."""
+"""Unit tests for the CCR engine (deterministic fake backend - no torch)."""
 
 import numpy as np
 import pytest

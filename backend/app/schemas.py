@@ -13,6 +13,24 @@ class ProjectOut(BaseModel):
     name: str
     description: str
     created_at: str
+    last_activity_at: str = ""  # latest run creation, else project creation
+    n_runs: int = 0
+    archived: bool = False
+
+
+class ProjectPatch(BaseModel):
+    archived: bool | None = None
+
+
+class RegisterIn(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=8, max_length=200)
+    name: str = Field(min_length=1, max_length=120)
+
+
+class LoginIn(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=1, max_length=200)
 
 
 class CorpusOut(BaseModel):
@@ -32,6 +50,8 @@ class ConstructCreate(BaseModel):
     description: str = ""
     reference: str = ""
     items: list[str] = Field(min_length=1)
+    reverse_scored: list[bool] | None = None  # parallel to items; defaults to all False
+    language: str = "en"
 
 
 class ConstructOut(BaseModel):
@@ -40,7 +60,13 @@ class ConstructOut(BaseModel):
     description: str
     reference: str
     items: list[str]
+    reverse_scored: list[bool] = []
     is_seed: bool
+    version: int = 1
+    verification_status: str = "draft"
+    language: str = "en"
+    category: str = ""
+    item_hash: str = ""  # first 16 hex chars for display
 
 
 class JobCreate(BaseModel):
@@ -48,7 +74,8 @@ class JobCreate(BaseModel):
     corpus_id: str
     construct_id: str
     text_column: str
-    model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
+    model_name: str = "all-minilm-l6-v2"  # registry id (spec 0003)
+    language: str = "en"
 
 
 class JobOut(BaseModel):
@@ -60,6 +87,7 @@ class JobOut(BaseModel):
     corpus_filename: str = ""
     text_column: str
     model_name: str
+    language: str = "en"
     status: str
     progress: float
     error: str

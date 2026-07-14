@@ -2,19 +2,113 @@ import { useEffect, useState } from "react";
 import { api } from "./api.js";
 import Workspace from "./Workspace.jsx";
 
+function relativeTime(iso) {
+  if (!iso) return "";
+  const then = new Date(iso.endsWith("Z") || iso.includes("+") ? iso : iso + "Z");
+  const mins = Math.max(0, Math.floor((Date.now() - then.getTime()) / 60000));
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return then.toISOString().slice(0, 10);
+}
+
+function groupProjects(projects) {
+  // Buckets by last activity: Today / This week / Earlier, with archived
+  // projects collapsed into their own group at the bottom. Projects arrive
+  // sorted by last activity (backend), so group order falls out naturally.
+  const now = Date.now();
+  const DAY = 86400000;
+  const groups = { Today: [], "This week": [], Earlier: [], Archived: [] };
+  for (const p of projects) {
+    if (p.archived) {
+      groups.Archived.push(p);
+      continue;
+    }
+    const iso = p.last_activity_at || p.created_at;
+    const t = new Date(iso.endsWith("Z") || iso.includes("+") ? iso : iso + "Z").getTime();
+    const age = now - t;
+    if (age < DAY) groups.Today.push(p);
+    else if (age < 7 * DAY) groups["This week"].push(p);
+    else groups.Earlier.push(p);
+  }
+  return Object.entries(groups).filter(([, items]) => items.length > 0);
+}
+
 export default function App() {
   const [projects, setProjects] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
+  const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
+  const [auth, setAuth] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
+  const [authMode, setAuthMode] = useState("signin"); // signin | register
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authBusy, setAuthBusy] = useState(false);
 
   const loadProjects = () =>
     api.listProjects().then(setProjects).catch((e) => setError(e.message));
+  const loadAuth = () => api.authMe().then(setAuth).catch(() => {});
 
   useEffect(() => {
     loadProjects();
+    loadAuth();
+    // Surface Google sign-in failures passed back via redirect.
+    const params = new URLSearchParams(window.location.search);
+    const authFail = params.get("auth_error");
+    if (authFail) {
+      setError(`Sign-in problem: ${authFail.replaceAll("-", " ")}.`);
+      window.history.replaceState({}, "", "/");
+    }
   }, []);
+
+  async function handleAuthSubmit(e) {
+    e.preventDefault();
+    setAuthError("");
+    setAuthBusy(true);
+    try {
+      if (authMode === "register") {
+        await api.register({ email: authEmail.trim(), password: authPassword, name: authName.trim() });
+      } else {
+        await api.login({ email: authEmail.trim(), password: authPassword });
+      }
+      setShowLogin(false);
+      setAuthEmail("");
+      setAuthPassword("");
+      setAuthName("");
+      await Promise.all([loadAuth(), loadProjects()]); // owned projects appear on sign-in
+    } catch (err) {
+      setAuthError(err.message);
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await api.logout();
+      await Promise.all([loadAuth(), loadProjects()]);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  useEffect(() => {
+    if (projects.length === 0) {
+      setSelectedId(null);
+      return;
+    }
+    if (!selectedId || !projects.some((p) => p.id === selectedId)) {
+      setSelectedId(projects[0].id);
+    }
+  }, [projects, selectedId]);
 
   async function createProject(e) {
     e.preventDefault();
@@ -31,6 +125,10 @@ export default function App() {
   }
 
   const selected = projects.find((p) => p.id === selectedId) || null;
+  const normalizedFilter = filter.trim().toLowerCase();
+  const visibleProjects = projects.filter((p) =>
+    p.name.toLowerCase().includes(normalizedFilter)
+  );
 
   return (
     <div className="app">
@@ -39,45 +137,183 @@ export default function App() {
         <span className="sub">
           Contextualized Construct Representations · theory-driven psychological text analysis
         </span>
+        <span className="header-auth">
+          {auth?.signed_in ? (
+            <>
+              <span className="small">Hi, {auth.name}</span>
+              <button className="header-btn" onClick={handleLogout}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button className="header-btn" onClick={() => setShowLogin(true)}>
+              Sign in
+            </button>
+          )}
+        </span>
       </header>
 
-      <div className="layout">
-        <aside className="sidebar">
-          <h2>Projects</h2>
-          {projects.map((p) => (
-            <button
-              key={p.id}
-              className={"project-item" + (p.id === selectedId ? " active" : "")}
-              onClick={() => setSelectedId(p.id)}
-            >
-              {p.name}
-              <span className="date">{p.created_at.slice(0, 10)}</span>
-            </button>
-          ))}
-
-          {creating ? (
-            <form onSubmit={createProject} className="mt">
-              <input
-                type="text"
-                autoFocus
-                placeholder="Project name"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-              />
-              <div className="row mt">
-                <button className="primary" type="submit">
-                  Create
+      {showLogin && (
+        <div className="modal-backdrop" onClick={() => setShowLogin(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>{authMode === "register" ? "Create an account" : "Sign in"}</h3>
+            <p className="hint">
+              Accounts are free. Signing in lifts the anonymous limits
+              {auth?.limits?.max_rows
+                ? ` (${Math.round(auth.limits.max_bytes / 1048576)} MB / ${auth.limits.max_rows.toLocaleString()} rows per file, ${auth?.usage?.max_runs_per_day ?? 3} runs/day)`
+                : ""}{" "}
+              and keeps your datasets and runs instead of deleting them after analysis.
+            </p>
+            {authError && <p className="small" style={{ color: "var(--danger, #b3261e)" }}>{authError}</p>}
+            {auth?.google_available && (
+              <>
+                <a className="primary google-btn" href="/api/auth/google/login">
+                  Continue with Google
+                </a>
+                <p className="small muted" style={{ textAlign: "center", margin: "8px 0" }}>
+                  or use email and password
+                </p>
+              </>
+            )}
+            <form onSubmit={handleAuthSubmit} className="mt">
+              {authMode === "register" && (
+                <label className="field">
+                  Name
+                  <input
+                    type="text"
+                    autoFocus
+                    value={authName}
+                    onChange={(e) => setAuthName(e.target.value)}
+                    placeholder="e.g. Mohammad"
+                  />
+                </label>
+              )}
+              <label className="field">
+                Email
+                <input
+                  type="email"
+                  autoFocus={authMode === "signin"}
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  placeholder="you@example.com"
+                />
+              </label>
+              <label className="field">
+                Password
+                {authMode === "register" && (
+                  <span className="field-hint"> at least 8 characters</span>
+                )}
+                <input
+                  type="password"
+                  value={authPassword}
+                  onChange={(e) => setAuthPassword(e.target.value)}
+                />
+              </label>
+              <div className="row">
+                <button
+                  className="primary"
+                  type="submit"
+                  disabled={
+                    authBusy ||
+                    !authEmail.trim() ||
+                    !authPassword ||
+                    (authMode === "register" && !authName.trim())
+                  }
+                >
+                  {authBusy ? "…" : authMode === "register" ? "Create account" : "Sign in"}
                 </button>
-                <button className="ghost" type="button" onClick={() => setCreating(false)}>
+                <button className="ghost" type="button" onClick={() => setShowLogin(false)}>
                   Cancel
                 </button>
               </div>
             </form>
-          ) : (
-            <button className="ghost mt" onClick={() => setCreating(true)}>
-              + New project
-            </button>
-          )}
+            <p className="small muted mt">
+              {authMode === "register" ? (
+                <>
+                  Already have an account?{" "}
+                  <button className="linkish" onClick={() => { setAuthMode("signin"); setAuthError(""); }}>
+                    Sign in
+                  </button>
+                </>
+              ) : (
+                <>
+                  New here?{" "}
+                  <button className="linkish" onClick={() => { setAuthMode("register"); setAuthError(""); }}>
+                    Create a free account
+                  </button>
+                </>
+              )}
+              {auth?.google_available
+                ? " · Forgot your password? Contact the lab admin, or use Google."
+                : " · Google sign-in arrives with lab accounts. Forgot your password? Contact the lab admin."}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="layout">
+        <aside className="sidebar">
+          <h2>
+            Projects
+            {projects.length > 0 && <span className="count">{projects.length}</span>}
+          </h2>
+          <input
+            type="text"
+            className="sidebar-filter"
+            placeholder="Search projects..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+          <div className="project-list">
+            {groupProjects(visibleProjects).map(([groupLabel, items]) => (
+              <div key={groupLabel}>
+                <div className="group-label">{groupLabel}</div>
+                {items.map((p) => (
+                  <button
+                    key={p.id}
+                    className={"project-item" + (p.id === selectedId ? " active" : "")}
+                    onClick={() => setSelectedId(p.id)}
+                    title={p.name}
+                  >
+                    <span className="project-name">{p.name}</span>
+                    <span className="date">
+                      {p.n_runs > 0 ? `${p.n_runs} run${p.n_runs === 1 ? "" : "s"} · ` : ""}
+                      {relativeTime(p.last_activity_at || p.created_at)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {filter && visibleProjects.length === 0 && (
+              <p className="small muted">No projects match "{filter}".</p>
+            )}
+          </div>
+
+          <div className="project-create">
+            {creating ? (
+              <form onSubmit={createProject}>
+                <input
+                  type="text"
+                  autoFocus
+                  placeholder="Project name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                />
+                <div className="row mt">
+                  <button className="primary" type="submit">
+                    Create
+                  </button>
+                  <button className="ghost" type="button" onClick={() => setCreating(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button className="ghost" onClick={() => setCreating(true)}>
+                + New project
+              </button>
+            )}
+          </div>
         </aside>
 
         <main className="main">
@@ -87,7 +323,17 @@ export default function App() {
             </div>
           )}
           {selected ? (
-            <Workspace key={selected.id} project={selected} />
+            <Workspace
+              key={selected.id}
+              project={selected}
+              auth={auth}
+              onAuthRefresh={loadAuth}
+              onProjectChanged={loadProjects}
+              onProjectDeleted={() => {
+                setSelectedId(null);
+                loadProjects();
+              }}
+            />
           ) : (
             <div className="card">
               <h3>Welcome</h3>
@@ -97,7 +343,7 @@ export default function App() {
                 score distributions, and a reproducibility record for every run.
               </p>
               <p className="small muted">
-                Self-contained by design: embeddings run on this server itself — no
+                Self-contained by design: embeddings run on this server itself - no
                 third-party AI APIs. Demo instance: storage is ephemeral and may reset;
                 please don&apos;t upload sensitive or identifiable data.
               </p>

@@ -1,0 +1,21 @@
+construct_id: mfq_fairness
+version: 1
+name: Moral Foundations - Fairness
+language: en
+category: moral-foundations
+description: Concern with justice, rights, and equal treatment (MFQ Fairness/Cheating).
+citation: "Graham, J., Nosek, B. A., Haidt, J., Iyer, R., Koleva, S., & Ditto, P. H. (2011). Mapping the moral domain. JPSP, 101(2)."
+verification_status: needs_verification
+items:
+  - item_id: fair_1
+    text: "Justice is the most important requirement for a society."
+    reverse_scored: false
+  - item_id: fair_2
+    text: "When the government makes laws, the number one principle should be ensuring that everyone is treated fairly."
+    reverse_scored: false
+  - item_id: fair_3
+    text: "Whether or not some people were treated differently than others."
+    reverse_scored: false
+  - item_id: fair_4
+    text: "Whether or not someone acted unfairly."
+    reverse_scored: false

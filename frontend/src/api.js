@@ -25,9 +25,17 @@ const json = (method, body) => ({
 export const api = {
   health: () => request("/api/health"),
   models: () => request("/api/models"),
+  languages: () => request("/api/languages"),
 
   listProjects: () => request("/api/projects"),
   createProject: (body) => request("/api/projects", json("POST", body)),
+  patchProject: (projectId, body) => request(`/api/projects/${projectId}`, json("PATCH", body)),
+  deleteProject: (projectId) => fetch(`/api/projects/${projectId}`, { method: "DELETE" }),
+
+  authMe: () => request("/api/auth/me"),
+  register: (body) => request("/api/auth/register", json("POST", body)),
+  login: (body) => request("/api/auth/login", json("POST", body)),
+  logout: () => request("/api/auth/logout", { method: "POST" }),
 
   listCorpora: (projectId) => request(`/api/projects/${projectId}/corpora`),
   uploadCorpus: (projectId, file) => {
@@ -38,6 +46,11 @@ export const api = {
 
   listConstructs: () => request("/api/constructs"),
   createConstruct: (body) => request("/api/constructs", json("POST", body)),
+  parseConstructFile: (file) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request("/api/constructs/parse-file", { method: "POST", body: form });
+  },
 
   createJob: (body) => request("/api/jobs", json("POST", body)),
   listJobs: (projectId) => request(`/api/jobs?project_id=${projectId}`),
@@ -46,4 +59,6 @@ export const api = {
 
   exportUrl: (jobId) => `/api/jobs/${jobId}/export`,
   metadataUrl: (jobId) => `/api/jobs/${jobId}/metadata`,
+  scriptUrl: (jobId) => `/api/jobs/${jobId}/script`,
+  scriptRequirementsUrl: (jobId) => `/api/jobs/${jobId}/script-requirements`,
 };

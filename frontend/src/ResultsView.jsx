@@ -25,13 +25,19 @@ export default function ResultsView({ jobId, onBack }) {
 
   return (
     <>
-      <div className="row" style={{ justifyContent: "space-between", marginBottom: 14 }}>
+      <div className="results-toolbar">
         <button className="ghost" onClick={onBack}>
           ← Back to workspace
         </button>
-        <div className="row">
+        <div className="row result-actions">
           <a href={api.exportUrl(jobId)}>
             <button className="primary">Export results CSV</button>
+          </a>
+          <a href={api.scriptUrl(jobId)}>
+            <button className="ghost">Python script</button>
+          </a>
+          <a href={api.scriptRequirementsUrl(jobId)}>
+            <button className="ghost">requirements.txt</button>
           </a>
           <a href={api.metadataUrl(jobId)}>
             <button className="ghost">Run metadata (JSON)</button>
@@ -64,7 +70,13 @@ export default function ResultsView({ jobId, onBack }) {
             <strong className="small">Data-quality notes</strong>
             <ul className="small" style={{ margin: "4px 0 0", paddingLeft: 20 }}>
               {summary.warnings.map((w, i) => (
-                <li key={i}>{w}</li>
+                <li key={i}>
+                  {typeof w === "string" ? w : (
+                    <>
+                      <code style={{ fontSize: 11 }}>{w.code}</code> - {w.message}
+                    </>
+                  )}
+                </li>
               ))}
             </ul>
           </div>
@@ -79,7 +91,7 @@ export default function ResultsView({ jobId, onBack }) {
       <div className="card">
         <h3>Per-item mean loadings</h3>
         <p className="hint">
-          Mean similarity of the corpus to each scale item — a face-validity check on which
+          Mean similarity of the corpus to each scale item - a face-validity check on which
           items drive the construct signal.
         </p>
         {summary.item_means.map((m, i) => (
@@ -110,7 +122,7 @@ export default function ResultsView({ jobId, onBack }) {
       </div>
 
       <div className="meta-footer">
-        <strong>Reproducibility record</strong> — model: <code>{metadata.model}</code> (dim{" "}
+        <strong>Reproducibility record</strong> - model: <code>{metadata.model}</code> (dim{" "}
         {metadata.embedding_dim}) · items hash: <code>{metadata.items_sha256_16}</code> ·
         text column: <code>{metadata.text_column}</code> · run:{" "}
         {metadata.started_at} → {metadata.finished_at} ({metadata.duration_seconds}s) ·
@@ -118,7 +130,7 @@ export default function ResultsView({ jobId, onBack }) {
         {metadata.sentence_transformers &&
           ` · sentence-transformers ${metadata.sentence_transformers}`}
         <div className="mt small">
-          Construct reference: {metadata.construct_reference || "—"}
+          Construct reference: {metadata.construct_reference || "-"}
         </div>
       </div>
     </>
@@ -136,22 +148,24 @@ function Stat({ k, v }) {
 
 function DocTable({ docs }) {
   return (
-    <table className="docs">
-      <thead>
-        <tr>
-          <th style={{ width: 60 }}>Score</th>
-          <th>Text</th>
-        </tr>
-      </thead>
-      <tbody>
-        {docs.map((d) => (
-          <tr key={d.row}>
-            <td className="score">{d.score.toFixed(3)}</td>
-            <td>{d.text}</td>
+    <div className="table-wrap">
+      <table className="docs">
+        <thead>
+          <tr>
+            <th style={{ width: 60 }}>Score</th>
+            <th>Text</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {docs.map((d) => (
+            <tr key={d.row}>
+              <td className="score">{d.score.toFixed(3)}</td>
+              <td>{d.text}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

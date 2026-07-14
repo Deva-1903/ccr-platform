@@ -1,0 +1,21 @@
+construct_id: mfq_care
+version: 1
+name: Moral Foundations - Care
+language: en
+category: moral-foundations
+description: Concern with suffering, compassion, and protection of the vulnerable (MFQ Care/Harm).
+citation: "Graham, J., Nosek, B. A., Haidt, J., Iyer, R., Koleva, S., & Ditto, P. H. (2011). Mapping the moral domain. JPSP, 101(2)."
+verification_status: needs_verification
+items:
+  - item_id: care_1
+    text: "Compassion for those who are suffering is the most crucial virtue."
+    reverse_scored: false
+  - item_id: care_2
+    text: "One of the worst things a person could do is hurt a defenseless animal."
+    reverse_scored: false
+  - item_id: care_3
+    text: "Whether or not someone suffered emotionally."
+    reverse_scored: false
+  - item_id: care_4
+    text: "Whether or not someone cared for someone weak or vulnerable."
+    reverse_scored: false
