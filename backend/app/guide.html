@@ -65,6 +65,26 @@ synthetic, written for this kit; no real participant data anywhere.</p>
   </ul>
 </div>
 
+<h2 id="quickstart">Quickstart: run YOUR study in 5 minutes</h2>
+<ol>
+  <li><b>Sign in</b> (top right - Google or email+password). Lab accounts have
+      unlimited access.</li>
+  <li><b>Create a project</b> named after your study.</li>
+  <li><b>Upload your corpus</b> - any CSV/XLSX with one text per row. Other columns
+      (IDs, conditions, demographics) are fine; they pass through untouched into the
+      results file.</li>
+  <li><b>Pick your construct</b> - search the library (94 scales from the lab's
+      collection) or click "+ Custom construct" and paste or upload your own items.</li>
+  <li><b>Run.</b> Read the warnings panel first (it tells you if something about your
+      data is off), then check the top/bottom scoring texts - if those don't make sense
+      for your construct, trust that instinct and report it.</li>
+  <li><b>Export</b> the results CSV (your columns + per-item similarities + CCR score)
+      and, if you want, the Python script that reproduces the run on your own machine.</li>
+</ol>
+<p>The sections below are structured test scenarios with sample data - useful for
+systematically stress-testing the platform, but <b>your real data is the best test we
+have</b>.</p>
+
 <h2 id="samples">0. Sample datasets</h2>
 <p>One file per platform behavior. To test something, download the file named for it and
 follow its scenario below. Unless stated otherwise, select language <b>English</b> and
@@ -206,8 +226,9 @@ pages don't update.</p>
 <ol>
   <li>Sign in, upload, run: no ANONYMOUS_DATA_REMOVED warning; re-running the same corpus
       works (file kept).</li>
-  <li>Saved-run cap: Step 3 card shows "N of 15 saved runs used". At the cap, new runs are
-      refused until you delete old runs/projects (nothing is auto-deleted).</li>
+  <li>Saved-run budget: the Step 3 card shows "N of M saved runs used". Lab accounts on
+      this dev instance are set effectively unlimited; public accounts get 15. At the cap,
+      new runs are refused until you delete old runs/projects (nothing is auto-deleted).</li>
   <li>Ownership: your projects are invisible to signed-out visitors and other accounts.
       Anonymous projects stay shared.</li>
 </ol>
@@ -224,8 +245,11 @@ pages don't update.</p>
 
 <h2 id="feedback">10. Found something off?</h2>
 <p>Anything that doesn't match what this guide says it should do - or anything confusing,
-slow, or missing - please note the section number and what you saw, and send it to
-Deva (<a href="mailto:devaanand@umass.edu">devaanand@umass.edu</a>). Screenshots welcome.</p>
+slow, or missing - post it in the lab's <b>#ccr Slack channel</b>: the 🐞 thread for bugs,
+the 💡 thread for ideas and feature requests. One line is enough; note the section number
+and what you saw; screenshots help. DMs to Deva work too, and email as a fallback
+(<a href="mailto:devaanand@umass.edu">devaanand@umass.edu</a>). Nothing is too small -
+"this button confused me" is exactly the kind of report we want.</p>
 
 </main>
 <a class="top" href="#">↑ Top</a>
