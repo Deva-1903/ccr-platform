@@ -6,6 +6,5 @@ backend/tests
 backend/.pytest_cache
 **/__pycache__
 frontend
-sample_data
 scripts
 *.md

@@ -745,6 +745,25 @@ def export_script_requirements(job_id: str, db: Session = Depends(get_db)):
     )
 
 
+# ------------------------------------------------------------ tester guide + samples
+# /guide and /samples exist for the dev instance: a click-through testing guide
+# for the PI/students and the synthetic demo corpora it references. guide.html
+# lives in app/ (not static/, which `npm run build` wipes); sample_data/ sits at
+# the repo root, same resolution as packages/ (= / in the container).
+GUIDE_HTML = Path(__file__).resolve().parent / "guide.html"
+SAMPLES_DIR = Path(__file__).resolve().parents[2] / "sample_data"
+
+
+@app.get("/guide", include_in_schema=False)
+def testing_guide():
+    if not GUIDE_HTML.exists():
+        raise HTTPException(404, "Guide not available on this instance.")
+    return FileResponse(GUIDE_HTML, media_type="text/html")
+
+
+if SAMPLES_DIR.exists():
+    app.mount("/samples", StaticFiles(directory=SAMPLES_DIR), name="samples")
+
 # ------------------------------------------------------------ static (SPA)
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 if STATIC_DIR.exists():

@@ -12,9 +12,16 @@ Space settings; after that, deploys are just `git push hf main`.
 | SUPABASE_ANON_KEY  | from the same page (anon public key, NOT service_role)      |
 | CCR_APP_URL        | https://devaanand-ccr-platform.hf.space                     |
 | CCR_COOKIE_SECURE  | 1                                                           |
+| CCR_MAX_ROWS       | 20000 (global upload ceiling; code default is 100000)       |
 
 Retention (CCR_ANON_TTL_HOURS=24) and model pre-warm are already defaults in
 the Dockerfile.
+
+## Tester guide
+
+The deployed instance serves a click-through testing guide at /guide with
+download links for every demo corpus (served from /samples). Send the PI and
+students that URL; no files need to be shared out of band.
 
 ## Supabase setup for Google sign-in (one time)
 

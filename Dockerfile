@@ -41,6 +41,9 @@ COPY backend/static ./static
 # registry.py/construct_lib.py resolve packages/ two levels above app/
 # (= "/" here), so /packages is exactly where they look.
 COPY packages /packages
+# Synthetic demo corpora served at /samples for the tester guide (/guide);
+# resolved the same way as packages/.
+COPY sample_data /sample_data
 
 EXPOSE 7860
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]

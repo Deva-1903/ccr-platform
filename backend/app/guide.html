@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCR Platform — Testing Guide</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
+    --accent: #2456a6; --card: #f7f7f8; --amber-bg: #fff7e0; --amber-border: #e0b84d;
+    --code-bg: #f0f0f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c; --fg: #e6e6e6; --muted: #9a9a9a; --border: #3a3d44;
+      --accent: #7aa7e8; --card: #1f2228; --amber-bg: #2e2810; --amber-border: #8a6d1f;
+      --code-bg: #24272e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.25rem; margin: 2.2rem 0 .6rem; padding-top: .6rem; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.02rem; margin: 1.2rem 0 .4rem; }
+  p, li { color: var(--fg); }
+  .sub { color: var(--muted); margin: 0 0 1.2rem; }
+  a { color: var(--accent); }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+  .note {
+    background: var(--amber-bg); border: 1px solid var(--amber-border);
+    border-radius: 8px; padding: .8rem 1rem; margin: 1rem 0;
+  }
+  .note b { display: block; margin-bottom: .25rem; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: .8rem 0; font-size: .93rem; }
+  th, td { border: 1px solid var(--border); padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  ol li, ul li { margin: .3rem 0; }
+  .dl::before { content: "⬇ "; font-size: .85em; }
+  .top { position: fixed; right: 1rem; bottom: 1rem; background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px; padding: .4rem .7rem;
+    text-decoration: none; font-size: .85rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>CCR Platform — Testing Guide</h1>
+<p class="sub">Everything built so far, as click-through scenarios: what to do and exactly what
+you should see. Every dataset referenced is downloadable right here — all texts are
+synthetic, written for this kit; no real participant data anywhere.</p>
+
+<div class="note">
+  <b>⚠ This is the free dev instance — two caveats before you start:</b>
+  <ul>
+    <li><b>Storage is ephemeral.</b> Accounts, projects, and saved runs are wiped whenever
+        the instance rebuilds or restarts. If your account disappears, that's expected —
+        just re-register. (Google sign-in recreates itself automatically.)</li>
+    <li><b>It sleeps when idle.</b> After ~48&nbsp;h without visitors, the first page load
+        takes about a minute to wake it up.</li>
+  </ul>
+</div>
+
+<h2 id="samples">0. Sample datasets</h2>
+<p>One file per platform behavior. To test something, download the file named for it and
+follow its scenario below. Unless stated otherwise, select language <b>English</b> and
+model <b>MiniLM</b>.</p>
+<div class="tablewrap">
+<table>
+  <tr><th>File</th><th>Demonstrates</th></tr>
+  <tr><td><a class="dl" href="/samples/sample_corpus.csv" download>sample_corpus.csv</a></td><td>Clean baseline run (60 rows, no warnings)</td></tr>
+  <tr><td><a class="dl" href="/samples/warnings_showcase.csv" download>warnings_showcase.csv</a></td><td>All text-QA warnings at once</td></tr>
+  <tr><td><a class="dl" href="/samples/french_demo.csv" download>french_demo.csv</a></td><td>Language mismatch / model-language checks</td></tr>
+  <tr><td><a class="dl" href="/samples/demo_spanish.csv" download>demo_spanish.csv</a></td><td>Same checks in Spanish + short-text rows</td></tr>
+  <tr><td><a class="dl" href="/samples/mixed_language_demo.csv" download>mixed_language_demo.csv</a></td><td>Uncertain language detection (15 EN + 15 ES)</td></tr>
+  <tr><td><a class="dl" href="/samples/long_documents_demo.csv" download>long_documents_demo.csv</a></td><td>Token-window truncation warning</td></tr>
+  <tr><td><a class="dl" href="/samples/moral_foundations_demo.csv" download>moral_foundations_demo.csv</a></td><td>Meaningful score spread across MFQ-2 foundations</td></tr>
+  <tr><td><a class="dl" href="/samples/multi_column_demo.csv" download>multi_column_demo.csv</a></td><td>Text-column auto-suggestion (5 columns)</td></tr>
+  <tr><td><a class="dl" href="/samples/semicolon_delimited_demo.csv" download>semicolon_delimited_demo.csv</a></td><td>Delimiter sniffing (semicolons, commas inside texts)</td></tr>
+  <tr><td><a class="dl" href="/samples/latin1_encoding_demo.csv" download>latin1_encoding_demo.csv</a></td><td>Non-UTF-8 encoding fallback</td></tr>
+  <tr><td><a class="dl" href="/samples/xlsx_upload_demo.xlsx" download>xlsx_upload_demo.xlsx</a></td><td>Excel ingestion path</td></tr>
+  <tr><td><a class="dl" href="/samples/large_demo.csv" download>large_demo.csv</a></td><td>Anonymous upload caps (800 rows)</td></tr>
+  <tr><td><a class="dl" href="/samples/construct_items_demo.csv" download>construct_items_demo.csv</a></td><td>Construct upload: item + reverse columns</td></tr>
+  <tr><td><a class="dl" href="/samples/construct_items_marker_demo.csv" download>construct_items_marker_demo.csv</a></td><td>Construct upload: (R) markers, blank + duplicate rows</td></tr>
+  <tr><td><a class="dl" href="/samples/construct_items_demo.xlsx" download>construct_items_demo.xlsx</a></td><td>Construct upload from Excel</td></tr>
+</table>
+</div>
+
+<h2 id="projects">1. Projects and sidebar</h2>
+<ol>
+  <li>Create three projects. They appear under "Today", newest activity first.</li>
+  <li>Type in the sidebar search box: the list filters as you type.</li>
+  <li>Archive a project (project header &gt; Archive): it moves into the collapsed
+      "Archived" group; Unarchive brings it back. No data is lost either way.</li>
+  <li>Delete a project: requires typing the project name; removes its datasets,
+      runs, and files permanently.</li>
+</ol>
+
+<h2 id="uploads">2. Upload paths (Step 1 card)</h2>
+<div class="tablewrap">
+<table>
+  <tr><th>Upload</th><th>Expect</th></tr>
+  <tr><td><a href="/samples/sample_corpus.csv" download>sample_corpus.csv</a></td><td>Parses, 60 rows, <code>text</code> column suggested</td></tr>
+  <tr><td><a href="/samples/multi_column_demo.csv" download>multi_column_demo.csv</a></td><td>5 columns; <code>comment_text</code> marked "(suggested)"</td></tr>
+  <tr><td><a href="/samples/semicolon_delimited_demo.csv" download>semicolon_delimited_demo.csv</a></td><td>Parses into exactly id + text (commas inside texts intact)</td></tr>
+  <tr><td><a href="/samples/latin1_encoding_demo.csv" download>latin1_encoding_demo.csv</a></td><td>Parses with a ⚠ note: decoded as latin-1; fiancée/café render correctly</td></tr>
+  <tr><td><a href="/samples/xlsx_upload_demo.xlsx" download>xlsx_upload_demo.xlsx</a></td><td>Parses like a CSV</td></tr>
+  <tr><td>any <code>.txt</code> or <code>.pdf</code> file</td><td>Rejected: unsupported file type</td></tr>
+</table>
+</div>
+<p>Anonymous limits (signed out): the Step 1 hint shows 2&nbsp;MB / 200 rows and says uploads
+are deleted after analysis. Upload
+<a href="/samples/large_demo.csv" download>large_demo.csv</a> (800 rows): rejected with a
+"Sign in (top right)" message. Sign in and retry: accepted.</p>
+
+<h2 id="constructs">3. Construct selection (Step 2 card)</h2>
+<ol>
+  <li>Open the picker: search field + panel below it, library grouped by category,
+      with "Recently used" pinned on top after your first runs.</li>
+  <li>Type "GAD" or "empathy": matches by name and category; Arrow keys + Enter work.</li>
+  <li>Select any imported construct: items listed, plus the "not yet verified verbatim"
+      notice (expected for the whole imported library for now).</li>
+</ol>
+
+<h3>Custom construct, typed</h3>
+<ol>
+  <li>"+ Custom construct" &gt; name it, paste items one per line.</li>
+  <li>Append <code>(R)</code> to one line: the form shows "1 item(s) marked reverse-scored".</li>
+  <li>Save: it appears in the picker under "My custom constructs"; run metadata carries
+      the reverse flag (check via Results &gt; metadata download).</li>
+</ol>
+
+<h3>Custom construct, from file</h3>
+<ol>
+  <li>"+ Custom construct" &gt; "Upload items from CSV/XLSX".</li>
+  <li>Try <a href="/samples/construct_items_demo.csv" download>construct_items_demo.csv</a>
+      (<code>item,reverse</code> columns — 1/true/yes/R = reverse),
+      <a href="/samples/construct_items_marker_demo.csv" download>construct_items_marker_demo.csv</a>
+      (single column with <code>(R)</code> markers), or
+      <a href="/samples/construct_items_demo.xlsx" download>construct_items_demo.xlsx</a> (Excel).</li>
+  <li>Expect: items fill the textarea ((R) appended where flagged), the filename becomes
+      the suggested name, and parse notes list skipped blanks/duplicates. Nothing is saved
+      until you review and press Save. Item files are never retained on the server.</li>
+</ol>
+
+<h2 id="warnings">4. Language, models, and warnings (Step 3 card + results)</h2>
+<p>Run each of these and open the results page; the amber warnings panel should show exactly:</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Corpus</th><th>Selection</th><th>Expected warnings</th></tr>
+  <tr><td><a href="/samples/warnings_showcase.csv" download>warnings_showcase.csv</a></td><td>en + MiniLM</td>
+      <td>EMPTY_ROWS_DROPPED (2), DUPLICATE_TEXTS (2), TEXT_TOO_SHORT (3), TEXTS_MAYBE_TRUNCATED (2); no language warnings</td></tr>
+  <tr><td><a href="/samples/french_demo.csv" download>french_demo.csv</a></td><td>en + MiniLM</td><td>LANGUAGE_MISMATCH (detected fr, 100%)</td></tr>
+  <tr><td>french_demo.csv</td><td>fr + MiniLM</td><td>MODEL_LANGUAGE_UNSUPPORTED</td></tr>
+  <tr><td>french_demo.csv</td><td>fr + Multilingual E5</td><td>no language warnings</td></tr>
+  <tr><td><a href="/samples/mixed_language_demo.csv" download>mixed_language_demo.csv</a></td><td>en + MiniLM</td><td>LANGUAGE_UNCERTAIN (majority 50%)</td></tr>
+  <tr><td><a href="/samples/long_documents_demo.csv" download>long_documents_demo.csv</a></td><td>en + MiniLM</td>
+      <td>TEXTS_MAYBE_TRUNCATED (4) + LANGUAGE_UNCERTAIN (only 10 rows, below the 20-row minimum — by design)</td></tr>
+</table>
+</div>
+<p>Warnings are per-run snapshots: changing language/model requires a NEW run; old result
+pages don't update.</p>
+
+<h2 id="results">5. Results and reproducibility</h2>
+<ol>
+  <li>Run <a href="/samples/moral_foundations_demo.csv" download>moral_foundations_demo.csv</a>
+      against two different MFQ-2 foundations: top texts change per foundation; the 6
+      neutral rows sink to the bottom.</li>
+  <li>Results page: histogram, mean/SD/min/max, per-item loadings, top/bottom texts.</li>
+  <li>Downloads: results CSV (input columns + sim_item_N + ccr_score), metadata JSON
+      (model revision, construct snapshot + item hash, language block, environment pins),
+      reproduction script + requirements file.</li>
+  <li>Reproduction check: <code>pip install -r requirements-repro.txt</code>, then
+      <code>python reproduce_analysis.py your_corpus.csv</code> on a machine with no
+      platform access; values should match the export (target ~1e-5 with real models).</li>
+</ol>
+
+<h2 id="accounts">6. Accounts</h2>
+<ol>
+  <li>Sign in (top right) &gt; "Create a free account" &gt; email + password (min 8 chars) —
+      or use "Continue with Google".</li>
+  <li>You're signed in immediately; the header shows your name.</li>
+  <li>Sign out, sign back in; wrong password gives "Incorrect email or password";
+      registering the same email again gives "already exists".</li>
+  <li>Email is case-insensitive. No self-service password reset yet — reset = admin action.
+      (And remember: password accounts vanish when this dev instance rebuilds.)</li>
+</ol>
+
+<h2 id="anon">7. Anonymous tiers (test signed OUT)</h2>
+<ol>
+  <li>Upload caps: see section 2.</li>
+  <li>Run limit: run 3 analyses. The Step 3 card counts "X of 3 free runs used today".
+      The 4th run is refused with a sign-in prompt. Counter resets next day (UTC).
+      Signing in removes the limit.</li>
+  <li>Delete-after-analysis: run any corpus, open results (fine, downloadable), note the
+      info warning "uploaded file was deleted after this analysis". Re-running that same
+      corpus: refused ("upload again, or sign in").</li>
+  <li>TTL purge: anonymous projects older than 24&nbsp;h are deleted entirely (startup + hourly).</li>
+</ol>
+
+<h2 id="signedin">8. Signed-in tier</h2>
+<ol>
+  <li>Sign in, upload, run: no ANONYMOUS_DATA_REMOVED warning; re-running the same corpus
+      works (file kept).</li>
+  <li>Saved-run cap: Step 3 card shows "N of 15 saved runs used". At the cap, new runs are
+      refused until you delete old runs/projects (nothing is auto-deleted).</li>
+  <li>Ownership: your projects are invisible to signed-out visitors and other accounts.
+      Anonymous projects stay shared.</li>
+</ol>
+
+<h2 id="perf">9. Performance behaviors</h2>
+<ol>
+  <li>Corpus-embedding cache: run the SAME corpus with a second construct (signed in, same
+      model): the run skips document embedding and completes in seconds; metadata shows
+      <code>"doc_embeddings_from_cache": true</code>.</li>
+  <li>Duplicate texts are embedded once
+      (<a href="/samples/warnings_showcase.csv" download>warnings_showcase.csv</a> has 2
+      dupes): identical scores for identical texts, less compute.</li>
+</ol>
+
+<h2 id="feedback">10. Found something off?</h2>
+<p>Anything that doesn't match what this guide says it should do — or anything confusing,
+slow, or missing — please note the section number and what you saw, and send it to
+Deva (<a href="mailto:devaanand@umass.edu">devaanand@umass.edu</a>). Screenshots welcome.</p>
+
+</main>
+<a class="top" href="#">↑ Top</a>
+</body>
+</html>
