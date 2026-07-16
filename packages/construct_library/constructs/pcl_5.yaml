@@ -1,0 +1,82 @@
+construct_id: pcl_5
+version: 1
+name: PTSD Checklist for DSM-5 (PCL-5)
+language: en
+category: PTSD symptoms
+description: PTSD symptoms - PTSD Checklist for DSM-5 (PCL-5). Screening tool only; not a diagnosis.
+citation: Weathers, F. W., Litz, B. T., Keane, T. M., Palmieri, P. A., Marx, B. P., & Schnurr, P. P. (2013).
+  The PTSD Checklist for DSM-5 (PCL-5). National Center for PTSD.
+verification_status: needs_verification
+source_url: https://www.ptsd.va.gov/professional/assessment/adult-sr/ptsd-checklist.asp
+rights_note: VA National Center for PTSD states the PCL-5 is public domain and not copyrighted. Screening
+  tool only; not a diagnosis.
+questionnaire: PTSD Checklist for DSM-5 (PCL-5)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: pcl_5_1
+  text: Repeated, disturbing, and unwanted memories of the stressful experience?
+  reverse_scored: false
+- item_id: pcl_5_2
+  text: Repeated, disturbing dreams of the stressful experience?
+  reverse_scored: false
+- item_id: pcl_5_3
+  text: Suddenly feeling or acting as if the stressful experience were actually happening again (as if
+    you were actually back there reliving it)?
+  reverse_scored: false
+- item_id: pcl_5_4
+  text: Feeling very upset when something reminded you of the stressful experience?
+  reverse_scored: false
+- item_id: pcl_5_5
+  text: Having strong physical reactions when something reminded you of the stressful experience (for
+    example, heart pounding, trouble breathing, sweating)?
+  reverse_scored: false
+- item_id: pcl_5_6
+  text: Avoiding memories, thoughts, or feelings related to the stressful experience?
+  reverse_scored: false
+- item_id: pcl_5_7
+  text: Avoiding external reminders of the stressful experience (for example, people, places, conversations,
+    activities, objects, or situations)?
+  reverse_scored: false
+- item_id: pcl_5_8
+  text: Trouble remembering important parts of the stressful experience?
+  reverse_scored: false
+- item_id: pcl_5_9
+  text: 'Having strong negative beliefs about yourself, other people, or the world (for example, having
+    thoughts such as: I am bad, there is something seriously wrong with me, no one can be trusted, the
+    world is completely dangerous)?'
+  reverse_scored: false
+- item_id: pcl_5_10
+  text: Blaming yourself or someone else for the stressful experience or what happened after it?
+  reverse_scored: false
+- item_id: pcl_5_11
+  text: Having strong negative feelings such as fear, horror, anger, guilt, or shame?
+  reverse_scored: false
+- item_id: pcl_5_12
+  text: Loss of interest in activities that you used to enjoy?
+  reverse_scored: false
+- item_id: pcl_5_13
+  text: Feeling distant or cut off from other people?
+  reverse_scored: false
+- item_id: pcl_5_14
+  text: Trouble experiencing positive feelings (for example, being unable to feel happiness or have loving
+    feelings for people close to you)?
+  reverse_scored: false
+- item_id: pcl_5_15
+  text: Irritable behavior, angry outbursts, or acting aggressively?
+  reverse_scored: false
+- item_id: pcl_5_16
+  text: Taking too many risks or doing things that could cause you harm?
+  reverse_scored: false
+- item_id: pcl_5_17
+  text: Being “superalert” or watchful or on guard?
+  reverse_scored: false
+- item_id: pcl_5_18
+  text: Feeling jumpy or easily startled?
+  reverse_scored: false
+- item_id: pcl_5_19
+  text: Having difficulty concentrating?
+  reverse_scored: false
+- item_id: pcl_5_20
+  text: Trouble falling or staying asleep?
+  reverse_scored: false

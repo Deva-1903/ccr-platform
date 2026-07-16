@@ -1,0 +1,22 @@
+construct_id: tipi_extraversion
+version: 1
+name: Extraversion (TIPI)
+language: en
+category: Big Five personality traits
+description: Big Five personality traits - Extraversion dimension of the Ten-Item Personality Inventory
+  (TIPI).
+citation: Gosling, S. D., Rentfrow, P. J., & Swann, W. B., Jr. (2003). A very brief measure of the Big-Five
+  personality domains. Journal of Research in Personality, 37(6), 504–528. https://doi.org/10.1016/S0092-6566(03)00046-1
+verification_status: needs_verification
+source_url: https://gosling.psy.utexas.edu/scales-weve-developed/ten-item-personality-measure-tipi/
+rights_note: Author/lab-hosted measure; verify permission for commercial redistribution.
+questionnaire: Ten-Item Personality Inventory (TIPI)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: tipi_extraversion_1
+  text: Extraverted, enthusiastic.
+  reverse_scored: false
+- item_id: tipi_extraversion_6
+  text: Reserved, quiet.
+  reverse_scored: true

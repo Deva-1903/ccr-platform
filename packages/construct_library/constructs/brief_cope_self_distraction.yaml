@@ -1,0 +1,22 @@
+construct_id: brief_cope_self_distraction
+version: 1
+name: Self-distraction (Brief COPE)
+language: en
+category: Coping
+description: Coping - Self-distraction dimension of the Brief COPE.
+citation: 'Carver, C. S. (1997). You want to measure coping but your protocol’s too long: Consider the
+  Brief COPE. International Journal of Behavioral Medicine, 4(1), 92–100. https://doi.org/10.1207/s15327558ijbm0401_6'
+verification_status: needs_verification
+source_url: https://www.psy.miami.edu/faculty/ccarver/brief-cope.html
+rights_note: Author-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Brief COPE
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: brief_cope_self_distraction_1
+  text: I've been turning to work or other activities to take my mind off things.
+  reverse_scored: false
+- item_id: brief_cope_self_distraction_19
+  text: I've been doing something to think about it less, such as going to movies, watching TV, reading,
+    daydreaming, sleeping, or shopping.
+  reverse_scored: false

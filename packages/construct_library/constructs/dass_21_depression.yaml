@@ -1,0 +1,38 @@
+construct_id: dass_21_depression
+version: 1
+name: Depression (DASS-21)
+language: en
+category: Depression/anxiety/stress symptoms
+description: Depression/anxiety/stress symptoms - Depression dimension of the Depression Anxiety Stress
+  Scales–21 (DASS-21). Screening tool only; not a diagnosis.
+citation: Lovibond, S. H., & Lovibond, P. F. (1995). Manual for the Depression Anxiety Stress Scales (2nd
+  ed.). Psychology Foundation of Australia.
+verification_status: needs_verification
+source_url: https://www2.psy.unsw.edu.au/dass/
+rights_note: DASS materials are publicly available and often described as public-domain; verify permission
+  for website redistribution. Screening tool only; not a diagnosis.
+questionnaire: Depression Anxiety Stress Scales–21 (DASS-21)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: dass_21_depression_3
+  text: I couldn’t seem to experience any positive feeling at all
+  reverse_scored: false
+- item_id: dass_21_depression_5
+  text: I found it difficult to work up the initiative to do things
+  reverse_scored: false
+- item_id: dass_21_depression_10
+  text: I felt that I had nothing to look forward to
+  reverse_scored: false
+- item_id: dass_21_depression_13
+  text: I felt down-hearted and blue
+  reverse_scored: false
+- item_id: dass_21_depression_16
+  text: I was unable to become enthusiastic about anything
+  reverse_scored: false
+- item_id: dass_21_depression_17
+  text: I felt I wasn’t worth much as a person
+  reverse_scored: false
+- item_id: dass_21_depression_21
+  text: I felt that life was meaningless
+  reverse_scored: false

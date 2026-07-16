@@ -1,0 +1,72 @@
+construct_id: need_for_cognition_scale_18_item_short_form
+version: 1
+name: Need for Cognition Scale, 18-item short form
+language: en
+category: Need for cognition
+description: Need for cognition - Need for Cognition Scale, 18-item short form.
+citation: Cacioppo, J. T., Petty, R. E., & Kao, C. F. (1984). The efficient assessment of need for cognition.
+  Journal of Personality Assessment, 48(3), 306–307. https://doi.org/10.1207/s15327752jpa4803_13
+verification_status: needs_verification
+source_url: https://richardepetty.com/wp-content/uploads/2019/01/1984-jpa-cacioppopettykao.pdf
+rights_note: Researcher-hosted article with complete item table; verify permission for commercial redistribution.
+questionnaire: Need for Cognition Scale, 18-item short form
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: need_for_cognition_scale_18_item_short_form_1
+  text: I would prefer complex to simple problems.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_2
+  text: I like to have the responsibility of handling a situation that requires a lot of thinking.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_3
+  text: Thinking is not my idea of fun.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_4
+  text: I would rather do something that requires little thought than something that is sure to challenge
+    my thinking abilities.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_5
+  text: I try to anticipate and avoid situations where there is likely a chance I will have to think in
+    depth about something.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_6
+  text: I find satisfaction in deliberating hard and for long hours.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_7
+  text: I only think as hard as I have to.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_8
+  text: I prefer to think about small, daily projects to long-term ones.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_9
+  text: I like tasks that require little thought once I've learned them.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_10
+  text: The idea of relying on thought to make my way to the top appeals to me.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_11
+  text: I really enjoy a task that involves coming up with new solutions to problems.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_12
+  text: Learning new ways to think doesn't excite me very much.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_13
+  text: I prefer my life to be filled with puzzles that I must solve.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_14
+  text: The notion of thinking abstractly is appealing to me.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_15
+  text: I would prefer a task that is intellectual, difficult, and important to one that is somewhat important
+    but does not require much thought.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_16
+  text: I feel relief rather than satisfaction after completing a task that required a lot of mental effort.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_17
+  text: It's enough for me that something gets the job done; I don't care how or why it works.
+  reverse_scored: false
+- item_id: need_for_cognition_scale_18_item_short_form_18
+  text: I usually end up deliberating about issues even when they do not affect me personally.
+  reverse_scored: false

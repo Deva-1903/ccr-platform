@@ -1,0 +1,38 @@
+construct_id: iri_fantasy
+version: 1
+name: Fantasy (IRI)
+language: en
+category: Empathy
+description: Empathy - Fantasy dimension of the Interpersonal Reactivity Index (IRI).
+citation: 'Davis, M. H. (1983). Measuring individual differences in empathy: Evidence for a multidimensional
+  approach. Journal of Personality and Social Psychology, 44(1), 113–126. https://doi.org/10.1037/0022-3514.44.1.113'
+verification_status: needs_verification
+source_url: https://www.eckerd.edu/psychology/iri/
+rights_note: Author/institution-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Interpersonal Reactivity Index (IRI)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: iri_fantasy_1
+  text: I daydream and fantasize, with some regularity, about things that might happen to me.
+  reverse_scored: false
+- item_id: iri_fantasy_5
+  text: I really get involved with the feelings of the characters in a novel.
+  reverse_scored: false
+- item_id: iri_fantasy_7
+  text: I am usually objective when I watch a movie or play, and I don't often get completely caught up
+    in it.
+  reverse_scored: true
+- item_id: iri_fantasy_12
+  text: Becoming extremely involved in a good book or movie is somewhat rare for me.
+  reverse_scored: true
+- item_id: iri_fantasy_16
+  text: After seeing a play or movie, I have felt as though I were one of the characters.
+  reverse_scored: false
+- item_id: iri_fantasy_23
+  text: When I watch a good movie, I can very easily put myself in the place of a leading character.
+  reverse_scored: false
+- item_id: iri_fantasy_26
+  text: When I am reading an interesting story or novel, I imagine how I would feel if the events in the
+    story were happening to me.
+  reverse_scored: false

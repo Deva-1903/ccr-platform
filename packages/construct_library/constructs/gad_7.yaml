@@ -1,0 +1,37 @@
+construct_id: gad_7
+version: 1
+name: Generalized Anxiety Disorder-7 (GAD-7)
+language: en
+category: Anxiety symptoms
+description: Anxiety symptoms - Generalized Anxiety Disorder-7 (GAD-7). Screening tool only; not a diagnosis.
+citation: 'Spitzer, R. L., Kroenke, K., Williams, J. B. W., & Löwe, B. (2006). A brief measure for assessing
+  generalized anxiety disorder: The GAD-7. Archives of Internal Medicine, 166(10), 1092–1097. https://doi.org/10.1001/archinte.166.10.1092'
+verification_status: needs_verification
+source_url: https://www.phqscreeners.com/
+rights_note: Pfizer states PHQ/GAD screeners are available without copyright restriction and at no charge.
+  Screening tool only; not a diagnosis.
+questionnaire: Generalized Anxiety Disorder-7 (GAD-7)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: gad_7_1
+  text: Feeling nervous, anxious, or on edge
+  reverse_scored: false
+- item_id: gad_7_2
+  text: Not being able to stop or control worrying
+  reverse_scored: false
+- item_id: gad_7_3
+  text: Worrying too much about different things
+  reverse_scored: false
+- item_id: gad_7_4
+  text: Trouble relaxing
+  reverse_scored: false
+- item_id: gad_7_5
+  text: Being so restless that it is hard to sit still
+  reverse_scored: false
+- item_id: gad_7_6
+  text: Becoming easily annoyed or irritable
+  reverse_scored: false
+- item_id: gad_7_7
+  text: Feeling afraid as if something awful might happen
+  reverse_scored: false

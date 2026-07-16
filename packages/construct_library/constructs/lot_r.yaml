@@ -1,0 +1,34 @@
+construct_id: lot_r
+version: 1
+name: Life Orientation Test–Revised (LOT-R)
+language: en
+category: Optimism
+description: Optimism - Life Orientation Test–Revised (LOT-R).
+citation: 'Scheier, M. F., Carver, C. S., & Bridges, M. W. (1994). Distinguishing optimism from neuroticism:
+  A reevaluation of the Life Orientation Test. Journal of Personality and Social Psychology, 67(6), 1063–1078.
+  https://doi.org/10.1037/0022-3514.67.6.1063'
+verification_status: needs_verification
+source_url: https://fetzer.org/sites/default/files/images/stories/pdf/selfmeasures/Self_Measures_for_Optimism_LIFE_ORIENTATION_TEST.pdf
+rights_note: Publicly posted scale handout; verify permission for commercial redistribution.
+questionnaire: Life Orientation Test–Revised (LOT-R)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: lot_r_1
+  text: In uncertain times, I usually expect the best.
+  reverse_scored: false
+- item_id: lot_r_3
+  text: If something can go wrong for me, it will.
+  reverse_scored: true
+- item_id: lot_r_4
+  text: I'm always optimistic about my future.
+  reverse_scored: false
+- item_id: lot_r_7
+  text: I hardly ever expect things to go my way.
+  reverse_scored: true
+- item_id: lot_r_9
+  text: I rarely count on good things happening to me.
+  reverse_scored: true
+- item_id: lot_r_10
+  text: Overall, I expect more good things to happen to me than bad.
+  reverse_scored: false

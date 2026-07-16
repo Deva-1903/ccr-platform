@@ -1,0 +1,33 @@
+construct_id: cbi_personal_burnout
+version: 1
+name: Personal burnout (CBI)
+language: en
+category: Burnout
+description: Burnout - Personal burnout dimension of the Copenhagen Burnout Inventory (CBI).
+citation: 'Kristensen, T. S., Borritz, M., Villadsen, E., & Christensen, K. B. (2005). The Copenhagen
+  Burnout Inventory: A new tool for the assessment of burnout. Work & Stress, 19(3), 192–207. https://doi.org/10.1080/02678370500297720'
+verification_status: needs_verification
+source_url: https://emerge.ucsd.edu/r_4dsm5/copenhagen-burnout-inventory-cbi/
+rights_note: Research center item page; verify permission for commercial redistribution.
+questionnaire: Copenhagen Burnout Inventory (CBI)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: cbi_personal_burnout_1
+  text: How often do you feel tired?
+  reverse_scored: false
+- item_id: cbi_personal_burnout_2
+  text: How often are you physically exhausted?
+  reverse_scored: false
+- item_id: cbi_personal_burnout_3
+  text: How often are you emotionally exhausted?
+  reverse_scored: false
+- item_id: cbi_personal_burnout_4
+  text: 'How often do you think: "I can''t take it anymore"?'
+  reverse_scored: false
+- item_id: cbi_personal_burnout_5
+  text: How often do you feel worn out?
+  reverse_scored: false
+- item_id: cbi_personal_burnout_6
+  text: How often do you feel weak and susceptible to illness?
+  reverse_scored: false

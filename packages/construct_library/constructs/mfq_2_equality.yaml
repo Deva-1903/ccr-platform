@@ -1,0 +1,35 @@
+construct_id: mfq_2_equality
+version: 1
+name: Equality (MFQ-2)
+language: en
+category: Moral foundations
+description: Moral foundations - Equality dimension of the Moral Foundations Questionnaire-2 (MFQ-2).
+citation: 'Atari, M., Haidt, J., Graham, J., Koleva, S., Stevens, S. T., & Dehghani, M. (2023). Morality
+  beyond the WEIRD: How the nomological network of morality varies across cultures. Journal of Personality
+  and Social Psychology, 125(5), 1157–1188. https://doi.org/10.1037/pspp0000470'
+verification_status: needs_verification
+source_url: https://psycnet.apa.org/record/2023-99083-001
+rights_note: nan
+questionnaire: Moral Foundations Questionnaire-2 (MFQ-2)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: mfq_2_equality_2
+  text: The world would be a better place if everyone made the same amount of money.
+  reverse_scored: false
+- item_id: mfq_2_equality_8
+  text: Our society would have fewer problems if people had the same income.
+  reverse_scored: false
+- item_id: mfq_2_equality_14
+  text: I believe that everyone should be given the same quantity of resources in life.
+  reverse_scored: false
+- item_id: mfq_2_equality_20
+  text: I believe it would be ideal if everyone in society wound up with roughly the same amount of money.
+  reverse_scored: false
+- item_id: mfq_2_equality_26
+  text: When people work together toward a common goal, they should share the rewards equally, even if
+    some worked harder on it.
+  reverse_scored: false
+- item_id: mfq_2_equality_32
+  text: I get upset when some people have a lot more money than others in my country.
+  reverse_scored: false

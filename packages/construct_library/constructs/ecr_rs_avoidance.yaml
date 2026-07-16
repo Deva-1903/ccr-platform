@@ -1,0 +1,35 @@
+construct_id: ecr_rs_avoidance
+version: 1
+name: Avoidance (ECR-RS)
+language: en
+category: Adult attachment
+description: Adult attachment - Avoidance dimension of the Experiences in Close Relationships—Relationship
+  Structures questionnaire (ECR-RS).
+citation: 'Fraley, R. C., Heffernan, M. E., Vicary, A. M., & Brumbaugh, C. C. (2011). The Experiences
+  in Close Relationships—Relationship Structures questionnaire: A method for assessing attachment orientations
+  across relationships. Psychological Assessment, 23(3), 615–625. https://doi.org/10.1037/a0022898'
+verification_status: needs_verification
+source_url: https://labs.psychology.illinois.edu/~rcfraley/measures/relstructures.htm
+rights_note: Author-hosted measure; verify permission for commercial redistribution.
+questionnaire: Experiences in Close Relationships—Relationship Structures questionnaire (ECR-RS)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: ecr_rs_avoidance_1
+  text: It helps to turn to this person in times of need.
+  reverse_scored: true
+- item_id: ecr_rs_avoidance_2
+  text: I usually discuss my problems and concerns with this person.
+  reverse_scored: true
+- item_id: ecr_rs_avoidance_3
+  text: I talk things over with this person.
+  reverse_scored: true
+- item_id: ecr_rs_avoidance_4
+  text: I find it easy to depend on this person.
+  reverse_scored: true
+- item_id: ecr_rs_avoidance_5
+  text: I don't feel comfortable opening up to this person.
+  reverse_scored: false
+- item_id: ecr_rs_avoidance_6
+  text: I prefer not to show this person how I feel deep down.
+  reverse_scored: false

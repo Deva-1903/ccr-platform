@@ -1,0 +1,27 @@
+construct_id: grit_s_perseverance_of_effort
+version: 1
+name: Perseverance of effort (Grit-S)
+language: en
+category: Grit
+description: Grit - Perseverance of effort dimension of the Short Grit Scale (Grit-S).
+citation: Duckworth, A. L., & Quinn, P. D. (2009). Development and validation of the Short Grit Scale
+  (Grit-S). Journal of Personality Assessment, 91(2), 166–174. https://doi.org/10.1080/00223890802634290
+verification_status: needs_verification
+source_url: https://angeladuckworth.com/grit-scale/
+rights_note: Author-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Short Grit Scale (Grit-S)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: grit_s_perseverance_of_effort_2
+  text: Setbacks don’t discourage me.
+  reverse_scored: false
+- item_id: grit_s_perseverance_of_effort_4
+  text: I am a hard worker.
+  reverse_scored: false
+- item_id: grit_s_perseverance_of_effort_7
+  text: I finish whatever I begin.
+  reverse_scored: false
+- item_id: grit_s_perseverance_of_effort_8
+  text: I am diligent.
+  reverse_scored: false

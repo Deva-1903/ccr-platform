@@ -1,0 +1,44 @@
+construct_id: rses
+version: 1
+name: Rosenberg Self-Esteem Scale (RSES)
+language: en
+category: Self-esteem
+description: Self-esteem - Rosenberg Self-Esteem Scale (RSES).
+citation: Rosenberg, M. (1965). Society and the adolescent self-image. Princeton University Press.
+verification_status: needs_verification
+source_url: https://socy.umd.edu/about-us/rosenberg-self-esteem-scale
+rights_note: University of Maryland Rosenberg page states the RSES is public domain.
+questionnaire: Rosenberg Self-Esteem Scale (RSES)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: rses_1
+  text: On the whole, I am satisfied with myself.
+  reverse_scored: false
+- item_id: rses_2
+  text: At times I think I am no good at all.
+  reverse_scored: false
+- item_id: rses_3
+  text: I feel that I have a number of good qualities.
+  reverse_scored: false
+- item_id: rses_4
+  text: I am able to do things as well as most other people.
+  reverse_scored: false
+- item_id: rses_5
+  text: I feel I do not have much to be proud of.
+  reverse_scored: false
+- item_id: rses_6
+  text: I certainly feel useless at times.
+  reverse_scored: false
+- item_id: rses_7
+  text: I feel that I'm a person of worth, at least on an equal plane with others.
+  reverse_scored: false
+- item_id: rses_8
+  text: I wish I could have more respect for myself.
+  reverse_scored: false
+- item_id: rses_9
+  text: All in all, I am inclined to feel that I am a failure.
+  reverse_scored: false
+- item_id: rses_10
+  text: I take a positive attitude toward myself.
+  reverse_scored: false

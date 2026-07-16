@@ -1,0 +1,42 @@
+construct_id: sdo7_dominance
+version: 1
+name: Dominance (SDO7)
+language: en
+category: Social dominance orientation
+description: Social dominance orientation - Dominance dimension of the Social Dominance Orientation Scale
+  (SDO7).
+citation: 'Ho, A. K., Sidanius, J., Kteily, N., Sheehy-Skeffington, J., Pratto, F., Henkel, K. E., Foels,
+  R., & Stewart, A. L. (2015). The nature of social dominance orientation: Theorizing and measuring preferences
+  for intergroup inequality using the new SDO7 scale. Journal of Personality and Social Psychology, 109(6),
+  1003–1028. https://doi.org/10.1037/pspi0000033'
+verification_status: needs_verification
+source_url: https://sites.lsa.umich.edu/ho-lab/wp-content/uploads/sites/277/2016/01/SDO7-Scale-16-items.pdf
+rights_note: Researcher/lab-hosted PDF; verify permission for commercial redistribution.
+questionnaire: Social Dominance Orientation Scale (SDO7)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: sdo7_dominance_1
+  text: Some groups of people must be kept in their place.
+  reverse_scored: false
+- item_id: sdo7_dominance_2
+  text: It’s probably a good thing that certain groups are at the top and other groups are at the bottom.
+  reverse_scored: false
+- item_id: sdo7_dominance_3
+  text: An ideal society requires some groups to be on top and others to be on the bottom.
+  reverse_scored: false
+- item_id: sdo7_dominance_4
+  text: Some groups of people are simply inferior to other groups.
+  reverse_scored: false
+- item_id: sdo7_dominance_5
+  text: Groups at the bottom are just as deserving as groups at the top.
+  reverse_scored: true
+- item_id: sdo7_dominance_6
+  text: No one group should dominate in society.
+  reverse_scored: true
+- item_id: sdo7_dominance_7
+  text: Groups at the bottom should not have to stay in their place.
+  reverse_scored: true
+- item_id: sdo7_dominance_8
+  text: Group dominance is a poor principle.
+  reverse_scored: true

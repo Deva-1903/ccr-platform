@@ -1,0 +1,40 @@
+construct_id: flourishing_scale
+version: 1
+name: Flourishing Scale
+language: en
+category: Flourishing
+description: Flourishing - Flourishing Scale.
+citation: 'Diener, E., Wirtz, D., Tov, W., Kim-Prieto, C., Choi, D., Oishi, S., & Biswas-Diener, R. (2010).
+  New well-being measures: Short scales to assess flourishing and positive and negative feelings. Social
+  Indicators Research, 97, 143–156. https://doi.org/10.1007/s11205-009-9493-y'
+verification_status: needs_verification
+source_url: https://eddiener.com/scales/8-item-flourishing-scale/
+rights_note: Author-hosted scale page; verify permission for commercial redistribution.
+questionnaire: Flourishing Scale
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: flourishing_scale_1
+  text: I lead a purposeful and meaningful life.
+  reverse_scored: false
+- item_id: flourishing_scale_2
+  text: My social relationships are supportive and rewarding.
+  reverse_scored: false
+- item_id: flourishing_scale_3
+  text: I am engaged and interested in my daily activities.
+  reverse_scored: false
+- item_id: flourishing_scale_4
+  text: I actively contribute to the happiness and well-being of others.
+  reverse_scored: false
+- item_id: flourishing_scale_5
+  text: I am competent and capable in the activities that are important to me.
+  reverse_scored: false
+- item_id: flourishing_scale_6
+  text: I am a good person and live a good life.
+  reverse_scored: false
+- item_id: flourishing_scale_7
+  text: I am optimistic about my future.
+  reverse_scored: false
+- item_id: flourishing_scale_8
+  text: People respect me.
+  reverse_scored: false

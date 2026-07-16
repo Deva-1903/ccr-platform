@@ -1,0 +1,49 @@
+construct_id: ipip_50_item_big_five_factor_markers_conscientiousness
+version: 1
+name: Conscientiousness (IPIP 50-item Big-Five Factor Markers)
+language: en
+category: Big Five personality traits
+description: Big Five personality traits - Conscientiousness dimension of the IPIP 50-item Big-Five Factor
+  Markers.
+citation: Goldberg, L. R. (1992). The development of markers for the Big-Five factor structure. Psychological
+  Assessment, 4(1), 26–42. https://doi.org/10.1037/1040-3590.4.1.26; Goldberg, L. R. (1999). A broad-bandwidth,
+  public-domain, personality inventory measuring the lower-level facets of several five-factor models.
+  In I. Mervielde, I. J. Deary, F. De Fruyt, & F. Ostendorf (Eds.), Personality psychology in Europe (Vol.
+  7, pp. 7–28). Tilburg University Press.
+verification_status: needs_verification
+source_url: https://ipip.ori.org/new_ipip-50-item-scale.htm
+rights_note: IPIP states that its items are public domain; use the exact IPIP scale name and citation.
+questionnaire: IPIP 50-item Big-Five Factor Markers
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_3
+  text: I am always prepared.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_8
+  text: I leave my belongings around.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_13
+  text: I pay attention to details.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_18
+  text: I make a mess of things.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_23
+  text: I get chores done right away.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_28
+  text: I often forget to put things back in their proper place.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_33
+  text: I like order.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_38
+  text: I shirk my duties.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_43
+  text: I follow a schedule.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_conscientiousness_48
+  text: I am exacting in my work.
+  reverse_scored: false

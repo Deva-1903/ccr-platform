@@ -1,0 +1,24 @@
+construct_id: 6_item_de_jong_gierveld_loneliness_scale_social_loneliness
+version: 1
+name: Social loneliness (6-item De Jong Gierveld Loneliness Scale)
+language: en
+category: Loneliness
+description: Loneliness - Social loneliness dimension of the 6-item De Jong Gierveld Loneliness Scale.
+citation: De Jong Gierveld, J., & Van Tilburg, T. (2006). A 6-item scale for overall, emotional, and social
+  loneliness. Research on Aging, 28(5), 582–598. https://doi.org/10.1177/0164027506289723
+verification_status: needs_verification
+source_url: https://www.nyc.gov/assets/dfta/downloads/pdf/about/dejong_gierveld_loneliness_scale.pdf
+rights_note: Government/institutional PDF provides the items; verify permission for commercial redistribution.
+questionnaire: 6-item De Jong Gierveld Loneliness Scale
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: 6_item_de_jong_gierveld_loneliness_scale_social_loneliness_4
+  text: There are plenty of people I can rely on when I have problems
+  reverse_scored: false
+- item_id: 6_item_de_jong_gierveld_loneliness_scale_social_loneliness_5
+  text: There are many people I can trust completely
+  reverse_scored: false
+- item_id: 6_item_de_jong_gierveld_loneliness_scale_social_loneliness_6
+  text: There are enough people I feel close to
+  reverse_scored: false

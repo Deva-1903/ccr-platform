@@ -1,0 +1,36 @@
+construct_id: iri_personal_distress
+version: 1
+name: Personal Distress (IRI)
+language: en
+category: Empathy
+description: Empathy - Personal Distress dimension of the Interpersonal Reactivity Index (IRI).
+citation: 'Davis, M. H. (1983). Measuring individual differences in empathy: Evidence for a multidimensional
+  approach. Journal of Personality and Social Psychology, 44(1), 113–126. https://doi.org/10.1037/0022-3514.44.1.113'
+verification_status: needs_verification
+source_url: https://www.eckerd.edu/psychology/iri/
+rights_note: Author/institution-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Interpersonal Reactivity Index (IRI)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: iri_personal_distress_6
+  text: In emergency situations, I feel apprehensive and ill-at-ease.
+  reverse_scored: false
+- item_id: iri_personal_distress_10
+  text: I sometimes feel helpless when I am in the middle of a very emotional situation.
+  reverse_scored: false
+- item_id: iri_personal_distress_13
+  text: When I see someone get hurt, I tend to remain calm.
+  reverse_scored: true
+- item_id: iri_personal_distress_17
+  text: Being in a tense emotional situation scares me.
+  reverse_scored: false
+- item_id: iri_personal_distress_19
+  text: I am usually pretty effective in dealing with emergencies.
+  reverse_scored: true
+- item_id: iri_personal_distress_24
+  text: I tend to lose control during emergencies.
+  reverse_scored: false
+- item_id: iri_personal_distress_27
+  text: When I see someone who badly needs help in an emergency, I go to pieces.
+  reverse_scored: false

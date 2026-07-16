@@ -1,0 +1,65 @@
+construct_id: teq
+version: 1
+name: Toronto Empathy Questionnaire (TEQ)
+language: en
+category: Empathy
+description: Empathy - Toronto Empathy Questionnaire (TEQ).
+citation: 'Spreng, R. N., McKinnon, M. C., Mar, R. A., & Levine, B. (2009). The Toronto Empathy Questionnaire:
+  Scale development and initial validation of a factor-analytic solution to multiple empathy measures.
+  Journal of Personality Assessment, 91(1), 62–71. https://doi.org/10.1080/00223890802484381'
+verification_status: needs_verification
+source_url: https://pmc.ncbi.nlm.nih.gov/articles/PMC2775495/
+rights_note: Open-access article includes item content; verify reuse under the article license.
+questionnaire: Toronto Empathy Questionnaire (TEQ)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: teq_1
+  text: When someone else is feeling excited, I tend to get excited too
+  reverse_scored: false
+- item_id: teq_2
+  text: Other people's misfortunes do not disturb me a great deal
+  reverse_scored: false
+- item_id: teq_3
+  text: It upsets me to see someone being treated disrespectfully
+  reverse_scored: false
+- item_id: teq_4
+  text: I remain unaffected when someone close to me is happy
+  reverse_scored: false
+- item_id: teq_5
+  text: I enjoy making other people feel better
+  reverse_scored: false
+- item_id: teq_6
+  text: I have tender, concerned feelings for people less fortunate than me
+  reverse_scored: false
+- item_id: teq_7
+  text: When a friend starts to talk about his/her problems, I try to steer the conversation towards something
+    else
+  reverse_scored: false
+- item_id: teq_8
+  text: I can tell when others are sad even when they do not say anything
+  reverse_scored: false
+- item_id: teq_9
+  text: I find that I am “in tune” with other people's moods
+  reverse_scored: false
+- item_id: teq_10
+  text: I do not feel sympathy for people who cause their own serious illnesses
+  reverse_scored: false
+- item_id: teq_11
+  text: I become irritated when someone cries
+  reverse_scored: false
+- item_id: teq_12
+  text: I am not really interested in how other people feel
+  reverse_scored: false
+- item_id: teq_13
+  text: I get a strong urge to help when I see someone who is upset
+  reverse_scored: false
+- item_id: teq_14
+  text: When I see someone being treated unfairly, I do not feel very much pity for them
+  reverse_scored: false
+- item_id: teq_15
+  text: I find it silly for people to cry out of happiness
+  reverse_scored: false
+- item_id: teq_16
+  text: When I see someone being taken advantage of, I feel kind of protective towards him/her
+  reverse_scored: false

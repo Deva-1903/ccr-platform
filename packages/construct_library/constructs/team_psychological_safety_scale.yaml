@@ -1,0 +1,36 @@
+construct_id: team_psychological_safety_scale
+version: 1
+name: Team Psychological Safety Scale
+language: en
+category: Psychological safety
+description: Psychological safety - Team Psychological Safety Scale.
+citation: Edmondson, A. (1999). Psychological safety and learning behavior in work teams. Administrative
+  Science Quarterly, 44(2), 350–383. https://doi.org/10.2307/2666999
+verification_status: needs_verification
+source_url: https://web.mit.edu/curhan/www/docs/Articles/15341_Readings/Group_Performance/Edmondson%20Psychological%20safety.pdf
+rights_note: Author paper/public PDF includes scale; verify permission for commercial redistribution.
+questionnaire: Team Psychological Safety Scale
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: team_psychological_safety_scale_1
+  text: If you make a mistake on this team, it is often held against you.
+  reverse_scored: false
+- item_id: team_psychological_safety_scale_2
+  text: Members of this team are able to bring up problems and tough issues.
+  reverse_scored: false
+- item_id: team_psychological_safety_scale_3
+  text: People on this team sometimes reject others for being different.
+  reverse_scored: false
+- item_id: team_psychological_safety_scale_4
+  text: It is safe to take a risk on this team.
+  reverse_scored: false
+- item_id: team_psychological_safety_scale_5
+  text: It is difficult to ask other members of this team for help.
+  reverse_scored: false
+- item_id: team_psychological_safety_scale_6
+  text: No one on this team would deliberately act in a way that undermines my efforts.
+  reverse_scored: false
+- item_id: team_psychological_safety_scale_7
+  text: Working with members of this team, my unique skills and talents are valued and utilized.
+  reverse_scored: false

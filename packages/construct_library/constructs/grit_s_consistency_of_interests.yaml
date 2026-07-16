@@ -1,0 +1,27 @@
+construct_id: grit_s_consistency_of_interests
+version: 1
+name: Consistency of interests (Grit-S)
+language: en
+category: Grit
+description: Grit - Consistency of interests dimension of the Short Grit Scale (Grit-S).
+citation: Duckworth, A. L., & Quinn, P. D. (2009). Development and validation of the Short Grit Scale
+  (Grit-S). Journal of Personality Assessment, 91(2), 166–174. https://doi.org/10.1080/00223890802634290
+verification_status: needs_verification
+source_url: https://angeladuckworth.com/grit-scale/
+rights_note: Author-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Short Grit Scale (Grit-S)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: grit_s_consistency_of_interests_1
+  text: New ideas and projects sometimes distract me from previous ones.
+  reverse_scored: true
+- item_id: grit_s_consistency_of_interests_3
+  text: I have been obsessed with a certain idea or project for a short time but later lost interest.
+  reverse_scored: true
+- item_id: grit_s_consistency_of_interests_5
+  text: I often set a goal but later choose to pursue a different one.
+  reverse_scored: true
+- item_id: grit_s_consistency_of_interests_6
+  text: I have difficulty maintaining my focus on projects that take more than a few months to complete.
+  reverse_scored: true

@@ -52,7 +52,8 @@ Configuration: copy `.env.example` to `.env` and fill what you need.
 
 - Do not upload sensitive or identifiable data to this shared dev instance; anonymous
   storage is ephemeral and the instance may reset.
-- The construct library here carries the 5 original seed scales; the lab's full
-  imported collection ships separately pending a redistribution-rights decision.
+- The construct library ships the lab's full collection (94 validated-scale
+  constructs + 5 seeds); wording verification against original publications is in
+  progress and unverified scales are flagged in the interface.
 - Tests: `cd backend && CCR_FAKE_EMBEDDINGS=1 python -m pytest -q` (64 tests, no ML
   downloads needed).

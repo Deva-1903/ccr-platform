@@ -1,0 +1,29 @@
+construct_id: adult_hope_scale_agency
+version: 1
+name: Agency (Adult Hope Scale)
+language: en
+category: Hope
+description: Hope - Agency dimension of the Adult Hope Scale.
+citation: 'Snyder, C. R., Harris, C., Anderson, J. R., Holleran, S. A., Irving, L. M., Sigmon, S. T.,
+  Yoshinobu, L., Gibb, J., Langelle, C., & Harney, P. (1991). The will and the ways: Development and validation
+  of an individual-differences measure of hope. Journal of Personality and Social Psychology, 60(4), 570–585.
+  https://doi.org/10.1037/0022-3514.60.4.570'
+verification_status: needs_verification
+source_url: https://ppc.sas.upenn.edu/sites/default/files/hopescale.pdf
+rights_note: University research center-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Adult Hope Scale
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: adult_hope_scale_agency_2
+  text: I energetically pursue my goals.
+  reverse_scored: false
+- item_id: adult_hope_scale_agency_9
+  text: My past experiences have prepared me well for my future.
+  reverse_scored: false
+- item_id: adult_hope_scale_agency_10
+  text: I’ve been pretty successful in life.
+  reverse_scored: false
+- item_id: adult_hope_scale_agency_12
+  text: I meet the goals that I set for myself.
+  reverse_scored: false

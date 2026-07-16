@@ -1,0 +1,34 @@
+construct_id: mfq_2_proportionality
+version: 1
+name: Proportionality (MFQ-2)
+language: en
+category: Moral foundations
+description: Moral foundations - Proportionality dimension of the Moral Foundations Questionnaire-2 (MFQ-2).
+citation: 'Atari, M., Haidt, J., Graham, J., Koleva, S., Stevens, S. T., & Dehghani, M. (2023). Morality
+  beyond the WEIRD: How the nomological network of morality varies across cultures. Journal of Personality
+  and Social Psychology, 125(5), 1157–1188. https://doi.org/10.1037/pspp0000470'
+verification_status: needs_verification
+source_url: https://psycnet.apa.org/record/2023-99083-001
+rights_note: nan
+questionnaire: Moral Foundations Questionnaire-2 (MFQ-2)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: mfq_2_proportionality_3
+  text: I think people who are more hard-working should end up with more money.
+  reverse_scored: false
+- item_id: mfq_2_proportionality_9
+  text: I think people should be rewarded in proportion to what they contribute.
+  reverse_scored: false
+- item_id: mfq_2_proportionality_15
+  text: The effort a worker puts into a job ought to be reflected in the size of a raise they receive.
+  reverse_scored: false
+- item_id: mfq_2_proportionality_21
+  text: It makes me happy when people are recognized on their merits.
+  reverse_scored: false
+- item_id: mfq_2_proportionality_27
+  text: In a fair society, those who work hard should live with higher standards of living.
+  reverse_scored: false
+- item_id: mfq_2_proportionality_33
+  text: I feel good when I see cheaters get caught and punished.
+  reverse_scored: false

@@ -1,0 +1,43 @@
+construct_id: sdo7_anti_egalitarianism
+version: 1
+name: Anti-egalitarianism (SDO7)
+language: en
+category: Social dominance orientation
+description: Social dominance orientation - Anti-egalitarianism dimension of the Social Dominance Orientation
+  Scale (SDO7).
+citation: 'Ho, A. K., Sidanius, J., Kteily, N., Sheehy-Skeffington, J., Pratto, F., Henkel, K. E., Foels,
+  R., & Stewart, A. L. (2015). The nature of social dominance orientation: Theorizing and measuring preferences
+  for intergroup inequality using the new SDO7 scale. Journal of Personality and Social Psychology, 109(6),
+  1003–1028. https://doi.org/10.1037/pspi0000033'
+verification_status: needs_verification
+source_url: https://sites.lsa.umich.edu/ho-lab/wp-content/uploads/sites/277/2016/01/SDO7-Scale-16-items.pdf
+rights_note: Researcher/lab-hosted PDF; verify permission for commercial redistribution.
+questionnaire: Social Dominance Orientation Scale (SDO7)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: sdo7_anti_egalitarianism_9
+  text: We should not push for group equality.
+  reverse_scored: false
+- item_id: sdo7_anti_egalitarianism_10
+  text: We shouldn’t try to guarantee that every group has the same quality of life.
+  reverse_scored: false
+- item_id: sdo7_anti_egalitarianism_11
+  text: It is unjust to try to make groups equal.
+  reverse_scored: false
+- item_id: sdo7_anti_egalitarianism_12
+  text: Group equality should not be our primary goal.
+  reverse_scored: false
+- item_id: sdo7_anti_egalitarianism_13
+  text: We should work to give all groups an equal chance to succeed.
+  reverse_scored: true
+- item_id: sdo7_anti_egalitarianism_14
+  text: We should do what we can to equalize conditions for different groups.
+  reverse_scored: true
+- item_id: sdo7_anti_egalitarianism_15
+  text: No matter how much effort it takes, we ought to strive to ensure that all groups have the same
+    chance in life.
+  reverse_scored: true
+- item_id: sdo7_anti_egalitarianism_16
+  text: Group equality should be our ideal.
+  reverse_scored: true

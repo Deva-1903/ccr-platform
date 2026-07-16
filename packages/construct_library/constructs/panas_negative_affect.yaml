@@ -1,0 +1,48 @@
+construct_id: panas_negative_affect
+version: 1
+name: Negative affect (PANAS)
+language: en
+category: Positive and negative affect
+description: Positive and negative affect - Negative affect dimension of the Positive and Negative Affect
+  Schedule (PANAS).
+citation: 'Watson, D., Clark, L. A., & Tellegen, A. (1988). Development and validation of brief measures
+  of positive and negative affect: The PANAS scales. Journal of Personality and Social Psychology, 54(6),
+  1063–1070. https://doi.org/10.1037/0022-3514.54.6.1063'
+verification_status: needs_verification
+source_url: https://www.scienceofbehaviorchange.org/wp-content/uploads/2019/10/PANAS.Watson.1988.pdf
+rights_note: Items are in the published article and publicly posted copies; verify permission for commercial
+  redistribution.
+questionnaire: Positive and Negative Affect Schedule (PANAS)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: panas_negative_affect_2
+  text: Distressed
+  reverse_scored: false
+- item_id: panas_negative_affect_4
+  text: Upset
+  reverse_scored: false
+- item_id: panas_negative_affect_6
+  text: Guilty
+  reverse_scored: false
+- item_id: panas_negative_affect_7
+  text: Scared
+  reverse_scored: false
+- item_id: panas_negative_affect_8
+  text: Hostile
+  reverse_scored: false
+- item_id: panas_negative_affect_11
+  text: Irritable
+  reverse_scored: false
+- item_id: panas_negative_affect_13
+  text: Ashamed
+  reverse_scored: false
+- item_id: panas_negative_affect_15
+  text: Nervous
+  reverse_scored: false
+- item_id: panas_negative_affect_18
+  text: Jittery
+  reverse_scored: false
+- item_id: panas_negative_affect_20
+  text: Afraid
+  reverse_scored: false

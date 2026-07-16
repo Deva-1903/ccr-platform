@@ -1,0 +1,40 @@
+construct_id: dass_21_anxiety
+version: 1
+name: Anxiety (DASS-21)
+language: en
+category: Depression/anxiety/stress symptoms
+description: Depression/anxiety/stress symptoms - Anxiety dimension of the Depression Anxiety Stress Scales–21
+  (DASS-21). Screening tool only; not a diagnosis.
+citation: Lovibond, S. H., & Lovibond, P. F. (1995). Manual for the Depression Anxiety Stress Scales (2nd
+  ed.). Psychology Foundation of Australia.
+verification_status: needs_verification
+source_url: https://www2.psy.unsw.edu.au/dass/
+rights_note: DASS materials are publicly available and often described as public-domain; verify permission
+  for website redistribution. Screening tool only; not a diagnosis.
+questionnaire: Depression Anxiety Stress Scales–21 (DASS-21)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: dass_21_anxiety_2
+  text: I was aware of dryness of my mouth
+  reverse_scored: false
+- item_id: dass_21_anxiety_4
+  text: I experienced breathing difficulty (e.g. excessively rapid breathing, breathlessness in the absence
+    of physical exertion)
+  reverse_scored: false
+- item_id: dass_21_anxiety_7
+  text: I experienced trembling (e.g. in the hands)
+  reverse_scored: false
+- item_id: dass_21_anxiety_9
+  text: I was worried about situations in which I might panic and make a fool of myself
+  reverse_scored: false
+- item_id: dass_21_anxiety_15
+  text: I felt I was close to panic
+  reverse_scored: false
+- item_id: dass_21_anxiety_19
+  text: I was aware of the action of my heart in the absence of physical exertion (e.g. sense of heart
+    rate increase, heart missing a beat)
+  reverse_scored: false
+- item_id: dass_21_anxiety_20
+  text: I felt scared without any good reason
+  reverse_scored: false

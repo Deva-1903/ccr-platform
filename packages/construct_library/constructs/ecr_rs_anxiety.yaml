@@ -1,0 +1,26 @@
+construct_id: ecr_rs_anxiety
+version: 1
+name: Anxiety (ECR-RS)
+language: en
+category: Adult attachment
+description: Adult attachment - Anxiety dimension of the Experiences in Close Relationships—Relationship
+  Structures questionnaire (ECR-RS).
+citation: 'Fraley, R. C., Heffernan, M. E., Vicary, A. M., & Brumbaugh, C. C. (2011). The Experiences
+  in Close Relationships—Relationship Structures questionnaire: A method for assessing attachment orientations
+  across relationships. Psychological Assessment, 23(3), 615–625. https://doi.org/10.1037/a0022898'
+verification_status: needs_verification
+source_url: https://labs.psychology.illinois.edu/~rcfraley/measures/relstructures.htm
+rights_note: Author-hosted measure; verify permission for commercial redistribution.
+questionnaire: Experiences in Close Relationships—Relationship Structures questionnaire (ECR-RS)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: ecr_rs_anxiety_7
+  text: I often worry that this person doesn't really care for me.
+  reverse_scored: false
+- item_id: ecr_rs_anxiety_8
+  text: I'm afraid that this person may abandon me.
+  reverse_scored: false
+- item_id: ecr_rs_anxiety_9
+  text: I worry that this person won't care about me as much as I care about him or her.
+  reverse_scored: false

@@ -38,7 +38,7 @@ RUNS_COOKIE_NAME = "ccr_runs"
 _SECRET = (os.environ.get("CCR_SESSION_SECRET") or secrets.token_hex(32)).encode()
 
 ANON_MAX_BYTES_DEFAULT = 2 * 1024 * 1024
-ANON_MAX_ROWS_DEFAULT = 500
+ANON_MAX_ROWS_DEFAULT = 200  # PI decision 2026-07-14 (was 500)
 ANON_MAX_RUNS_PER_DAY_DEFAULT = 3
 USER_MAX_SAVED_RUNS_DEFAULT = 15
 ANON_TTL_HOURS_DEFAULT = 0  # 0 = purge disabled (local dev); deployments set 24

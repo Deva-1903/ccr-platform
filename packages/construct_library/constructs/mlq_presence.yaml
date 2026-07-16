@@ -1,0 +1,31 @@
+construct_id: mlq_presence
+version: 1
+name: Presence (MLQ)
+language: en
+category: Meaning in life
+description: Meaning in life - Presence dimension of the Meaning in Life Questionnaire (MLQ).
+citation: 'Steger, M. F., Frazier, P., Oishi, S., & Kaler, M. (2006). The Meaning in Life Questionnaire:
+  Assessing the presence of and search for meaning in life. Journal of Counseling Psychology, 53(1), 80–93.
+  https://doi.org/10.1037/0022-0167.53.1.80'
+verification_status: needs_verification
+source_url: https://ppc.sas.upenn.edu/resources/questionnaires-researchers/meaning-life-questionnaire
+rights_note: University research center-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Meaning in Life Questionnaire (MLQ)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: mlq_presence_1
+  text: I understand my life's meaning.
+  reverse_scored: false
+- item_id: mlq_presence_4
+  text: My life has a clear sense of purpose.
+  reverse_scored: false
+- item_id: mlq_presence_5
+  text: I have a good sense of what makes my life meaningful.
+  reverse_scored: false
+- item_id: mlq_presence_6
+  text: I have discovered a satisfying life purpose.
+  reverse_scored: false
+- item_id: mlq_presence_9
+  text: My life has no clear purpose.
+  reverse_scored: true

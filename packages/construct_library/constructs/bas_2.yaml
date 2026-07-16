@@ -1,0 +1,47 @@
+construct_id: bas_2
+version: 1
+name: Body Appreciation Scale-2 (BAS-2)
+language: en
+category: Body appreciation / body image
+description: Body appreciation / body image - Body Appreciation Scale-2 (BAS-2).
+citation: 'Tylka, T. L., & Wood-Barcalow, N. L. (2015). The Body Appreciation Scale-2: Item refinement
+  and psychometric evaluation. Body Image, 12, 53–67. https://doi.org/10.1016/j.bodyim.2014.09.006'
+verification_status: needs_verification
+source_url: https://emerge.ucsd.edu/r_4dsm5/body-appreciation-scale-2/
+rights_note: Research center item page; verify permission for commercial redistribution.
+questionnaire: Body Appreciation Scale-2 (BAS-2)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: bas_2_1
+  text: I respect my body.
+  reverse_scored: false
+- item_id: bas_2_2
+  text: I feel good about my body.
+  reverse_scored: false
+- item_id: bas_2_3
+  text: I feel that my body has at least some good qualities.
+  reverse_scored: false
+- item_id: bas_2_4
+  text: I take a positive attitude towards my body.
+  reverse_scored: false
+- item_id: bas_2_5
+  text: I am attentive to my body's needs.
+  reverse_scored: false
+- item_id: bas_2_6
+  text: I feel love for my body.
+  reverse_scored: false
+- item_id: bas_2_7
+  text: I appreciate the different and unique characteristics of my body.
+  reverse_scored: false
+- item_id: bas_2_8
+  text: My behavior reveals my positive attitude toward my body; for example, I hold my head high and
+    smile.
+  reverse_scored: false
+- item_id: bas_2_9
+  text: I am comfortable in my body.
+  reverse_scored: false
+- item_id: bas_2_10
+  text: I feel like I am beautiful even if I am different from media images of attractive people (e.g.,
+    models, actresses/actors).
+  reverse_scored: false

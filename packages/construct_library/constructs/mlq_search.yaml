@@ -1,0 +1,31 @@
+construct_id: mlq_search
+version: 1
+name: Search (MLQ)
+language: en
+category: Meaning in life
+description: Meaning in life - Search dimension of the Meaning in Life Questionnaire (MLQ).
+citation: 'Steger, M. F., Frazier, P., Oishi, S., & Kaler, M. (2006). The Meaning in Life Questionnaire:
+  Assessing the presence of and search for meaning in life. Journal of Counseling Psychology, 53(1), 80–93.
+  https://doi.org/10.1037/0022-0167.53.1.80'
+verification_status: needs_verification
+source_url: https://ppc.sas.upenn.edu/resources/questionnaires-researchers/meaning-life-questionnaire
+rights_note: University research center-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Meaning in Life Questionnaire (MLQ)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: mlq_search_2
+  text: I am looking for something that makes my life feel meaningful.
+  reverse_scored: false
+- item_id: mlq_search_3
+  text: I am always looking to find my life's purpose.
+  reverse_scored: false
+- item_id: mlq_search_7
+  text: I am always searching for something that makes my life feel significant.
+  reverse_scored: false
+- item_id: mlq_search_8
+  text: I am seeking a purpose or mission for my life.
+  reverse_scored: false
+- item_id: mlq_search_10
+  text: I am searching for meaning in my life.
+  reverse_scored: false

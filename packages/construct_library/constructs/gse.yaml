@@ -1,0 +1,46 @@
+construct_id: gse
+version: 1
+name: General Self-Efficacy Scale (GSE)
+language: en
+category: General self-efficacy
+description: General self-efficacy - General Self-Efficacy Scale (GSE).
+citation: 'Schwarzer, R., & Jerusalem, M. (1995). Generalized Self-Efficacy Scale. In J. Weinman, S. Wright,
+  & M. Johnston (Eds.), Measures in health psychology: A user’s portfolio. Causal and control beliefs
+  (pp. 35–37). NFER-NELSON.'
+verification_status: needs_verification
+source_url: https://userpage.fu-berlin.de/~health/engscal.htm
+rights_note: Author/researcher-hosted scale; check local permission requirements before commercial use.
+questionnaire: General Self-Efficacy Scale (GSE)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: gse_1
+  text: I can always manage to solve difficult problems if I try hard enough.
+  reverse_scored: false
+- item_id: gse_2
+  text: If someone opposes me, I can find the means and ways to get what I want.
+  reverse_scored: false
+- item_id: gse_3
+  text: It is easy for me to stick to my aims and accomplish my goals.
+  reverse_scored: false
+- item_id: gse_4
+  text: I am confident that I could deal efficiently with unexpected events.
+  reverse_scored: false
+- item_id: gse_5
+  text: Thanks to my resourcefulness, I know how to handle unforeseen situations.
+  reverse_scored: false
+- item_id: gse_6
+  text: I can solve most problems if I invest the necessary effort.
+  reverse_scored: false
+- item_id: gse_7
+  text: I can remain calm when facing difficulties because I can rely on my coping abilities.
+  reverse_scored: false
+- item_id: gse_8
+  text: When I am confronted with a problem, I can usually find several solutions.
+  reverse_scored: false
+- item_id: gse_9
+  text: If I am in trouble, I can usually think of a solution.
+  reverse_scored: false
+- item_id: gse_10
+  text: I can usually handle whatever comes my way.
+  reverse_scored: false

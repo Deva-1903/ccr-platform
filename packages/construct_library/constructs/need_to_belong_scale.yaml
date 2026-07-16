@@ -1,0 +1,46 @@
+construct_id: need_to_belong_scale
+version: 1
+name: Need to Belong Scale
+language: en
+category: Need to belong
+description: Need to belong - Need to Belong Scale.
+citation: 'Leary, M. R., Kelly, K. M., Cottrell, C. A., & Schreindorfer, L. S. (2013). Construct validity
+  of the Need to Belong Scale: Mapping the nomological network. Journal of Personality Assessment, 95(6),
+  610–624. https://doi.org/10.1080/00223891.2013.819511'
+verification_status: needs_verification
+source_url: https://sites.duke.edu/leary/files/2019/05/NTB.pdf
+rights_note: Researcher-hosted questionnaire PDF; verify permission for commercial redistribution.
+questionnaire: Need to Belong Scale
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: need_to_belong_scale_1
+  text: If other people don’t seem to accept me, I don’t let it bother me.
+  reverse_scored: false
+- item_id: need_to_belong_scale_2
+  text: I try hard not to do things that will make other people avoid or reject me.
+  reverse_scored: false
+- item_id: need_to_belong_scale_3
+  text: I seldom worry about whether other people care about me.
+  reverse_scored: false
+- item_id: need_to_belong_scale_4
+  text: I need to feel that there are people I can turn to in times of need.
+  reverse_scored: false
+- item_id: need_to_belong_scale_5
+  text: I want other people to accept me.
+  reverse_scored: false
+- item_id: need_to_belong_scale_6
+  text: I do not like being alone.
+  reverse_scored: false
+- item_id: need_to_belong_scale_7
+  text: Being apart from my friends for long periods of time does not bother me.
+  reverse_scored: false
+- item_id: need_to_belong_scale_8
+  text: I have a strong need to belong.
+  reverse_scored: false
+- item_id: need_to_belong_scale_9
+  text: It bothers me a great deal when I am not included in other people’s plans.
+  reverse_scored: false
+- item_id: need_to_belong_scale_10
+  text: My feelings are easily hurt when I feel that others do not accept me.
+  reverse_scored: false

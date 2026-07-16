@@ -1,0 +1,35 @@
+construct_id: mfq_2_purity
+version: 1
+name: Purity (MFQ-2)
+language: en
+category: Moral foundations
+description: Moral foundations - Purity dimension of the Moral Foundations Questionnaire-2 (MFQ-2).
+citation: 'Atari, M., Haidt, J., Graham, J., Koleva, S., Stevens, S. T., & Dehghani, M. (2023). Morality
+  beyond the WEIRD: How the nomological network of morality varies across cultures. Journal of Personality
+  and Social Psychology, 125(5), 1157–1188. https://doi.org/10.1037/pspp0000470'
+verification_status: needs_verification
+source_url: https://psycnet.apa.org/record/2023-99083-001
+rights_note: nan
+questionnaire: Moral Foundations Questionnaire-2 (MFQ-2)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: mfq_2_purity_6
+  text: I think the human body should be treated like a temple, housing something sacred within.
+  reverse_scored: false
+- item_id: mfq_2_purity_12
+  text: I believe chastity is an important virtue.
+  reverse_scored: false
+- item_id: mfq_2_purity_18
+  text: It upsets me when people use foul language like it is nothing.
+  reverse_scored: false
+- item_id: mfq_2_purity_24
+  text: If I found out that an acquaintance had an unusual but harmless sexual fetish, I would feel uneasy
+    about them.
+  reverse_scored: false
+- item_id: mfq_2_purity_30
+  text: People should try to use natural medicines rather than chemically identical human-made ones.
+  reverse_scored: false
+- item_id: mfq_2_purity_36
+  text: I admire people who keep their virginity until marriage.
+  reverse_scored: false

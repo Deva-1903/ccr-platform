@@ -1,0 +1,49 @@
+construct_id: ipip_50_item_big_five_factor_markers_extraversion
+version: 1
+name: Extraversion (IPIP 50-item Big-Five Factor Markers)
+language: en
+category: Big Five personality traits
+description: Big Five personality traits - Extraversion dimension of the IPIP 50-item Big-Five Factor
+  Markers.
+citation: Goldberg, L. R. (1992). The development of markers for the Big-Five factor structure. Psychological
+  Assessment, 4(1), 26–42. https://doi.org/10.1037/1040-3590.4.1.26; Goldberg, L. R. (1999). A broad-bandwidth,
+  public-domain, personality inventory measuring the lower-level facets of several five-factor models.
+  In I. Mervielde, I. J. Deary, F. De Fruyt, & F. Ostendorf (Eds.), Personality psychology in Europe (Vol.
+  7, pp. 7–28). Tilburg University Press.
+verification_status: needs_verification
+source_url: https://ipip.ori.org/new_ipip-50-item-scale.htm
+rights_note: IPIP states that its items are public domain; use the exact IPIP scale name and citation.
+questionnaire: IPIP 50-item Big-Five Factor Markers
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_1
+  text: I am the life of the party.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_6
+  text: I don't talk a lot.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_11
+  text: I feel comfortable around people.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_16
+  text: I keep in the background.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_21
+  text: I start conversations.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_26
+  text: I have little to say.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_31
+  text: I talk to a lot of different people at parties.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_36
+  text: I don't like to draw attention to myself.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_41
+  text: I don't mind being the center of attention.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_extraversion_46
+  text: I am quiet around strangers.
+  reverse_scored: false

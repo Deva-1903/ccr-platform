@@ -1,0 +1,38 @@
+construct_id: erq_cognitive_reappraisal
+version: 1
+name: Cognitive reappraisal (ERQ)
+language: en
+category: Emotion regulation
+description: Emotion regulation - Cognitive reappraisal dimension of the Emotion Regulation Questionnaire
+  (ERQ).
+citation: 'Gross, J. J., & John, O. P. (2003). Individual differences in two emotion regulation processes:
+  Implications for affect, relationships, and well-being. Journal of Personality and Social Psychology,
+  85(2), 348–362. https://doi.org/10.1037/0022-3514.85.2.348'
+verification_status: needs_verification
+source_url: https://spl.stanford.edu/sites/g/files/sbiybj19321/files/media/file/english_0.pdf
+rights_note: Stanford Psychophysiology Lab-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Emotion Regulation Questionnaire (ERQ)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: erq_cognitive_reappraisal_1
+  text: When I want to feel more positive emotion (such as joy or amusement), I change what I'm thinking
+    about.
+  reverse_scored: false
+- item_id: erq_cognitive_reappraisal_3
+  text: When I want to feel less negative emotion (such as sadness or anger), I change what I'm thinking
+    about.
+  reverse_scored: false
+- item_id: erq_cognitive_reappraisal_5
+  text: When I'm faced with a stressful situation, I make myself think about it in a way that helps me
+    stay calm.
+  reverse_scored: false
+- item_id: erq_cognitive_reappraisal_7
+  text: When I want to feel more positive emotion, I change the way I'm thinking about the situation.
+  reverse_scored: false
+- item_id: erq_cognitive_reappraisal_8
+  text: I control my emotions by changing the way I think about the situation I'm in.
+  reverse_scored: false
+- item_id: erq_cognitive_reappraisal_10
+  text: When I want to feel less negative emotion, I change the way I'm thinking about the situation.
+  reverse_scored: false

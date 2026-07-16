@@ -1,0 +1,49 @@
+construct_id: ipip_50_item_big_five_factor_markers_intellect_imagination
+version: 1
+name: Intellect/Imagination (IPIP 50-item Big-Five Factor Markers)
+language: en
+category: Big Five personality traits
+description: Big Five personality traits - Intellect/Imagination dimension of the IPIP 50-item Big-Five
+  Factor Markers.
+citation: Goldberg, L. R. (1992). The development of markers for the Big-Five factor structure. Psychological
+  Assessment, 4(1), 26–42. https://doi.org/10.1037/1040-3590.4.1.26; Goldberg, L. R. (1999). A broad-bandwidth,
+  public-domain, personality inventory measuring the lower-level facets of several five-factor models.
+  In I. Mervielde, I. J. Deary, F. De Fruyt, & F. Ostendorf (Eds.), Personality psychology in Europe (Vol.
+  7, pp. 7–28). Tilburg University Press.
+verification_status: needs_verification
+source_url: https://ipip.ori.org/new_ipip-50-item-scale.htm
+rights_note: IPIP states that its items are public domain; use the exact IPIP scale name and citation.
+questionnaire: IPIP 50-item Big-Five Factor Markers
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_5
+  text: I have a rich vocabulary.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_10
+  text: I have difficulty understanding abstract ideas.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_15
+  text: I have a vivid imagination.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_20
+  text: I am not interested in abstract ideas.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_25
+  text: I have excellent ideas.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_30
+  text: I do not have a good imagination.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_35
+  text: I am quick to understand things.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_40
+  text: I use difficult words.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_45
+  text: I spend time reflecting on things.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_intellect_imagination_50
+  text: I am full of ideas.
+  reverse_scored: false

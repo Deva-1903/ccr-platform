@@ -1,0 +1,45 @@
+construct_id: phq_9
+version: 1
+name: Patient Health Questionnaire-9 (PHQ-9)
+language: en
+category: Depression symptoms
+description: Depression symptoms - Patient Health Questionnaire-9 (PHQ-9). Screening tool only; not a
+  diagnosis.
+citation: 'Kroenke, K., Spitzer, R. L., & Williams, J. B. W. (2001). The PHQ-9: Validity of a brief depression
+  severity measure. Journal of General Internal Medicine, 16(9), 606–613. https://doi.org/10.1046/j.1525-1497.2001.016009606.x'
+verification_status: needs_verification
+source_url: https://www.phqscreeners.com/
+rights_note: Pfizer states PHQ/GAD screeners are available without copyright restriction and at no charge.
+  Screening tool only; not a diagnosis.
+questionnaire: Patient Health Questionnaire-9 (PHQ-9)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: phq_9_1
+  text: Little interest or pleasure in doing things
+  reverse_scored: false
+- item_id: phq_9_2
+  text: Feeling down, depressed, or hopeless
+  reverse_scored: false
+- item_id: phq_9_3
+  text: Trouble falling or staying asleep, or sleeping too much
+  reverse_scored: false
+- item_id: phq_9_4
+  text: Feeling tired or having little energy
+  reverse_scored: false
+- item_id: phq_9_5
+  text: Poor appetite or overeating
+  reverse_scored: false
+- item_id: phq_9_6
+  text: Feeling bad about yourself — or that you are a failure or have let yourself or your family down
+  reverse_scored: false
+- item_id: phq_9_7
+  text: Trouble concentrating on things, such as reading the newspaper or watching television
+  reverse_scored: false
+- item_id: phq_9_8
+  text: Moving or speaking so slowly that other people could have noticed? Or the opposite — being so
+    fidgety or restless that you have been moving around a lot more than usual
+  reverse_scored: false
+- item_id: phq_9_9
+  text: Thoughts that you would be better off dead, or of hurting yourself in some way
+  reverse_scored: false

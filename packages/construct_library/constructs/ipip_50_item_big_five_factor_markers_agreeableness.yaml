@@ -1,0 +1,49 @@
+construct_id: ipip_50_item_big_five_factor_markers_agreeableness
+version: 1
+name: Agreeableness (IPIP 50-item Big-Five Factor Markers)
+language: en
+category: Big Five personality traits
+description: Big Five personality traits - Agreeableness dimension of the IPIP 50-item Big-Five Factor
+  Markers.
+citation: Goldberg, L. R. (1992). The development of markers for the Big-Five factor structure. Psychological
+  Assessment, 4(1), 26–42. https://doi.org/10.1037/1040-3590.4.1.26; Goldberg, L. R. (1999). A broad-bandwidth,
+  public-domain, personality inventory measuring the lower-level facets of several five-factor models.
+  In I. Mervielde, I. J. Deary, F. De Fruyt, & F. Ostendorf (Eds.), Personality psychology in Europe (Vol.
+  7, pp. 7–28). Tilburg University Press.
+verification_status: needs_verification
+source_url: https://ipip.ori.org/new_ipip-50-item-scale.htm
+rights_note: IPIP states that its items are public domain; use the exact IPIP scale name and citation.
+questionnaire: IPIP 50-item Big-Five Factor Markers
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_2
+  text: I feel little concern for others.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_7
+  text: I am interested in people.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_12
+  text: I insult people.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_17
+  text: I sympathize with others' feelings.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_22
+  text: I am not interested in other people's problems.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_27
+  text: I have a soft heart.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_32
+  text: I am not really interested in others.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_37
+  text: I take time out for others.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_42
+  text: I feel others' emotions.
+  reverse_scored: false
+- item_id: ipip_50_item_big_five_factor_markers_agreeableness_47
+  text: I make people feel at ease.
+  reverse_scored: false

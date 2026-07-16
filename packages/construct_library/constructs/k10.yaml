@@ -1,0 +1,48 @@
+construct_id: k10
+version: 1
+name: Kessler Psychological Distress Scale (K10)
+language: en
+category: Psychological distress
+description: Psychological distress - Kessler Psychological Distress Scale (K10). Screening tool only;
+  not a diagnosis.
+citation: Kessler, R. C., Andrews, G., Colpe, L. J., Hiripi, E., Mroczek, D. K., Normand, S.-L. T., Walters,
+  E. E., & Zaslavsky, A. M. (2002). Short screening scales to monitor population prevalences and trends
+  in non-specific psychological distress. Psychological Medicine, 32(6), 959–976. https://doi.org/10.1017/S0033291702006074
+verification_status: needs_verification
+source_url: https://www.tac.vic.gov.au/files-to-move/media/upload/k10_english.pdf
+rights_note: Publicly posted government PDF; verify permission for redistribution. Screening tool only;
+  not a diagnosis.
+questionnaire: Kessler Psychological Distress Scale (K10)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: k10_1
+  text: tired out for no good reason?
+  reverse_scored: false
+- item_id: k10_2
+  text: nervous?
+  reverse_scored: false
+- item_id: k10_3
+  text: so nervous that nothing could calm you down?
+  reverse_scored: false
+- item_id: k10_4
+  text: hopeless?
+  reverse_scored: false
+- item_id: k10_5
+  text: restless or fidgety?
+  reverse_scored: false
+- item_id: k10_6
+  text: so restless you could not sit still?
+  reverse_scored: false
+- item_id: k10_7
+  text: depressed?
+  reverse_scored: false
+- item_id: k10_8
+  text: that everything was an effort?
+  reverse_scored: false
+- item_id: k10_9
+  text: so sad that nothing could cheer you up?
+  reverse_scored: false
+- item_id: k10_10
+  text: worthless?
+  reverse_scored: false

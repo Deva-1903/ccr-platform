@@ -1,0 +1,21 @@
+construct_id: brief_cope_acceptance
+version: 1
+name: Acceptance (Brief COPE)
+language: en
+category: Coping
+description: Coping - Acceptance dimension of the Brief COPE.
+citation: 'Carver, C. S. (1997). You want to measure coping but your protocol’s too long: Consider the
+  Brief COPE. International Journal of Behavioral Medicine, 4(1), 92–100. https://doi.org/10.1207/s15327558ijbm0401_6'
+verification_status: needs_verification
+source_url: https://www.psy.miami.edu/faculty/ccarver/brief-cope.html
+rights_note: Author-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Brief COPE
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: brief_cope_acceptance_20
+  text: I've been accepting the reality of the fact that it has happened.
+  reverse_scored: false
+- item_id: brief_cope_acceptance_24
+  text: I've been learning to live with it.
+  reverse_scored: false

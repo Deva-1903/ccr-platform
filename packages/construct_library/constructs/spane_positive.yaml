@@ -1,0 +1,35 @@
+construct_id: spane_positive
+version: 1
+name: Positive (SPANE)
+language: en
+category: Positive and negative affect
+description: Positive and negative affect - Positive dimension of the Scale of Positive and Negative Experience
+  (SPANE).
+citation: 'Diener, E., Wirtz, D., Tov, W., Kim-Prieto, C., Choi, D., Oishi, S., & Biswas-Diener, R. (2010).
+  New well-being measures: Short scales to assess flourishing and positive and negative feelings. Social
+  Indicators Research, 97, 143–156. https://doi.org/10.1007/s11205-009-9493-y'
+verification_status: needs_verification
+source_url: https://eddiener.com/scale-of-positive-and-negative-experience-spane/
+rights_note: Author-hosted scale page; verify permission for commercial redistribution.
+questionnaire: Scale of Positive and Negative Experience (SPANE)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: spane_positive_1
+  text: Positive
+  reverse_scored: false
+- item_id: spane_positive_3
+  text: Good
+  reverse_scored: false
+- item_id: spane_positive_5
+  text: Pleasant
+  reverse_scored: false
+- item_id: spane_positive_7
+  text: Happy
+  reverse_scored: false
+- item_id: spane_positive_10
+  text: Joyful
+  reverse_scored: false
+- item_id: spane_positive_12
+  text: Contented
+  reverse_scored: false

@@ -1,0 +1,22 @@
+construct_id: scs_sf_mindfulness
+version: 1
+name: Mindfulness (SCS-SF)
+language: en
+category: Self-compassion
+description: Self-compassion - Mindfulness dimension of the Self-Compassion Scale–Short Form (SCS-SF).
+citation: Raes, F., Pommier, E., Neff, K. D., & Van Gucht, D. (2011). Construction and factorial validation
+  of a short form of the Self-Compassion Scale. Clinical Psychology & Psychotherapy, 18(3), 250–255. https://doi.org/10.1002/cpp.702
+verification_status: needs_verification
+source_url: https://self-compassion.org/wp-content/uploads/2015/02/ShortSCS.pdf
+rights_note: Kristin Neff’s official scale materials grant permission to use the Self-Compassion Scale;
+  verify terms for redistribution on a public website.
+questionnaire: Self-Compassion Scale–Short Form (SCS-SF)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: scs_sf_mindfulness_3
+  text: When something painful happens I try to take a balanced view of the situation.
+  reverse_scored: false
+- item_id: scs_sf_mindfulness_7
+  text: When something upsets me I try to keep my emotions in balance.
+  reverse_scored: false

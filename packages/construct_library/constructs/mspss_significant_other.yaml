@@ -1,0 +1,28 @@
+construct_id: mspss_significant_other
+version: 1
+name: Significant other (MSPSS)
+language: en
+category: Perceived social support
+description: Perceived social support - Significant other dimension of the Multidimensional Scale of Perceived
+  Social Support (MSPSS).
+citation: Zimet, G. D., Dahlem, N. W., Zimet, S. G., & Farley, G. K. (1988). The Multidimensional Scale
+  of Perceived Social Support. Journal of Personality Assessment, 52(1), 30–41. https://doi.org/10.1207/s15327752jpa5201_2
+verification_status: needs_verification
+source_url: https://gzimet.wixsite.com/mspss
+rights_note: Author-hosted scale site; verify permission for commercial redistribution.
+questionnaire: Multidimensional Scale of Perceived Social Support (MSPSS)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: mspss_significant_other_1
+  text: There is a special person who is around when I am in need.
+  reverse_scored: false
+- item_id: mspss_significant_other_2
+  text: There is a special person with whom I can share my joys and sorrows.
+  reverse_scored: false
+- item_id: mspss_significant_other_5
+  text: I have a special person who is a real source of comfort to me.
+  reverse_scored: false
+- item_id: mspss_significant_other_10
+  text: There is a special person in my life who cares about my feelings.
+  reverse_scored: false

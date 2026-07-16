@@ -1,0 +1,29 @@
+construct_id: erq_expressive_suppression
+version: 1
+name: Expressive suppression (ERQ)
+language: en
+category: Emotion regulation
+description: Emotion regulation - Expressive suppression dimension of the Emotion Regulation Questionnaire
+  (ERQ).
+citation: 'Gross, J. J., & John, O. P. (2003). Individual differences in two emotion regulation processes:
+  Implications for affect, relationships, and well-being. Journal of Personality and Social Psychology,
+  85(2), 348–362. https://doi.org/10.1037/0022-3514.85.2.348'
+verification_status: needs_verification
+source_url: https://spl.stanford.edu/sites/g/files/sbiybj19321/files/media/file/english_0.pdf
+rights_note: Stanford Psychophysiology Lab-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Emotion Regulation Questionnaire (ERQ)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: erq_expressive_suppression_2
+  text: I keep my emotions to myself.
+  reverse_scored: false
+- item_id: erq_expressive_suppression_4
+  text: When I am feeling positive emotions, I am careful not to express them.
+  reverse_scored: false
+- item_id: erq_expressive_suppression_6
+  text: I control my emotions by not expressing them.
+  reverse_scored: false
+- item_id: erq_expressive_suppression_9
+  text: When I am feeling negative emotions, I make sure not to express them.
+  reverse_scored: false

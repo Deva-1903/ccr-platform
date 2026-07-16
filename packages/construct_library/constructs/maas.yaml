@@ -1,0 +1,64 @@
+construct_id: maas
+version: 1
+name: Mindful Attention Awareness Scale (MAAS)
+language: en
+category: Mindfulness
+description: Mindfulness - Mindful Attention Awareness Scale (MAAS).
+citation: 'Brown, K. W., & Ryan, R. M. (2003). The benefits of being present: Mindfulness and its role
+  in psychological well-being. Journal of Personality and Social Psychology, 84(4), 822–848. https://doi.org/10.1037/0022-3514.84.4.822'
+verification_status: needs_verification
+source_url: https://selfdeterminationtheory.org/mindfulness-attention-awareness/
+rights_note: Official Self-Determination Theory site hosts the scale; verify permission for commercial
+  redistribution.
+questionnaire: Mindful Attention Awareness Scale (MAAS)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: maas_1
+  text: I could be experiencing some emotion and not be conscious of it until some time later.
+  reverse_scored: false
+- item_id: maas_2
+  text: I break or spill things because of carelessness, not paying attention, or thinking of something
+    else.
+  reverse_scored: false
+- item_id: maas_3
+  text: I find it difficult to stay focused on what’s happening in the present.
+  reverse_scored: false
+- item_id: maas_4
+  text: I tend to walk quickly to get where I’m going without paying attention to what I experience along
+    the way.
+  reverse_scored: false
+- item_id: maas_5
+  text: I tend not to notice feelings of physical tension or discomfort until they really grab my attention.
+  reverse_scored: false
+- item_id: maas_6
+  text: I forget a person’s name almost as soon as I’ve been told it for the first time.
+  reverse_scored: false
+- item_id: maas_7
+  text: It seems I am “running on automatic,” without much awareness of what I’m doing.
+  reverse_scored: false
+- item_id: maas_8
+  text: I rush through activities without being really attentive to them.
+  reverse_scored: false
+- item_id: maas_9
+  text: I get so focused on the goal I want to achieve that I lose touch with what I’m doing right now
+    to get there.
+  reverse_scored: false
+- item_id: maas_10
+  text: I do jobs or tasks automatically, without being aware of what I'm doing.
+  reverse_scored: false
+- item_id: maas_11
+  text: I find myself listening to someone with one ear, doing something else at the same time.
+  reverse_scored: false
+- item_id: maas_12
+  text: I drive places on ‘automatic pilot’ and then wonder why I went there.
+  reverse_scored: false
+- item_id: maas_13
+  text: I find myself preoccupied with the future or the past.
+  reverse_scored: false
+- item_id: maas_14
+  text: I find myself doing things without paying attention.
+  reverse_scored: false
+- item_id: maas_15
+  text: I snack without being aware that I’m eating.
+  reverse_scored: false

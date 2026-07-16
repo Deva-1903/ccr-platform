@@ -1,0 +1,29 @@
+construct_id: cage_questionnaire
+version: 1
+name: CAGE Questionnaire
+language: en
+category: Alcohol use risk
+description: Alcohol use risk - CAGE Questionnaire. Screening tool only; not a diagnosis.
+citation: 'Ewing, J. A. (1984). Detecting alcoholism: The CAGE questionnaire. JAMA, 252(14), 1905–1907.
+  https://doi.org/10.1001/jama.1984.03350140051025'
+verification_status: needs_verification
+source_url: https://www.hopkinsmedicine.org/-/media/medicine/documents/cage-substance-screening-tool.pdf
+rights_note: Institutional clinical handout; verify permission for redistribution. Screening tool only;
+  not a diagnosis.
+questionnaire: CAGE Questionnaire
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: cage_questionnaire_1
+  text: Have you ever felt you ought to Cut down on your drinking?
+  reverse_scored: false
+- item_id: cage_questionnaire_2
+  text: Have people Annoyed you by criticizing your drinking?
+  reverse_scored: false
+- item_id: cage_questionnaire_3
+  text: Have you ever felt bad or Guilty about your drinking?
+  reverse_scored: false
+- item_id: cage_questionnaire_4
+  text: Have you ever had a drink first thing in the morning to steady your nerves or to get rid of a
+    hangover (Eye-opener)?
+  reverse_scored: false

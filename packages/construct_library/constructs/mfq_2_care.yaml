@@ -1,0 +1,34 @@
+construct_id: mfq_2_care
+version: 1
+name: Care (MFQ-2)
+language: en
+category: Moral foundations
+description: Moral foundations - Care dimension of the Moral Foundations Questionnaire-2 (MFQ-2).
+citation: 'Atari, M., Haidt, J., Graham, J., Koleva, S., Stevens, S. T., & Dehghani, M. (2023). Morality
+  beyond the WEIRD: How the nomological network of morality varies across cultures. Journal of Personality
+  and Social Psychology, 125(5), 1157–1188. https://doi.org/10.1037/pspp0000470'
+verification_status: needs_verification
+source_url: https://psycnet.apa.org/record/2023-99083-001
+rights_note: nan
+questionnaire: Moral Foundations Questionnaire-2 (MFQ-2)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: mfq_2_care_1
+  text: Caring for people who have suffered is an important virtue.
+  reverse_scored: false
+- item_id: mfq_2_care_7
+  text: I believe that compassion for those who are suffering is one of the most crucial virtues.
+  reverse_scored: false
+- item_id: mfq_2_care_13
+  text: We should all care for people who are in emotional pain.
+  reverse_scored: false
+- item_id: mfq_2_care_19
+  text: I am empathetic toward those people who have suffered in their lives.
+  reverse_scored: false
+- item_id: mfq_2_care_25
+  text: Everyone should try to comfort people who are going through something hard.
+  reverse_scored: false
+- item_id: mfq_2_care_31
+  text: It pains me when I see someone ignoring the needs of another human being.
+  reverse_scored: false

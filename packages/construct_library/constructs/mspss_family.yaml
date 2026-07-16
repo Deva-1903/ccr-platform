@@ -1,0 +1,28 @@
+construct_id: mspss_family
+version: 1
+name: Family (MSPSS)
+language: en
+category: Perceived social support
+description: Perceived social support - Family dimension of the Multidimensional Scale of Perceived Social
+  Support (MSPSS).
+citation: Zimet, G. D., Dahlem, N. W., Zimet, S. G., & Farley, G. K. (1988). The Multidimensional Scale
+  of Perceived Social Support. Journal of Personality Assessment, 52(1), 30–41. https://doi.org/10.1207/s15327752jpa5201_2
+verification_status: needs_verification
+source_url: https://gzimet.wixsite.com/mspss
+rights_note: Author-hosted scale site; verify permission for commercial redistribution.
+questionnaire: Multidimensional Scale of Perceived Social Support (MSPSS)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: mspss_family_3
+  text: My family really tries to help me.
+  reverse_scored: false
+- item_id: mspss_family_4
+  text: I get the emotional help and support I need from my family.
+  reverse_scored: false
+- item_id: mspss_family_8
+  text: I can talk about my problems with my family.
+  reverse_scored: false
+- item_id: mspss_family_11
+  text: My family is willing to help me make decisions.
+  reverse_scored: false

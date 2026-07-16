@@ -1,0 +1,38 @@
+construct_id: dass_21_stress
+version: 1
+name: Stress (DASS-21)
+language: en
+category: Depression/anxiety/stress symptoms
+description: Depression/anxiety/stress symptoms - Stress dimension of the Depression Anxiety Stress Scales–21
+  (DASS-21). Screening tool only; not a diagnosis.
+citation: Lovibond, S. H., & Lovibond, P. F. (1995). Manual for the Depression Anxiety Stress Scales (2nd
+  ed.). Psychology Foundation of Australia.
+verification_status: needs_verification
+source_url: https://www2.psy.unsw.edu.au/dass/
+rights_note: DASS materials are publicly available and often described as public-domain; verify permission
+  for website redistribution. Screening tool only; not a diagnosis.
+questionnaire: Depression Anxiety Stress Scales–21 (DASS-21)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: dass_21_stress_1
+  text: I found it hard to wind down
+  reverse_scored: false
+- item_id: dass_21_stress_6
+  text: I tended to over-react to situations
+  reverse_scored: false
+- item_id: dass_21_stress_8
+  text: I felt that I was using a lot of nervous energy
+  reverse_scored: false
+- item_id: dass_21_stress_11
+  text: I found myself getting agitated
+  reverse_scored: false
+- item_id: dass_21_stress_12
+  text: I found it difficult to relax
+  reverse_scored: false
+- item_id: dass_21_stress_14
+  text: I was intolerant of anything that kept me from getting on with what I was doing
+  reverse_scored: false
+- item_id: dass_21_stress_18
+  text: I felt that I was rather touchy
+  reverse_scored: false

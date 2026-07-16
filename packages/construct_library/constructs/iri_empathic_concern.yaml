@@ -1,0 +1,36 @@
+construct_id: iri_empathic_concern
+version: 1
+name: Empathic Concern (IRI)
+language: en
+category: Empathy
+description: Empathy - Empathic Concern dimension of the Interpersonal Reactivity Index (IRI).
+citation: 'Davis, M. H. (1983). Measuring individual differences in empathy: Evidence for a multidimensional
+  approach. Journal of Personality and Social Psychology, 44(1), 113–126. https://doi.org/10.1037/0022-3514.44.1.113'
+verification_status: needs_verification
+source_url: https://www.eckerd.edu/psychology/iri/
+rights_note: Author/institution-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Interpersonal Reactivity Index (IRI)
+reverse_flags_source: subconstruct_markers
+imported_from: lib.xlsx
+items:
+- item_id: iri_empathic_concern_2
+  text: I often have tender, concerned feelings for people less fortunate than me.
+  reverse_scored: false
+- item_id: iri_empathic_concern_4
+  text: Sometimes I don't feel very sorry for other people when they are having problems.
+  reverse_scored: true
+- item_id: iri_empathic_concern_9
+  text: When I see someone being taken advantage of, I feel kind of protective towards them.
+  reverse_scored: false
+- item_id: iri_empathic_concern_14
+  text: Other people's misfortunes do not usually disturb me a great deal.
+  reverse_scored: true
+- item_id: iri_empathic_concern_18
+  text: When I see someone being treated unfairly, I sometimes don't feel very much pity for them.
+  reverse_scored: true
+- item_id: iri_empathic_concern_20
+  text: I am often quite touched by things that I see happen.
+  reverse_scored: false
+- item_id: iri_empathic_concern_22
+  text: I would describe myself as a pretty soft-hearted person.
+  reverse_scored: false

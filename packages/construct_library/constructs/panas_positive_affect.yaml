@@ -1,0 +1,48 @@
+construct_id: panas_positive_affect
+version: 1
+name: Positive affect (PANAS)
+language: en
+category: Positive and negative affect
+description: Positive and negative affect - Positive affect dimension of the Positive and Negative Affect
+  Schedule (PANAS).
+citation: 'Watson, D., Clark, L. A., & Tellegen, A. (1988). Development and validation of brief measures
+  of positive and negative affect: The PANAS scales. Journal of Personality and Social Psychology, 54(6),
+  1063–1070. https://doi.org/10.1037/0022-3514.54.6.1063'
+verification_status: needs_verification
+source_url: https://www.scienceofbehaviorchange.org/wp-content/uploads/2019/10/PANAS.Watson.1988.pdf
+rights_note: Items are in the published article and publicly posted copies; verify permission for commercial
+  redistribution.
+questionnaire: Positive and Negative Affect Schedule (PANAS)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: panas_positive_affect_1
+  text: Interested
+  reverse_scored: false
+- item_id: panas_positive_affect_3
+  text: Excited
+  reverse_scored: false
+- item_id: panas_positive_affect_5
+  text: Strong
+  reverse_scored: false
+- item_id: panas_positive_affect_9
+  text: Enthusiastic
+  reverse_scored: false
+- item_id: panas_positive_affect_10
+  text: Proud
+  reverse_scored: false
+- item_id: panas_positive_affect_12
+  text: Alert
+  reverse_scored: false
+- item_id: panas_positive_affect_14
+  text: Inspired
+  reverse_scored: false
+- item_id: panas_positive_affect_16
+  text: Determined
+  reverse_scored: false
+- item_id: panas_positive_affect_17
+  text: Attentive
+  reverse_scored: false
+- item_id: panas_positive_affect_19
+  text: Active
+  reverse_scored: false

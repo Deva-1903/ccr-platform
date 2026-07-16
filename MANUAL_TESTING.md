@@ -38,7 +38,7 @@ fake but every flow works; never use for real analysis).
 | `xlsx_upload_demo.xlsx` | Parses like a CSV |
 | a `.txt` or `.pdf` file | Rejected: unsupported file type |
 
-Anonymous limits (signed out): the Step 1 hint shows 2 MB / 500 rows and says
+Anonymous limits (signed out): the Step 1 hint shows 2 MB / 200 rows and says
 uploads are deleted after analysis. Upload `large_demo.csv` (800 rows): rejected
 with a "Sign in (top right)" message. Sign in and retry: accepted.
 

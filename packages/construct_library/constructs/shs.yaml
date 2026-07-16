@@ -1,0 +1,29 @@
+construct_id: shs
+version: 1
+name: Subjective Happiness Scale (SHS)
+language: en
+category: Subjective happiness
+description: Subjective happiness - Subjective Happiness Scale (SHS).
+citation: 'Lyubomirsky, S., & Lepper, H. S. (1999). A measure of subjective happiness: Preliminary reliability
+  and construct validation. Social Indicators Research, 46, 137–155. https://doi.org/10.1023/A:1006824100041'
+verification_status: needs_verification
+source_url: https://ppc.sas.upenn.edu/resources/questionnaires-researchers/subjective-happiness-scale
+rights_note: University research center-hosted questionnaire; verify permission for commercial redistribution.
+questionnaire: Subjective Happiness Scale (SHS)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: shs_1
+  text: 'In general, I consider myself:'
+  reverse_scored: false
+- item_id: shs_2
+  text: 'Compared with most of my peers, I consider myself:'
+  reverse_scored: false
+- item_id: shs_3
+  text: Some people are generally very happy. They enjoy life regardless of what is going on, getting
+    the most out of everything. To what extent does this characterization describe you?
+  reverse_scored: false
+- item_id: shs_4
+  text: Some people are generally not very happy. Although they are not depressed, they never seem as
+    happy as they might be. To what extent does this characterization describe you?
+  reverse_scored: false

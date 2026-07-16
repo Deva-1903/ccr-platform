@@ -1,0 +1,34 @@
+construct_id: brs
+version: 1
+name: Brief Resilience Scale (BRS)
+language: en
+category: Resilience
+description: Resilience - Brief Resilience Scale (BRS).
+citation: 'Smith, B. W., Dalen, J., Wiggins, K., Tooley, E., Christopher, P., & Bernard, J. (2008). The
+  Brief Resilience Scale: Assessing the ability to bounce back. International Journal of Behavioral Medicine,
+  15(3), 194–200. https://doi.org/10.1080/10705500802222972'
+verification_status: needs_verification
+source_url: https://www.researchgate.net/publication/223961567_The_Brief_Resilience_Scale_Assessing_the_Ability_to_Bounce_Back
+rights_note: Items are publicly visible in author paper copies; verify permission for commercial redistribution.
+questionnaire: Brief Resilience Scale (BRS)
+reverse_flags_source: not_provided_pending_verification
+imported_from: lib.xlsx
+items:
+- item_id: brs_1
+  text: I tend to bounce back quickly after hard times.
+  reverse_scored: false
+- item_id: brs_2
+  text: I have a hard time making it through stressful events.
+  reverse_scored: false
+- item_id: brs_3
+  text: It does not take me long to recover from a stressful event.
+  reverse_scored: false
+- item_id: brs_4
+  text: It is hard for me to snap back when something bad happens.
+  reverse_scored: false
+- item_id: brs_5
+  text: I usually come through difficult times with little trouble.
+  reverse_scored: false
+- item_id: brs_6
+  text: I tend to take a long time to get over set-backs in my life.
+  reverse_scored: false
