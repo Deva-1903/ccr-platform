@@ -5,13 +5,13 @@ Space settings; after that, deploys are just `git push hf main`.
 
 ## Space secrets (Settings > Variables and secrets)
 
-| Secret | Value |
-|---|---|
+| Secret             | Value                                                       |
+| ------------------ | ----------------------------------------------------------- |
 | CCR_SESSION_SECRET | `python3 -c "import secrets; print(secrets.token_hex(32))"` |
-| SUPABASE_URL | from Supabase > Project Settings > API |
-| SUPABASE_ANON_KEY | from the same page (anon public key, NOT service_role) |
-| CCR_APP_URL | https://devaanand-ccr-platform.hf.space |
-| CCR_COOKIE_SECURE | 1 |
+| SUPABASE_URL       | from Supabase > Project Settings > API                      |
+| SUPABASE_ANON_KEY  | from the same page (anon public key, NOT service_role)      |
+| CCR_APP_URL        | https://devaanand-ccr-platform.hf.space                     |
+| CCR_COOKIE_SECURE  | 1                                                           |
 
 Retention (CCR_ANON_TTL_HOURS=24) and model pre-warm are already defaults in
 the Dockerfile.
