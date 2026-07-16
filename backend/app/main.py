@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -483,7 +484,11 @@ async def upload_corpus(
             f"Anonymous uploads are limited to {mb} MB. Sign in (top right) to upload larger files.",
         )
 
+    # Assign the id NOW: the model's default fires at INSERT flush, so reading
+    # corpus.id before commit yields None - every upload would then share one
+    # "None.csv" on disk, each new upload silently clobbering the previous one.
     corpus = Corpus(
+        id=uuid.uuid4().hex,
         project_id=project_id, filename=file.filename, path="", n_rows=0, columns_json="[]"
     )
     # Parse from a local temp file, then hand the bytes to the storage backend

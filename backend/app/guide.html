@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CCR Platform — Testing Guide</title>
+<title>CCR Platform - Testing Guide</title>
 <style>
   :root {
     --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
@@ -49,16 +49,16 @@
 <body>
 <main>
 
-<h1>CCR Platform — Testing Guide</h1>
+<h1>CCR Platform - Testing Guide</h1>
 <p class="sub">Everything built so far, as click-through scenarios: what to do and exactly what
-you should see. Every dataset referenced is downloadable right here — all texts are
+you should see. Every dataset referenced is downloadable right here - all texts are
 synthetic, written for this kit; no real participant data anywhere.</p>
 
 <div class="note">
-  <b>⚠ This is the free dev instance — two caveats before you start:</b>
+  <b>⚠ This is the free dev instance - two caveats before you start:</b>
   <ul>
     <li><b>Storage is ephemeral.</b> Accounts, projects, and saved runs are wiped whenever
-        the instance rebuilds or restarts. If your account disappears, that's expected —
+        the instance rebuilds or restarts. If your account disappears, that's expected -
         just re-register. (Google sign-in recreates itself automatically.)</li>
     <li><b>It sleeps when idle.</b> After ~48&nbsp;h without visitors, the first page load
         takes about a minute to wake it up.</li>
@@ -138,12 +138,12 @@ are deleted after analysis. Upload
 <ol>
   <li>"+ Custom construct" &gt; "Upload items from CSV/XLSX".</li>
   <li>Try <a href="/samples/construct_items_demo.csv" download>construct_items_demo.csv</a>
-      (<code>item,reverse</code> columns — 1/true/yes/R = reverse),
+      (<code>item,reverse</code> columns - 1/true/yes/R = reverse),
       <a href="/samples/construct_items_marker_demo.csv" download>construct_items_marker_demo.csv</a>
       (single column with <code>(R)</code> markers), or
       <a href="/samples/construct_items_demo.xlsx" download>construct_items_demo.xlsx</a> (Excel).</li>
   <li>Expect: items fill the textarea ((R) appended where flagged), the filename becomes
-      the suggested name, and parse notes list skipped blanks/duplicates. Nothing is saved
+      the suggested name, and parse notes list skipped duplicates. Nothing is saved
       until you review and press Save. Item files are never retained on the server.</li>
 </ol>
 
@@ -159,7 +159,7 @@ are deleted after analysis. Upload
   <tr><td>french_demo.csv</td><td>fr + Multilingual E5</td><td>no language warnings</td></tr>
   <tr><td><a href="/samples/mixed_language_demo.csv" download>mixed_language_demo.csv</a></td><td>en + MiniLM</td><td>LANGUAGE_UNCERTAIN (majority 50%)</td></tr>
   <tr><td><a href="/samples/long_documents_demo.csv" download>long_documents_demo.csv</a></td><td>en + MiniLM</td>
-      <td>TEXTS_MAYBE_TRUNCATED (4) + LANGUAGE_UNCERTAIN (only 10 rows, below the 20-row minimum — by design)</td></tr>
+      <td>TEXTS_MAYBE_TRUNCATED (4) + LANGUAGE_UNCERTAIN (only 10 rows, below the 20-row minimum - by design)</td></tr>
 </table>
 </div>
 <p>Warnings are per-run snapshots: changing language/model requires a NEW run; old result
@@ -181,12 +181,12 @@ pages don't update.</p>
 
 <h2 id="accounts">6. Accounts</h2>
 <ol>
-  <li>Sign in (top right) &gt; "Create a free account" &gt; email + password (min 8 chars) —
+  <li>Sign in (top right) &gt; "Create a free account" &gt; email + password (min 8 chars) -
       or use "Continue with Google".</li>
   <li>You're signed in immediately; the header shows your name.</li>
   <li>Sign out, sign back in; wrong password gives "Incorrect email or password";
       registering the same email again gives "already exists".</li>
-  <li>Email is case-insensitive. No self-service password reset yet — reset = admin action.
+  <li>Email is case-insensitive. No self-service password reset yet - reset = admin action.
       (And remember: password accounts vanish when this dev instance rebuilds.)</li>
 </ol>
 
@@ -223,8 +223,8 @@ pages don't update.</p>
 </ol>
 
 <h2 id="feedback">10. Found something off?</h2>
-<p>Anything that doesn't match what this guide says it should do — or anything confusing,
-slow, or missing — please note the section number and what you saw, and send it to
+<p>Anything that doesn't match what this guide says it should do - or anything confusing,
+slow, or missing - please note the section number and what you saw, and send it to
 Deva (<a href="mailto:devaanand@umass.edu">devaanand@umass.edu</a>). Screenshots welcome.</p>
 
 </main>

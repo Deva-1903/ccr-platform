@@ -63,7 +63,8 @@ with a "Sign in (top right)" message. Sign in and retry: accepted.
 2. Try a CSV with `item,reverse` columns (1/true/yes/R = reverse) or a
    single-column file with `(R)` markers.
 3. Expect: items fill the textarea ((R) appended where flagged), the filename
-   becomes the suggested name, and parse notes list skipped blanks/duplicates.
+   becomes the suggested name, and parse notes list skipped duplicates (and
+   blank cells in multi-column files; fully blank lines are dropped at read).
    Nothing is saved until you review and press Save. Item files are never
    retained on the server.
 

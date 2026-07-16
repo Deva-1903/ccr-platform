@@ -269,3 +269,41 @@ def test_script_export_is_valid_offline_python(client, flow):
     reqs = client.get(f"/api/jobs/{job_id}/script-requirements")
     assert reqs.status_code == 200
     assert "==" in reqs.text  # pinned versions, not ranges
+
+
+# ------------------------------------------- uploads must not clobber each other
+def test_second_upload_does_not_clobber_first(client, flow):
+    """Regression: corpus ids used to be read before INSERT (still None), so
+    every upload stored to the same "None.csv" - a later upload silently
+    replaced an earlier corpus's file, and runs analyzed the wrong dataset."""
+    project = client.post("/api/projects", json={"name": "clobber-check"}).json()
+
+    first = upload(client, project["id"], "first.csv",
+                   b"text\nalpha one\nalpha two\nalpha three\n").json()
+    second = upload(client, project["id"], "second.csv",
+                    b"text\nbeta one\nbeta two\nbeta three\nbeta four\n").json()
+
+    # Distinct stored files, both still present after the second upload.
+    from pathlib import Path
+    assert first["id"] and second["id"] and first["id"] != second["id"]
+    paths = {
+        c["filename"]: c for c in
+        client.get(f"/api/projects/{project['id']}/corpora").json()
+    }
+    assert paths["first.csv"]["n_rows"] == 3 and paths["second.csv"]["n_rows"] == 4
+
+    # Running the FIRST corpus must analyze the first corpus's rows.
+    job = client.post("/api/jobs", json={
+        "project_id": project["id"], "corpus_id": first["id"],
+        "construct_id": flow["construct"]["id"], "text_column": "text",
+        "model_name": "fake-deterministic",
+    }).json()
+    job = wait_for_job(client, job["id"])
+    assert job["status"] == "completed", job.get("error")
+    # Assert on the EXPORTED rows (what was actually analyzed), not on DB
+    # metadata - the broken path kept correct metadata while scoring the
+    # other corpus's texts.
+    export = client.get(f"/api/jobs/{job['id']}/export").text
+    data_lines = [l for l in export.splitlines()[1:] if l.strip()]
+    assert len(data_lines) == 3, export
+    assert "alpha" in export and "beta" not in export
