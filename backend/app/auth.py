@@ -73,6 +73,17 @@ def cookies_secure() -> bool:
     return os.environ.get("CCR_COOKIE_SECURE") == "1"
 
 
+def admin_emails() -> set[str]:
+    """Comma-separated allowlist; admin is an env-granted capability, not a DB
+    role, so a compromised database cannot mint admins."""
+    raw = os.environ.get("ADMIN_EMAILS", "")
+    return {e.strip().lower() for e in raw.split(",") if e.strip()}
+
+
+def is_admin(email: str | None) -> bool:
+    return bool(email) and email.strip().lower() in admin_emails()
+
+
 # ---------------------------------------------------------- passwords
 def hash_password(password: str) -> str:
     salt = secrets.token_bytes(16)

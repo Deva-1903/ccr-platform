@@ -162,3 +162,20 @@ Checklist before giving the URL to real users:
 - [ ] `CCR_DATA_DIR` on a persistent volume (default /tmp is ephemeral)
 - [ ] `CCR_ANON_TTL_HOURS=24` (default in the image)
 - [ ] Smoke test: sections 2, 4, 6, 7 above
+
+## 12. Admin page (/admin)
+
+Requires `ADMIN_EMAILS` to include your signed-in email (see .env.example).
+
+1. Sign in with an allowlisted account: an "Admin" link appears in the header;
+   non-admins (and signed-out visitors) see an access notice at /admin.
+2. Overview: account/run/project counters plus scales awaiting verification.
+3. Users: toggle a user to "lab" (their saved-run cap disappears - check
+   /api/auth/me shows max_saved_runs null), reset a password (temporary
+   password shown once; old one stops working), delete a user (removes all
+   their data; self-deletion refused).
+4. Failed runs: a failed job lists with its error tail; Requeue re-runs it
+   (refused when the corpus file is already gone - anonymous retention).
+5. Verification: mark a scale Verified; its "unverified" flag disappears
+   platform-wide. Statuses are applied back to the library YAML before
+   production.

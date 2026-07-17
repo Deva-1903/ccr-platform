@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
+from . import admin as admin_module
 from . import auth, auth_google, retention, storage
 from . import jobs as jobs_module
 from . import registry
@@ -84,6 +85,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="CCR Platform", version="0.1.0", lifespan=lifespan)
+app.include_router(admin_module.router)
 
 app.add_middleware(GZipMiddleware, minimum_size=1024)  # constructs payload + SPA compress ~4-5x
 app.add_middleware(
@@ -208,14 +210,19 @@ def auth_me(
     user: dict | None = Depends(auth.get_current_user),
 ):
     if user:
+        row = db.get(User, user["id"])
+        role = (row.role if row else None) or "member"
         return {
             "signed_in": True,
             "name": user["name"],
             "email": user["email"],
+            "role": role,
+            "is_admin": auth.is_admin(user["email"]),
             "limits": {"max_bytes": MAX_UPLOAD_BYTES, "max_rows": None},
             "usage": {
                 "saved_runs": _saved_runs_used(db, user["id"]),
-                "max_saved_runs": auth.user_max_saved_runs(),
+                # lab accounts: unlimited saved runs (admin-granted role)
+                "max_saved_runs": None if role == "lab" else auth.user_max_saved_runs(),
             },
         }
     return {
@@ -617,8 +624,12 @@ def create_job(
                 "Sign in (top right) to keep running - accounts are free.",
             )
     else:
-        # Signed-in tier: saved-run cap instead of deletion (their data, their call).
-        if _saved_runs_used(db, user["id"]) >= auth.user_max_saved_runs():
+        # Signed-in tier: saved-run cap instead of deletion (their data, their
+        # call). Lab-role accounts (admin-granted) are uncapped.
+        row = db.get(User, user["id"])
+        if (row.role if row else "member") != "lab" and (
+            _saved_runs_used(db, user["id"]) >= auth.user_max_saved_runs()
+        ):
             raise HTTPException(
                 409,
                 f"You have {auth.user_max_saved_runs()} saved runs (the maximum). "
@@ -764,6 +775,16 @@ def testing_guide():
     if not GUIDE_HTML.exists():
         raise HTTPException(404, "Guide not available on this instance.")
     return FileResponse(GUIDE_HTML, media_type="text/html")
+
+
+@app.get("/admin", include_in_schema=False)
+def admin_page():
+    """Serve the SPA at /admin; the frontend renders the admin view there
+    (and shows access-denied unless /api/auth/me says is_admin)."""
+    index = Path(__file__).resolve().parent.parent / "static" / "index.html"
+    if not index.exists():
+        raise HTTPException(404, "UI not built.")
+    return FileResponse(index, media_type="text/html")
 
 
 if SAMPLES_DIR.exists():

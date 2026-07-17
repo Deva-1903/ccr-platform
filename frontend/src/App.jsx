@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "./api.js";
+import AdminPage from "./AdminPage.jsx";
 import Workspace from "./Workspace.jsx";
+
+const IS_ADMIN_PATH = window.location.pathname === "/admin";
 
 function relativeTime(iso) {
   if (!iso) return "";
@@ -141,6 +144,9 @@ export default function App() {
           {auth?.signed_in ? (
             <>
               <span className="small">Hi, {auth.name}</span>
+              {auth.is_admin && !IS_ADMIN_PATH && (
+                <a className="header-btn" href="/admin">Admin</a>
+              )}
               <button className="header-btn" onClick={handleLogout}>
                 Sign out
               </button>
@@ -251,6 +257,11 @@ export default function App() {
         </div>
       )}
 
+      {IS_ADMIN_PATH ? (
+        <main className="main" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1rem" }}>
+          <AdminPage auth={auth} />
+        </main>
+      ) : (
       <div className="layout">
         <aside className="sidebar">
           <h2>
@@ -351,6 +362,7 @@ export default function App() {
           )}
         </main>
       </div>
+      )}
     </div>
   );
 }

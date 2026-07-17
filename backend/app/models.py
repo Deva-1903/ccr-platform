@@ -29,6 +29,9 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(120), default="")
     password_hash: Mapped[str] = mapped_column(Text)  # scrypt$salt$digest (auth.py)
+    role: Mapped[str] = mapped_column(String(16), default="member")  # member | lab
+    # "lab" = unlimited saved runs (set via /admin). Admins are NOT a DB role:
+    # admin access is granted by the ADMIN_EMAILS env allowlist (auth.is_admin).
     created_at: Mapped[str] = mapped_column(String(32), default=_now)
 
 
