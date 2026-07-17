@@ -115,6 +115,10 @@ def reset_password(
     user = db.get(User, user_id)
     if user is None:
         raise HTTPException(404, "User not found")
+    if not user.password_hash:
+        raise HTTPException(
+            400, "This is a Google account - it has no password to reset (they sign in via Google)."
+        )
     temp = secrets.token_urlsafe(9)  # 12 chars, meets the minimum length
     user.password_hash = auth.hash_password(temp)
     db.commit()

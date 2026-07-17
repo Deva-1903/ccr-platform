@@ -126,17 +126,19 @@ export default function AdminPage({ auth }) {
                     >
                       {u.role === "lab" ? "Make member" : "Make lab (unlimited)"}
                     </button>{" "}
-                    <button
-                      className="linkish"
-                      onClick={() =>
-                        act(async () => {
-                          const r = await post(`/api/admin/users/${u.id}/reset-password`);
-                          setNotice(`Temporary password for ${r.email}: ${r.temporary_password}`);
-                        })
-                      }
-                    >
-                      Reset password
-                    </button>{" "}
+                    {!u.google_only && (
+                      <button
+                        className="linkish"
+                        onClick={() =>
+                          act(async () => {
+                            const r = await post(`/api/admin/users/${u.id}/reset-password`);
+                            setNotice(`Temporary password for ${r.email}: ${r.temporary_password}`);
+                          })
+                        }
+                      >
+                        Reset password
+                      </button>
+                    )}{" "}
                     {!u.is_admin && (
                       <button
                         className="linkish danger"

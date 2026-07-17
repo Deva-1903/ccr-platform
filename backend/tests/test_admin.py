@@ -148,6 +148,32 @@ def test_password_reset_issues_working_temp_password(client):
     assert good.status_code == 200
 
 
+def test_password_reset_refused_for_google_account(client, monkeypatch):
+    from app import auth_google
+    monkeypatch.setattr(
+        auth_google, "exchange",
+        lambda code, verifier: {"email": "googler@lab.test", "name": "Googler"},
+    )
+    monkeypatch.setenv("SUPABASE_URL", "https://x.supabase.co")
+    monkeypatch.setenv("SUPABASE_ANON_KEY", "k")
+    from app import auth
+    client.cookies.set(auth_google.VERIFIER_COOKIE, auth.sign_payload({"v": "v"}))
+    client.get("/api/auth/google/callback?code=c", follow_redirects=False)
+    client.post("/api/auth/logout")
+
+    sign_in_as(client, ADMIN_EMAIL, "Admin")
+    uid = next(
+        u["id"] for u in client.get("/api/admin/users").json()
+        if u["email"] == "googler@lab.test"
+    )
+    assert any(
+        u["email"] == "googler@lab.test" and u["google_only"]
+        for u in client.get("/api/admin/users").json()
+    )
+    resp = client.post(f"/api/admin/users/{uid}/reset-password")
+    assert resp.status_code == 400 and "Google" in resp.json()["detail"]
+
+
 def test_delete_user_cascades_and_protects_self(client):
     register(client, "doomed@lab.test")
     project = client.post("/api/projects", json={"name": "DoomedData"}).json()
