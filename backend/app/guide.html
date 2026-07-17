@@ -44,6 +44,15 @@
   .top { position: fixed; right: 1rem; bottom: 1rem; background: var(--card);
     border: 1px solid var(--border); border-radius: 8px; padding: .4rem .7rem;
     text-decoration: none; font-size: .85rem; }
+  figure { margin: 1rem 0 1.4rem; }
+  figure svg { width: 100%; height: auto; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--card); }
+  figcaption { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+  .box { fill: var(--bg); stroke: var(--border); stroke-width: 1.5; }
+  .box-accent { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .lbl { fill: var(--fg); font: 600 13px sans-serif; }
+  .lbl-sm { fill: var(--muted); font: 11px sans-serif; }
+  .flow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#arw); }
 </style>
 </head>
 <body>
@@ -57,12 +66,8 @@ synthetic, written for this kit; no real participant data anywhere.</p>
 <div class="note">
   <b>⚠ This is the dev instance - a couple of things to know:</b>
   <ul>
-    <li><b>Your account, projects, and runs are saved</b> (backed by a persistent
-        database). They stay put across restarts.</li>
-    <li><b>Uploaded files are not guaranteed yet.</b> If the instance restarts, a
-        dataset you uploaded may need re-uploading (your project and its results
-        stay; only the raw file may need to be added again). Durable file storage
-        is being finalized.</li>
+    <li><b>Your work is saved.</b> Account, projects, uploaded datasets, and runs
+        are backed by persistent storage and stay put across restarts.</li>
     <li><b>It sleeps when idle.</b> After ~48&nbsp;h without visitors, the first page
         load takes about a minute to wake it up.</li>
     <li>Please still avoid uploading sensitive or identifiable data on this dev
@@ -248,7 +253,126 @@ pages don't update.</p>
       dupes): identical scores for identical texts, less compute.</li>
 </ol>
 
-<h2 id="feedback">10. Found something off?</h2>
+<h2 id="architecture">11. How it works (architecture &amp; data flow)</h2>
+<p>For anyone who wants to look under the hood. The whole system is deliberately
+simple: one application, a few managed services around it, and no third-party AI
+APIs — the embedding models run on our own server, so uploaded text never leaves
+the platform.</p>
+
+<h3>What runs where</h3>
+<figure>
+<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Architecture: browser talks to one app container, which uses Postgres, R2, and Supabase/Google auth.">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <!-- browser -->
+  <rect class="box" x="20" y="120" width="150" height="60" rx="8"/>
+  <text class="lbl" x="95" y="147" text-anchor="middle">Your browser</text>
+  <text class="lbl-sm" x="95" y="165" text-anchor="middle">the web interface</text>
+  <!-- app container -->
+  <rect class="box-accent" x="270" y="90" width="220" height="120" rx="10"/>
+  <text class="lbl" x="380" y="115" text-anchor="middle">One app container</text>
+  <text class="lbl-sm" x="380" y="135" text-anchor="middle">API + interface (FastAPI/React)</text>
+  <text class="lbl-sm" x="380" y="152" text-anchor="middle">embedding models run here</text>
+  <text class="lbl-sm" x="380" y="169" text-anchor="middle">(MiniLM, E5) — no external AI</text>
+  <text class="lbl-sm" x="380" y="190" text-anchor="middle">hosted on Hugging Face</text>
+  <!-- stores -->
+  <rect class="box" x="590" y="30" width="150" height="52" rx="8"/>
+  <text class="lbl" x="665" y="52" text-anchor="middle">Postgres</text>
+  <text class="lbl-sm" x="665" y="69" text-anchor="middle">records (Supabase)</text>
+  <rect class="box" x="590" y="124" width="150" height="52" rx="8"/>
+  <text class="lbl" x="665" y="146" text-anchor="middle">Object storage</text>
+  <text class="lbl-sm" x="665" y="163" text-anchor="middle">files (Cloudflare R2)</text>
+  <rect class="box" x="590" y="218" width="150" height="52" rx="8"/>
+  <text class="lbl" x="665" y="240" text-anchor="middle">Sign-in</text>
+  <text class="lbl-sm" x="665" y="257" text-anchor="middle">Google / Supabase</text>
+  <!-- arrows -->
+  <path class="flow" d="M170,150 L268,150"/>
+  <path class="flow" d="M492,140 L588,58"/>
+  <path class="flow" d="M492,150 L588,150"/>
+  <path class="flow" d="M492,162 L588,244"/>
+</svg>
+<figcaption>The interface, the API, and the embedding models all live in one
+container. Around it: a persistent database for records, object storage for
+uploaded files, and Google/Supabase for sign-in. Every piece is on a free tier.</figcaption>
+</figure>
+
+<h3>What happens during a run</h3>
+<figure>
+<svg viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Data flow: upload, quality checks, embed items and texts, cosine similarity, scores, results and exports.">
+  <defs>
+    <marker id="arw2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <g>
+    <rect class="box" x="15" y="30" width="120" height="54" rx="8"/>
+    <text class="lbl-sm" x="75" y="52" text-anchor="middle">1. Upload</text>
+    <text class="lbl-sm" x="75" y="68" text-anchor="middle">corpus + construct</text>
+
+    <rect class="box" x="165" y="30" width="120" height="54" rx="8"/>
+    <text class="lbl-sm" x="225" y="52" text-anchor="middle">2. Quality checks</text>
+    <text class="lbl-sm" x="225" y="68" text-anchor="middle">language, warnings</text>
+
+    <rect class="box-accent" x="315" y="30" width="130" height="54" rx="8"/>
+    <text class="lbl-sm" x="380" y="52" text-anchor="middle">3. Embed both</text>
+    <text class="lbl-sm" x="380" y="68" text-anchor="middle">items &amp; texts, one model</text>
+
+    <rect class="box-accent" x="475" y="30" width="130" height="54" rx="8"/>
+    <text class="lbl-sm" x="540" y="52" text-anchor="middle">4. Cosine similarity</text>
+    <text class="lbl-sm" x="540" y="68" text-anchor="middle">text × each item</text>
+
+    <rect class="box" x="635" y="30" width="110" height="54" rx="8"/>
+    <text class="lbl-sm" x="690" y="52" text-anchor="middle">5. CCR score</text>
+    <text class="lbl-sm" x="690" y="68" text-anchor="middle">mean of items</text>
+
+    <rect class="box" x="240" y="120" width="280" height="50" rx="8"/>
+    <text class="lbl-sm" x="380" y="141" text-anchor="middle">6. Results: distributions, per-item loadings,</text>
+    <text class="lbl-sm" x="380" y="157" text-anchor="middle">top/bottom texts + CSV, metadata, repro script</text>
+  </g>
+  <path class="flow" style="marker-end:url(#arw2)" d="M135,57 L163,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M285,57 L313,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M445,57 L473,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M605,57 L633,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M690,84 L690,120 L522,145"/>
+</svg>
+<figcaption>CCR in one line: embed the validated scale items and your texts with
+the <em>same</em> model, then each text's cosine similarity to the items is its
+loading; the mean across items is the CCR score. It is deterministic embeddings
+plus arithmetic — no LLM, no prompting, no randomness.</figcaption>
+</figure>
+
+<h3>Where your data lives (and for how long)</h3>
+<ul>
+  <li><b>Records</b> (account, projects, run results and summaries) → the Postgres
+      database. Persistent, backed up.</li>
+  <li><b>Uploaded files</b> → object storage. Signed-in users' files persist;
+      anonymous uploads are deleted the moment their analysis finishes.</li>
+  <li><b>Anonymous sessions</b> are wiped entirely after 24&nbsp;hours; nothing you
+      upload anonymously is kept.</li>
+  <li><b>Reproducibility</b>: every run also records the exact model version, an
+      item-wording hash, and package versions, so the downloadable script
+      reproduces the numbers on any machine.</li>
+</ul>
+
+<h3>A few engineering choices worth knowing</h3>
+<ul>
+  <li><b>Same model for items and texts</b>, always — mixing models makes scores
+      non-comparable, so the platform records the model on every run and warns you.</li>
+  <li><b>MiniLM is the default</b> because it is the reference model in the published
+      CCR work; the stronger E5 models are available and clearly labelled.</li>
+  <li><b>Re-running a new construct on the same corpus is near-instant</b> — the
+      text embeddings are cached and reused (identical every time), so only the
+      cheap similarity step repeats.</li>
+  <li><b>Warnings never silently "fix" your data</b> — the platform surfaces issues
+      (wrong language, truncation, duplicates) and lets you decide.</li>
+</ul>
+
+<h2 id="feedback">12. Found something off?</h2>
 <p>Anything that doesn't match what this guide says it should do - or anything confusing,
 slow, or missing - post it in the lab's <b>#ccr Slack channel</b>: the 🐞 thread for bugs,
 the 💡 thread for ideas and feature requests. One line is enough; note the section number
