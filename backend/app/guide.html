@@ -55,13 +55,18 @@ you should see. Every dataset referenced is downloadable right here - all texts 
 synthetic, written for this kit; no real participant data anywhere.</p>
 
 <div class="note">
-  <b>⚠ This is the free dev instance - two caveats before you start:</b>
+  <b>⚠ This is the dev instance - a couple of things to know:</b>
   <ul>
-    <li><b>Storage is ephemeral.</b> Accounts, projects, and saved runs are wiped whenever
-        the instance rebuilds or restarts. If your account disappears, that's expected -
-        just re-register. (Google sign-in recreates itself automatically.)</li>
-    <li><b>It sleeps when idle.</b> After ~48&nbsp;h without visitors, the first page load
-        takes about a minute to wake it up.</li>
+    <li><b>Your account, projects, and runs are saved</b> (backed by a persistent
+        database). They stay put across restarts.</li>
+    <li><b>Uploaded files are not guaranteed yet.</b> If the instance restarts, a
+        dataset you uploaded may need re-uploading (your project and its results
+        stay; only the raw file may need to be added again). Durable file storage
+        is being finalized.</li>
+    <li><b>It sleeps when idle.</b> After ~48&nbsp;h without visitors, the first page
+        load takes about a minute to wake it up.</li>
+    <li>Please still avoid uploading sensitive or identifiable data on this dev
+        instance.</li>
   </ul>
 </div>
 
@@ -207,7 +212,7 @@ pages don't update.</p>
   <li>Sign out, sign back in; wrong password gives "Incorrect email or password";
       registering the same email again gives "already exists".</li>
   <li>Email is case-insensitive. No self-service password reset yet - reset = admin action.
-      (And remember: password accounts vanish when this dev instance rebuilds.)</li>
+      (Accounts persist across restarts now - no need to re-register.)</li>
 </ol>
 
 <h2 id="anon">7. Anonymous tiers (test signed OUT)</h2>
