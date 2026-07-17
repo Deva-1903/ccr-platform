@@ -54,3 +54,19 @@ the password when prompted (or a credential helper).
   on next sign-in automatically; password accounts must re-register. Fine for
   feedback; a persistent volume or Postgres arrives with the launch decision.
 - The Space sleeps after ~48 h idle; first visit wakes it (~1 min).
+
+## Persistent storage (make accounts/data survive restarts)
+
+HF Spaces free disk is ephemeral - SQLite is wiped on every rebuild. Point the
+app at your Supabase Postgres (free, already used for Google auth):
+
+1. Supabase dashboard > Project Settings > Database > Connection string >
+   "Session pooler". Copy the URI and put your DB password into it.
+2. Add it as a Space secret named `DATABASE_URL`.
+3. Restart the Space. First boot creates the tables in Postgres; data now
+   persists across restarts and redeploys.
+
+For durable uploaded FILES too (not just the database), also set the
+`CCR_STORAGE=s3` R2 secrets (see .env.example). Without that, the database
+rows survive but a signed-in user's uploaded corpus file can still vanish on
+restart (results CSVs are regenerable by re-running).
