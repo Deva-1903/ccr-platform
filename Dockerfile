@@ -25,6 +25,12 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /srv
 
+# CPU-only torch FIRST: this Space runs on cpu-basic, but the default PyPI
+# torch drags in the multi-GB CUDA wheel stack, which bloats the image and
+# OOM-kills the builder at the model-bake step below (observed 2026-07-17).
+# With torch already satisfied, the requirements install skips it entirely.
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
