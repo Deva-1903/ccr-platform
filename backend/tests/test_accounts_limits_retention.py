@@ -153,6 +153,43 @@ def test_anonymous_corpus_removed_after_run_and_rerun_gets_410(client):
     assert resp.status_code == 410
 
 
+def test_missing_file_degrades_gracefully_not_crash(client):
+    """After an ephemeral-disk restart a signed-in corpus's file can vanish
+    while its DB row and past results remain. The UI must be able to warn
+    (file_available=False) and a re-run must return a clean 410, never a 500."""
+    from pathlib import Path
+
+    register(client, "restart@test.edu")
+    project = client.post("/api/projects", json={"name": "Survivor"}).json()
+    corpus = upload(client, project["id"], "c.csv", csv_rows(5)).json()
+    construct = any_construct(client)
+    job = wait_for_job(client, run_job(client, project["id"], corpus["id"], construct["id"]).json()["id"])
+    assert job["status"] == "completed"
+
+    # Simulate the restart: the raw file disappears from disk.
+    listed = client.get(f"/api/projects/{project['id']}/corpora").json()[0]
+    assert listed["file_available"] is True
+    Path(listed_path(client, project["id"], corpus["id"])).unlink()
+
+    # Listing now flags it; the past results still load; a re-run 410s cleanly.
+    relisted = client.get(f"/api/projects/{project['id']}/corpora").json()[0]
+    assert relisted["file_available"] is False
+    assert client.get(f"/api/jobs/{job['id']}/results").status_code == 200  # summary from DB
+    rerun = run_job(client, project["id"], corpus["id"], construct["id"])
+    assert rerun.status_code == 410 and "upload the file again" in rerun.json()["detail"].lower()
+
+
+def listed_path(client, project_id, corpus_id):
+    from app.db import SessionLocal
+    from app.models import Corpus
+
+    db = SessionLocal()
+    try:
+        return db.get(Corpus, corpus_id).path
+    finally:
+        db.close()
+
+
 def test_signed_in_corpus_survives_run(client):
     register(client, "keeper@test.edu")
     project = client.post("/api/projects", json={"name": "Kept"}).json()

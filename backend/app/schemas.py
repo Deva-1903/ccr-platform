@@ -42,6 +42,7 @@ class CorpusOut(BaseModel):
     suggested_text_column: str | None = None
     parse_info: dict = {}
     preview: list[dict] | None = None
+    file_available: bool = True  # False = raw file gone (re-upload to run again)
     created_at: str
 
 

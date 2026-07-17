@@ -126,7 +126,9 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
     );
   }
 
-  const canRun = corpusId && textColumn && constructId && modelName && !running;
+  const fileMissing = corpus && corpus.file_available === false;
+  const canRun =
+    corpusId && textColumn && constructId && modelName && !running && !fileMissing;
 
   return (
     <>
@@ -231,6 +233,7 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
                 {corpora.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.filename} ({c.n_rows.toLocaleString()} rows)
+                    {c.file_available === false ? " — re-upload to run" : ""}
                   </option>
                 ))}
               </select>
@@ -257,6 +260,13 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
         </div>
         {corpus?.parse_info?.note && (
           <p className="small muted">⚠ {corpus.parse_info.note}</p>
+        )}
+        {corpus && corpus.file_available === false && (
+          <p className="small muted">
+            ⚠ This dataset's file is no longer on the server (the instance restarted).
+            Your past results for it are safe, but to run a new analysis, upload the
+            file again above.
+          </p>
         )}
       </div>
 

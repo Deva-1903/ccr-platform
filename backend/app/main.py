@@ -458,6 +458,7 @@ def list_corpora(project_id: str, db: Session = Depends(get_db)):
             columns=json.loads(c.columns_json),
             suggested_text_column=c.suggested_text_column or None,
             parse_info=json.loads(c.parse_info_json or "{}"),
+            file_available=bool(c.path) and storage.exists(c.path),
             created_at=c.created_at,
         )
         for c in rows
@@ -645,14 +646,18 @@ def create_job(
     if not (2 <= len(language) <= 8 and language.replace("-", "").isalpha()):
         raise HTTPException(400, f"Invalid language code '{body.language}'.")
 
-    # Retention: anonymous uploads are deleted after their analysis, so a
-    # re-run needs a fresh upload (or an account, where data persists).
+    # The raw file may be gone for two reasons: an anonymous upload was deleted
+    # right after its analysis, or an ephemeral-disk restart wiped it. Either
+    # way, past results are intact (DB) but a NEW run needs the file re-supplied.
     if not corpus.path or not storage.exists(corpus.path):
-        raise HTTPException(
-            410,
-            "This dataset's file was removed after analysis (anonymous uploads are "
-            "not kept). Upload the file again, or sign in to keep datasets.",
-        )
+        if user is None:
+            msg = ("This dataset's file was removed after analysis (anonymous uploads "
+                   "are not kept). Upload the file again, or sign in to keep datasets.")
+        else:
+            msg = ("This dataset's file is no longer on the server, so it can't be "
+                   "re-run. Your past results for it are safe. Upload the file again "
+                   "to run a new analysis.")
+        raise HTTPException(410, msg)
 
     job = Job(
         project_id=body.project_id,
@@ -707,6 +712,13 @@ def export_results(job_id: str, db: Session = Depends(get_db)):
     job = _get_or_404(db, Job, job_id)
     if job.status != "completed" or not job.result_path:
         raise HTTPException(409, "Results not available.")
+    if not storage.exists(job.result_path):
+        raise HTTPException(
+            410,
+            "The results CSV file is no longer on the server. The summary and "
+            "per-item loadings on the results page are still available; re-run the "
+            "analysis to regenerate the downloadable CSV.",
+        )
     filename = f"ccr_results_{job_id[:8]}.csv"
     if storage.is_s3(job.result_path):
         from fastapi.responses import StreamingResponse
