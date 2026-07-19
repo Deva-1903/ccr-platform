@@ -47,6 +47,23 @@ def script_text(metadata: dict) -> str:
     provider = metadata.get("provider_model_id", metadata.get("model", ""))
     revision = metadata.get("model_revision")
     revision_arg = f", revision={revision!r}" if revision and revision != "PIN_ME" else ""
+    pooling_fallback = metadata.get("model_pooling_fallback")
+    max_seq = metadata.get("model_max_seq_length")
+    if pooling_fallback:
+        # Repos with incomplete sentence-transformers packaging (pooling config
+        # missing) must be assembled module-by-module, exactly as the platform
+        # backend does - otherwise the exported script cannot load the model.
+        rev_model_args = f", model_args={{'revision': {revision!r}}}" if revision and revision != "PIN_ME" else ""
+        model_loader = (
+            f"word = st_models.Transformer({provider!r}, max_seq_length={max_seq!r}{rev_model_args})\n"
+            f"    get_dim = getattr(word, 'get_embedding_dimension', None) or word.get_word_embedding_dimension\n"
+            f"    pool = st_models.Pooling(get_dim(), pooling_mode={pooling_fallback!r})\n"
+            f"    model = SentenceTransformer(modules=[word, pool])"
+        )
+        st_import = "from sentence_transformers import SentenceTransformer\nfrom sentence_transformers import models as st_models"
+    else:
+        model_loader = f"model = SentenceTransformer({provider!r}{revision_arg})"
+        st_import = "from sentence_transformers import SentenceTransformer"
     item_prefix = metadata.get("item_prefix", "")
     text_prefix = metadata.get("text_prefix", "")
     text_column = metadata.get("text_column", "text")
@@ -78,7 +95,7 @@ import sys
 
 import numpy as np
 import pandas as pd
-from sentence_transformers import SentenceTransformer
+{st_import}
 
 TEXT_COLUMN = {text_column!r}
 ITEM_PREFIX = {item_prefix!r}   # model-required prefix (E5 family); empty = none
@@ -94,7 +111,7 @@ def main(csv_path: str) -> None:
     work = df.loc[mask].reset_index(drop=True)          # platform drops empty rows the same way
     texts = work[TEXT_COLUMN].astype(str).tolist()
 
-    model = SentenceTransformer({provider!r}{revision_arg})
+    {model_loader}
     item_texts = [ITEM_PREFIX + i["text"] for i in ITEMS]
     doc_texts = [TEXT_PREFIX + t for t in texts]
 

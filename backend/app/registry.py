@@ -49,6 +49,11 @@ class ModelConfig:
     text_prefix: str
     normalize_embeddings: bool
     lazy_load: bool
+    # Set ("mean"/"cls") for repos whose sentence-transformers packaging is
+    # incomplete (modules.json references a pooling config the repo lacks):
+    # the backend then builds Transformer+Pooling explicitly instead of
+    # relying on SentenceTransformer(id) auto-loading.
+    pooling_fallback: str | None = None
     user_warnings: tuple[str, ...] = field(default_factory=tuple)
 
     @property
@@ -89,6 +94,7 @@ def _parse_model(raw: dict, lang_sets) -> ModelConfig:
         text_prefix=usage.get("text_prefix") or sym or "",
         normalize_embeddings=bool(usage.get("normalize_embeddings", True)),
         lazy_load=bool(ops.get("lazy_load", False)),
+        pooling_fallback=usage.get("pooling_fallback") or None,
         user_warnings=tuple(raw.get("warnings", []) or []),
     )
 

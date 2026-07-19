@@ -304,6 +304,8 @@ def run_job(job_id: str) -> None:
             "model_registry_id": model_cfg.id if model_cfg else job.model_name,
             "provider_model_id": model_cfg.provider_model_id if model_cfg else job.model_name,
             "model_revision": model_cfg.revision if model_cfg else None,
+            "model_pooling_fallback": model_cfg.pooling_fallback if model_cfg else None,
+            "model_max_seq_length": model_cfg.max_seq_length if model_cfg else None,
             "scoring": {"adjustment_strategy": "none", "aggregate": "mean_all_items"},
             "output_schema": (
                 list(work_df.columns)

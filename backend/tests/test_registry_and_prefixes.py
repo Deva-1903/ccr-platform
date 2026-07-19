@@ -108,3 +108,43 @@ def test_model_language_unsupported_warning():
     assert w["code"] == "MODEL_LANGUAGE_UNSUPPORTED"
     assert model_language_warning("en", "m", frozenset({"en"}), None) is None
     assert model_language_warning("zz", "m", frozenset(), None) is None  # unknown coverage: no warning
+
+
+# ------------------------------------- psyembedding models (pooling fallback)
+def test_psyembedding_models_registered_with_pooling_fallback():
+    """The published PsyEmbedding repos lack the 1_Pooling config their
+    modules.json references, so plain SentenceTransformer(id) cannot load
+    them; the registry must flag them for explicit module assembly."""
+    from app import registry
+
+    psy = [m for m in registry.list_models() if m.id.startswith("psyembedding-")]
+    assert len(psy) == 4
+    for m in psy:
+        assert m.pooling_fallback == "mean", m.id
+        assert not m.requires_prefix, m.id
+        assert m.embedding_dimension == 1024 and m.max_seq_length == 512, m.id
+        assert m.lazy_load, m.id
+
+
+def test_repro_script_uses_explicit_modules_for_pooling_fallback():
+    from app.reproducibility import script_text
+
+    meta = {
+        "construct_snapshot": {"items": [{"text": "I am satisfied.", "reverse_scored": False}],
+                               "name": "X", "version": 1, "item_hash": "ab" * 16},
+        "model_registry_id": "psyembedding-bert-large",
+        "provider_model_id": "Culture-and-Morality-Lab/psyembedding-bert-large-uncased",
+        "model_revision": "PIN_ME",
+        "model_pooling_fallback": "mean",
+        "model_max_seq_length": 512,
+        "text_column": "text",
+    }
+    src = script_text(meta)
+    compile(src, "reproduce_analysis.py", "exec")
+    assert "st_models.Pooling" in src and "pooling_mode='mean'" in src
+    # plain models keep the one-line loader
+    plain = script_text({**meta, "model_pooling_fallback": None,
+                         "model_registry_id": "all-minilm-l6-v2",
+                         "provider_model_id": "sentence-transformers/all-MiniLM-L6-v2"})
+    compile(plain, "reproduce_analysis.py", "exec")
+    assert "st_models" not in plain
