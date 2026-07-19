@@ -42,16 +42,39 @@ class SentenceTransformerBackend:
 
     _cache: dict[str, object] = {}
 
-    def __init__(self, model_name: str, revision: str | None = None):
+    def __init__(
+        self,
+        model_name: str,
+        revision: str | None = None,
+        pooling_fallback: str | None = None,
+        max_seq_length: int | None = None,
+    ):
         self.name = model_name
         self.revision = revision
+        self.pooling_fallback = pooling_fallback
+        self._max_seq_length = max_seq_length
 
     def _model(self):
         if self.name not in self._cache:
             from sentence_transformers import SentenceTransformer  # lazy: heavy import
 
-            kwargs = {"revision": self.revision} if self.revision else {}
-            self._cache[self.name] = SentenceTransformer(self.name, **kwargs)
+            if self.pooling_fallback:
+                # Registry-flagged repos ship modules.json without the pooling
+                # config it references, so auto-loading fails; build the module
+                # stack explicitly with the pooling the model card documents.
+                from sentence_transformers import models as st_models
+
+                margs = {"model_args": {"revision": self.revision}} if self.revision else {}
+                word = st_models.Transformer(
+                    self.name, max_seq_length=self._max_seq_length, **margs
+                )
+                # renamed in newer sentence-transformers; support both
+                get_dim = getattr(word, "get_embedding_dimension", None) or word.get_word_embedding_dimension
+                pool = st_models.Pooling(get_dim(), pooling_mode=self.pooling_fallback)
+                self._cache[self.name] = SentenceTransformer(modules=[word, pool])
+            else:
+                kwargs = {"revision": self.revision} if self.revision else {}
+                self._cache[self.name] = SentenceTransformer(self.name, **kwargs)
         return self._cache[self.name]
 
     @property
@@ -68,7 +91,7 @@ class SentenceTransformerBackend:
             emb = model.encode(
                 texts[i : i + batch],
                 convert_to_numpy=True,
-                normalize_embeddings=True,
+                normalize_embeddings=True, # scales every vector to length 1
                 show_progress_bar=False,
             )
             out.append(emb)
@@ -115,7 +138,12 @@ def get_backend(model_id: str) -> EmbeddingBackend:
     from . import registry  # local import: engine stays importable without yaml deps
 
     cfg = registry.get_model(model_id)
-    return SentenceTransformerBackend(cfg.provider_model_id, revision=cfg.pinned_revision)
+    return SentenceTransformerBackend(
+        cfg.provider_model_id,
+        revision=cfg.pinned_revision,
+        pooling_fallback=cfg.pooling_fallback,
+        max_seq_length=cfg.max_seq_length,
+    )
 
 
 @dataclass
@@ -201,8 +229,8 @@ def run_ccr(
         doc_emb = encode_unique(backend, texts_for_encoding, progress_cb=doc_progress)
 
     # Both matrices are L2-normalized -> cosine similarity is a dot product.
-    sims = doc_emb @ item_emb.T
-    scores = sims.mean(axis=1)
+    sims = doc_emb @ item_emb.T   # similarity of every text to every item
+    scores = sims.mean(axis=1)   # average across items = the CCR score
 
     finished = datetime.now(timezone.utc)
     items_hash = hashlib.sha256("\n".join(items).encode()).hexdigest()[:16]

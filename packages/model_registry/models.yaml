@@ -77,3 +77,127 @@ models:
     warnings:
       - "Quality varies by language, especially lower-resource languages."
       - "Scores are not comparable across model families."
+
+  # PsyEmbedding family (Culture & Morality Lab): sentence-transformers models
+  # fine-tuned for psychological text analysis on sentence-similarity pairs.
+  # Added on PI request 2026-07-18. All four: mean pooling, no prefix, English,
+  # 1024-dim, 512-token window, ~1.3 GB download on first use (lazy).
+
+  - id: psyembedding-bert-large
+    provider_model_id: Culture-and-Morality-Lab/psyembedding-bert-large-uncased
+    display_name: "PsyEmbedding BERT Large (psychology fine-tune)"
+    revision: PIN_ME
+    default: false
+    supported_languages: ["en"]
+    embedding_dimension: 1024
+    max_seq_length: 512
+    quality_tier: specialized
+    speed_tier: slow
+    usage_config:
+      requires_prefix: false
+      symmetric_similarity_prefix: null
+      pooling: mean                            # per model card; see pooling_fallback
+      # The published repos' modules.json references a 1_Pooling config the
+      # repos do not contain, so SentenceTransformer(id) cannot auto-load
+      # them; the backend builds Transformer+mean-Pooling explicitly.
+      pooling_fallback: mean
+      normalize_embeddings: true
+    operational_config:
+      expected_time_per_1k_texts_cpu: benchmark_required
+      worker_ram_min_gb: 4
+      lazy_load: true
+      max_resident_models: 1
+    warnings:
+      - "Fine-tuned for psychological text; general-domain performance untested."
+      - "Substantially slower and heavier than MiniLM."
+      - "Scores are not comparable across model families."
+
+  - id: psyembedding-roberta-large
+    provider_model_id: Culture-and-Morality-Lab/psyembedding-roberta-large
+    display_name: "PsyEmbedding RoBERTa Large (psychology fine-tune)"
+    revision: PIN_ME
+    default: false
+    supported_languages: ["en"]
+    embedding_dimension: 1024
+    max_seq_length: 512
+    quality_tier: specialized
+    speed_tier: slow
+    usage_config:
+      requires_prefix: false
+      symmetric_similarity_prefix: null
+      pooling: mean                            # per model card; see pooling_fallback
+      # The published repos' modules.json references a 1_Pooling config the
+      # repos do not contain, so SentenceTransformer(id) cannot auto-load
+      # them; the backend builds Transformer+mean-Pooling explicitly.
+      pooling_fallback: mean
+      normalize_embeddings: true
+    operational_config:
+      expected_time_per_1k_texts_cpu: benchmark_required
+      worker_ram_min_gb: 4
+      lazy_load: true
+      max_resident_models: 1
+    warnings:
+      - "Fine-tuned for psychological text; general-domain performance untested."
+      - "Substantially slower and heavier than MiniLM."
+      - "Scores are not comparable across model families."
+
+  - id: psyembedding-gte-large
+    provider_model_id: Culture-and-Morality-Lab/psyembedding-gte-large
+    display_name: "PsyEmbedding GTE Large (psychology fine-tune)"
+    revision: PIN_ME
+    default: false
+    supported_languages: ["en"]
+    embedding_dimension: 1024
+    max_seq_length: 512
+    quality_tier: specialized
+    speed_tier: slow
+    usage_config:
+      requires_prefix: false
+      symmetric_similarity_prefix: null
+      pooling: mean                            # per model card; see pooling_fallback
+      # The published repos' modules.json references a 1_Pooling config the
+      # repos do not contain, so SentenceTransformer(id) cannot auto-load
+      # them; the backend builds Transformer+mean-Pooling explicitly.
+      pooling_fallback: mean
+      normalize_embeddings: true
+    operational_config:
+      expected_time_per_1k_texts_cpu: benchmark_required
+      worker_ram_min_gb: 4
+      lazy_load: true
+      max_resident_models: 1
+    warnings:
+      - "Fine-tuned for psychological text; general-domain performance untested."
+      - "Substantially slower and heavier than MiniLM."
+      - "Scores are not comparable across model families."
+
+  - id: psyembedding-e5-large-v2
+    provider_model_id: Culture-and-Morality-Lab/psyembedding-e5-large-v2
+    display_name: "PsyEmbedding E5 Large v2 (psychology fine-tune)"
+    revision: PIN_ME
+    default: false
+    supported_languages: ["en"]
+    embedding_dimension: 1024
+    max_seq_length: 512
+    quality_tier: specialized
+    speed_tier: slow
+    usage_config:
+      # Unlike base intfloat/e5-large-v2, the fine-tune's card specifies direct
+      # encoding with NO "query: " prefix; the ST package carries its own
+      # pooling+normalize config, so we match the card exactly.
+      requires_prefix: false
+      symmetric_similarity_prefix: null
+      pooling: mean                            # per model card; see pooling_fallback
+      # The published repos' modules.json references a 1_Pooling config the
+      # repos do not contain, so SentenceTransformer(id) cannot auto-load
+      # them; the backend builds Transformer+mean-Pooling explicitly.
+      pooling_fallback: mean
+      normalize_embeddings: true
+    operational_config:
+      expected_time_per_1k_texts_cpu: benchmark_required
+      worker_ram_min_gb: 4
+      lazy_load: true
+      max_resident_models: 1
+    warnings:
+      - "Fine-tuned for psychological text; general-domain performance untested."
+      - "Substantially slower and heavier than MiniLM."
+      - "Scores are not comparable across model families."
