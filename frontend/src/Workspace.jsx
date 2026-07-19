@@ -202,12 +202,23 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
         </h3>
         <p className="hint">
           Upload a CSV or XLSX file, then choose the column containing the text to analyze.
+          {/* Both ceilings are shown up front, for signed-in users too: the row
+              limit is global and usually binds first, so surfacing only the
+              byte limit sent people off to split a file that was never too
+              large in bytes. */}
           {auth && !auth.signed_in && auth.limits?.max_rows && (
             <>
               {" "}
               Anonymous limit: {Math.round(auth.limits.max_bytes / 1048576)} MB /{" "}
               {auth.limits.max_rows.toLocaleString()} rows per file; uploads are deleted
               after analysis. Sign in (top right) for larger uploads and to keep your data.
+            </>
+          )}
+          {auth && auth.signed_in && auth.limits?.max_rows && (
+            <>
+              {" "}
+              Limit: {Math.round(auth.limits.max_bytes / 1048576)} MB /{" "}
+              {auth.limits.max_rows.toLocaleString()} rows per file.
             </>
           )}
         </p>

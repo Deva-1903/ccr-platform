@@ -250,6 +250,44 @@ def test_saved_run_cap_for_signed_in_users(client, monkeypatch):
     assert "saved runs" in resp.json()["detail"]
 
 
+# ------------------------------------------------------------ upload ceiling
+def test_upload_byte_ceiling_rejects_and_is_env_configurable(client, monkeypatch):
+    monkeypatch.setenv("CCR_MAX_UPLOAD_BYTES", str(4 * 1024 * 1024))  # 4 MB
+    register(client, "bytes@test.edu")
+    project = client.post("/api/projects", json={"name": "Bytes"}).json()
+
+    resp = upload(client, project["id"], "big.csv", b"text\n" + b"a" * (5 * 1024 * 1024))
+    assert resp.status_code == 413, resp.json()
+    assert "4 MB" in resp.json()["detail"]  # reports the configured ceiling, not a baked-in one
+
+    assert upload(client, project["id"], "ok.csv", csv_rows(5)).status_code == 201
+
+
+def test_oversized_upload_leaves_no_partial_temp_file(client, monkeypatch):
+    """The stream aborts mid-transfer, so the partial write must be cleaned up."""
+    from app.db import DATA_DIR
+
+    monkeypatch.setenv("CCR_MAX_UPLOAD_BYTES", str(2 * 1024 * 1024))
+    register(client, "partial@test.edu")
+    project = client.post("/api/projects", json={"name": "Partial"}).json()
+
+    tmp_dir = DATA_DIR / "tmp"
+    before = set(tmp_dir.iterdir()) if tmp_dir.exists() else set()
+    assert upload(client, project["id"], "big.csv", b"text\n" + b"a" * (3 * 1024 * 1024)).status_code == 413
+    after = set(tmp_dir.iterdir()) if tmp_dir.exists() else set()
+    assert after == before, f"partial upload left behind: {after - before}"
+
+
+def test_signed_in_limits_report_the_real_row_ceiling(client, monkeypatch):
+    """max_rows was reported as None for signed-in users, implying no row limit."""
+    monkeypatch.setenv("CCR_MAX_ROWS", "20000")
+    register(client, "limits@test.edu")
+
+    limits = client.get("/api/auth/me").json()["limits"]
+    assert limits["max_rows"] == 20000
+    assert limits["max_bytes"] > 0
+
+
 # ---------------------------------------------------------------- ownership
 def test_owned_projects_invisible_and_untouchable_to_others(client):
     register(client, "alice@test.edu", "Alice")

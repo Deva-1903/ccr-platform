@@ -12,7 +12,32 @@ Space settings; after that, deploys are just `git push hf main`.
 | SUPABASE_ANON_KEY  | from the same page (anon public key, NOT service_role)      |
 | CCR_APP_URL        | https://devaanand-ccr-platform.hf.space                     |
 | CCR_COOKIE_SECURE  | 1                                                           |
-| CCR_MAX_ROWS       | 20000 (global upload ceiling; code default is 100000)       |
+| CCR_MAX_ROWS       | 20000 (global row ceiling; code default is 100000)          |
+
+`CCR_MAX_ROWS` is the limit that actually bounds a run — embedding cost scales
+with rows and tokens, not file bytes, and on 2 vCPU it is *time*, not memory,
+that runs out first. Measured on the cpu-basic Space shape (2 vCPU / 16 GB):
+upload + parse peaks at roughly 5x file size, so even a 50 MB corpus costs
+about 250 MB of the 16 GB available. The byte ceiling (`CCR_MAX_UPLOAD_BYTES`,
+default 50 MB) is an abuse/OOM backstop that should not fire on a legitimate
+corpus: at `CCR_MAX_ROWS=20000` it only binds above ~2.6 KB per row, which is
+already past every model's token window. Anonymous uploads use the lower of
+that and `CCR_ANON_MAX_BYTES` (5 MB), sized as a pre-parse shield so an
+unauthenticated request cannot make the server parse a large file only to
+reject it at row 201.
+
+Embedding throughput at 2 threads, batch 64 (see `scripts/bench_models.py` to
+re-measure on the actual host — these are derated estimates, not Space-measured):
+
+| model         | ~15-word rows | ~60-word rows | ~250-word rows |
+| ------------- | ------------- | ------------- | -------------- |
+| MiniLM L6 v2  | ~1.2 s/1k     | ~2.1 s/1k     | ~8.4 s/1k      |
+| E5 Large v2   | ~7.5 s/1k     | ~27 s/1k      | ~123 s/1k      |
+
+At `CCR_MAX_ROWS=20000` that is ~25 s to ~3 min for MiniLM, but up to ~40 min
+for E5 Large on long documents. Jobs that long are also *fragile*: a Space
+restart marks any running job failed (`recover_orphaned_jobs`), so worst-case
+job duration — not row count alone — is the number to keep in view.
 
 Retention (CCR_ANON_TTL_HOURS=24) and model pre-warm are already defaults in
 the Dockerfile.

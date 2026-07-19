@@ -30,7 +30,7 @@ from .ccr import FAKE_MODEL_NAME
 from .construct_files import parse_construct_file
 from .construct_lib import sync_library
 from .db import DATA_DIR, Base, SessionLocal, auto_migrate_sqlite, engine, get_db
-from .ingest import IngestError, load_corpus, suggest_text_column
+from .ingest import IngestError, load_corpus, max_rows as corpus_max_rows, suggest_text_column
 from .models import Construct, Corpus, Job, Project, User
 from .reproducibility import requirements_text, script_text
 from .schemas import (
@@ -46,8 +46,47 @@ from .schemas import (
     RegisterIn,
 )
 
-MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # sane lab-scale ceiling; raise deliberately
 ALLOWED_SUFFIXES = (".csv", ".xlsx", ".xls")
+
+# Upload ceiling: an OOM/abuse backstop, NOT the research-workflow limit.
+# Job cost scales with rows and tokens, not file bytes (20k tweets and 20k
+# essays are the same row count and wildly different compute), so the limit
+# that actually bounds a run is CCR_MAX_ROWS - see ingest.max_rows(). Keep
+# this loose and tune rows per deployment.
+MAX_UPLOAD_BYTES_DEFAULT = 50 * 1024 * 1024
+UPLOAD_CHUNK_BYTES = 1024 * 1024
+
+
+def max_upload_bytes() -> int:
+    """Global upload ceiling, env-configurable (CCR_MAX_UPLOAD_BYTES)."""
+    return int(os.environ.get("CCR_MAX_UPLOAD_BYTES", MAX_UPLOAD_BYTES_DEFAULT))
+
+
+class _UploadTooLarge(Exception):
+    """Raised mid-stream once an upload passes its byte ceiling."""
+
+
+async def _stream_to_temp(file: UploadFile, dest: Path, ceiling: int) -> int:
+    """Copy an upload to `dest` in chunks, aborting past `ceiling` bytes.
+
+    Streaming rather than file.read()-ing the whole payload into one bytes
+    object keeps peak memory at one chunk: an oversized upload is rejected
+    without ever being fully resident, and the partial temp file is removed
+    on any failure (including a client disconnect mid-upload).
+    """
+    total = 0
+    try:
+        with dest.open("wb") as out:
+            while chunk := await file.read(UPLOAD_CHUNK_BYTES):
+                total += len(chunk)
+                if total > ceiling:
+                    raise _UploadTooLarge()
+                out.write(chunk)
+    except BaseException:
+        dest.unlink(missing_ok=True)
+        raise
+    return total
+
 
 # Languages offered in the UI selector; detection may report others (ISO 639-1).
 SELECTABLE_LANGUAGES = [
@@ -218,7 +257,12 @@ def auth_me(
             "email": user["email"],
             "role": role,
             "is_admin": auth.is_admin(user["email"]),
-            "limits": {"max_bytes": MAX_UPLOAD_BYTES, "max_rows": None},
+            # max_rows is NOT unlimited for signed-in users: CCR_MAX_ROWS is a
+            # global ingest ceiling and is usually the limit that actually
+            # binds (deployed instances set it well below the byte ceiling).
+            # Reporting None here told users there was no row limit until they
+            # hit one mid-upload.
+            "limits": {"max_bytes": max_upload_bytes(), "max_rows": corpus_max_rows()},
             "usage": {
                 "saved_runs": _saved_runs_used(db, user["id"]),
                 # lab accounts: unlimited saved runs (admin-granted role)
@@ -479,18 +523,10 @@ async def upload_corpus(
     if suffix not in ALLOWED_SUFFIXES:
         raise HTTPException(400, f"Unsupported file type '{suffix}'. Use CSV or XLSX.")
 
-    payload = await file.read()
-    if len(payload) > MAX_UPLOAD_BYTES:
-        raise HTTPException(413, "File exceeds the 25 MB upload limit.")
-
     # Tier gate (design §5.1): anonymous users get strict caps; signing in
-    # lifts them.
-    if user is None and len(payload) > auth.anon_max_bytes():
-        mb = auth.anon_max_bytes() // (1024 * 1024)
-        raise HTTPException(
-            413,
-            f"Anonymous uploads are limited to {mb} MB. Sign in (top right) to upload larger files.",
-        )
+    # lifts them to the global ceiling.
+    is_anon = user is None
+    ceiling = min(max_upload_bytes(), auth.anon_max_bytes()) if is_anon else max_upload_bytes()
 
     # Assign the id NOW: the model's default fires at INSERT flush, so reading
     # corpus.id before commit yields None - every upload would then share one
@@ -499,12 +535,22 @@ async def upload_corpus(
         id=uuid.uuid4().hex,
         project_id=project_id, filename=file.filename, path="", n_rows=0, columns_json="[]"
     )
-    # Parse from a local temp file, then hand the bytes to the storage backend
+    # Stream to a local temp file, parse it, then hand it to the storage backend
     # (local disk by default; S3/R2 when CCR_STORAGE=s3 in production).
     tmp_dir = DATA_DIR / "tmp"
     tmp_dir.mkdir(exist_ok=True)
     tmp = tmp_dir / f"{corpus.id}{suffix}"
-    tmp.write_bytes(payload)
+    try:
+        await _stream_to_temp(file, tmp, ceiling)
+    except _UploadTooLarge:
+        mb = ceiling // (1024 * 1024)
+        if is_anon:
+            raise HTTPException(
+                413,
+                f"Anonymous uploads are limited to {mb} MB. Sign in (top right) "
+                "to upload larger files.",
+            ) from None
+        raise HTTPException(413, f"File exceeds the {mb} MB upload limit.") from None
 
     try:
         df, parse_info = load_corpus(str(tmp))
