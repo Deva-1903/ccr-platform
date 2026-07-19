@@ -3,16 +3,32 @@
 The Space builds from this repo's Dockerfile. One-time setup lives in the
 Space settings; after that, deploys are just `git push hf main`.
 
-## Space secrets (Settings > Variables and secrets)
+## Space settings (Settings > Variables and secrets)
+
+Hugging Face keeps **Variables** and **Secrets** in two separate stores, and a
+name defined in BOTH puts the Space into `CONFIG_ERROR` ("Collision on
+variables and secrets names") before it even builds. Add each key below to one
+store only — if the Space reports a config error after a settings change, look
+for a duplicated name first, not a bad value.
+
+Secrets (credentials — encrypted, write-only once set):
 
 | Secret             | Value                                                       |
 | ------------------ | ----------------------------------------------------------- |
 | CCR_SESSION_SECRET | `python3 -c "import secrets; print(secrets.token_hex(32))"` |
 | SUPABASE_URL       | from Supabase > Project Settings > API                      |
 | SUPABASE_ANON_KEY  | from the same page (anon public key, NOT service_role)      |
-| CCR_APP_URL        | https://devaanand-ccr-platform.hf.space                     |
-| CCR_COOKIE_SECURE  | 1                                                           |
-| CCR_MAX_ROWS       | 20000 (global row ceiling; code default is 100000)          |
+| DATABASE_URL       | Supabase session-pooler URI (see persistent storage below)  |
+
+Variables (non-sensitive tuning — visible in settings, safe to edit):
+
+| Variable               | Value                                               |
+| ---------------------- | --------------------------------------------------- |
+| CCR_APP_URL            | https://devaanand-ccr-platform.hf.space             |
+| CCR_COOKIE_SECURE      | 1                                                   |
+| CCR_MAX_ROWS           | 20000 (global row ceiling; code default is 100000)  |
+| CCR_MAX_UPLOAD_BYTES   | optional; code default is 52428800 (50 MB)          |
+| CCR_ANON_MAX_BYTES     | optional; code default is 5242880 (5 MB)            |
 
 `CCR_MAX_ROWS` is the limit that actually bounds a run — embedding cost scales
 with rows and tokens, not file bytes, and on 2 vCPU it is *time*, not memory,
