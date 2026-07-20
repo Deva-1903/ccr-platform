@@ -53,6 +53,30 @@
   .lbl { fill: var(--fg); font: 600 13px sans-serif; }
   .lbl-sm { fill: var(--muted); font: 11px sans-serif; }
   .flow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#arw); }
+  /* Shareable section links: a "#" appears on hover; click a heading to copy
+     a direct link to that section. */
+  h2[id], h3[id] { scroll-margin-top: 1rem; }
+  .anchor {
+    opacity: 0; text-decoration: none; color: var(--muted); font-weight: 400;
+    margin-left: .4rem; cursor: pointer; transition: opacity .12s;
+  }
+  h2:hover .anchor, h3:hover .anchor, .anchor:focus { opacity: .7; }
+  .anchor:hover { opacity: 1; color: var(--accent); }
+  :target { animation: flash 1.4s ease-out; }
+  @keyframes flash {
+    from { background: var(--amber-bg); }
+    to   { background: transparent; }
+  }
+  .toast {
+    position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
+    background: var(--accent); color: #fff; padding: .5rem .9rem; border-radius: 8px;
+    font-size: .85rem; opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .toast.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    :target { animation: none; }
+    .anchor { transition: none; }
+  }
 </style>
 </head>
 <body>
@@ -411,5 +435,48 @@ and what you saw; screenshots help. DMs to Deva work too, and email as a fallbac
 
 </main>
 <a class="top" href="#">↑ Top</a>
+<div class="toast" id="toast" role="status" aria-live="polite">Link copied</div>
+<script>
+(function () {
+  var toast = document.getElementById('toast'), timer;
+  function ping(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(timer);
+    timer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+  }
+  function share(id) {
+    // location.hash also makes the browser scroll to and :target-flash the section.
+    if (history.replaceState) history.replaceState(null, '', '#' + id);
+    location.hash = id;
+    var url = location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () { ping('Section link copied'); },
+        function () { ping('Link in address bar'); }
+      );
+    } else {
+      ping('Link in address bar');
+    }
+  }
+  // Give every id'd heading a click-to-copy "#" affordance.
+  var heads = document.querySelectorAll('h2[id], h3[id]');
+  Array.prototype.forEach.call(heads, function (h) {
+    var a = document.createElement('a');
+    a.className = 'anchor';
+    a.href = '#' + h.id;
+    a.textContent = '#';
+    a.setAttribute('aria-label', 'Copy link to this section');
+    a.addEventListener('click', function (e) { e.preventDefault(); share(h.id); });
+    h.appendChild(a);
+    // Clicking the heading text itself (not a link inside it) also shares.
+    h.style.cursor = 'pointer';
+    h.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') return;  // let real links behave normally
+      share(h.id);
+    });
+  });
+})();
+</script>
 </body>
 </html>
