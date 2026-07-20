@@ -95,6 +95,35 @@ synthetic, written for this kit; no real participant data anywhere.</p>
 systematically stress-testing the platform, but <b>your real data is the best test we
 have</b>.</p>
 
+<h2 id="limits">Limits at a glance</h2>
+<p>Signing in lifts the anonymous caps; a lab account (admin-granted) removes the
+saved-run cap. The row limit is usually what you hit first, not the file size.</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Limit</th><th>Signed out</th><th>Signed in</th><th>Lab account</th></tr>
+  <tr><td>Upload size</td><td>5&nbsp;MB</td><td>50&nbsp;MB</td><td>50&nbsp;MB</td></tr>
+  <tr><td>Rows per file</td><td>200</td><td>20,000</td><td>20,000</td></tr>
+  <tr><td>Runs per day</td><td>3, then sign in</td><td>unlimited</td><td>unlimited</td></tr>
+  <tr><td>Saved runs kept</td><td>none (file deleted after each run)</td><td>15</td><td>unlimited</td></tr>
+</table>
+</div>
+<p>Every model below is available on all three, including signed out.</p>
+
+<h2 id="models">Models available</h2>
+<p>Chosen on the Step 3 card. Scores are only comparable <i>within</i> the same model -
+never across model families. Larger models are slower and, the first time anyone selects
+one on this instance, take a couple of extra minutes to download before the run starts;
+after that they stay warm.</p>
+<div class="tablewrap">
+<table>
+  <tr><th>Model</th><th>Best for</th><th>Notes</th></tr>
+  <tr><td>MiniLM L6 v2 <b>(default)</b></td><td>English, general use</td><td>Fast; the CCR reference model. Start here.</td></tr>
+  <tr><td>E5 Large v2</td><td>English, higher quality</td><td>Stronger but noticeably slower.</td></tr>
+  <tr><td>Multilingual E5 Base</td><td>50+ languages</td><td>Use for non-English corpora.</td></tr>
+  <tr><td>PsyEmbedding BERT / RoBERTa / GTE / E5 Large</td><td>Psychological text</td><td>Four lab fine-tunes for psychology research. English; heavier, so the first run downloads ~1.3&nbsp;GB.</td></tr>
+</table>
+</div>
+
 <h2 id="samples">0. Sample datasets</h2>
 <p>One file per platform behavior. To test something, download the file named for it and
 follow its scenario below. Unless stated otherwise, select language <b>English</b> and
@@ -142,7 +171,7 @@ model <b>MiniLM</b>.</p>
   <tr><td>any <code>.txt</code> or <code>.pdf</code> file</td><td>Rejected: unsupported file type</td></tr>
 </table>
 </div>
-<p>Anonymous limits (signed out): the Step 1 hint shows 2&nbsp;MB / 200 rows and says uploads
+<p>Anonymous limits (signed out): the Step 1 hint shows 5&nbsp;MB / 200 rows and says uploads
 are deleted after analysis. Upload
 <a href="/samples/large_demo.csv" download>large_demo.csv</a> (800 rows): rejected with a
 "Sign in (top right)" message. Sign in and retry: accepted.</p>
