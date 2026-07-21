@@ -64,7 +64,7 @@ class SentenceTransformerBackend:
                 # stack explicitly with the pooling the model card documents.
                 from sentence_transformers import models as st_models
 
-                margs = {"model_args": {"revision": self.revision}} if self.revision else {}
+                margs = {"model_kwargs": {"revision": self.revision}} if self.revision else {}
                 word = st_models.Transformer(
                     self.name, max_seq_length=self._max_seq_length, **margs
                 )

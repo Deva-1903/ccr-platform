@@ -53,9 +53,9 @@ def script_text(metadata: dict) -> str:
         # Repos with incomplete sentence-transformers packaging (pooling config
         # missing) must be assembled module-by-module, exactly as the platform
         # backend does - otherwise the exported script cannot load the model.
-        rev_model_args = f", model_args={{'revision': {revision!r}}}" if revision and revision != "PIN_ME" else ""
+        rev_model_kwargs = f", model_kwargs={{'revision': {revision!r}}}" if revision and revision != "PIN_ME" else ""
         model_loader = (
-            f"word = st_models.Transformer({provider!r}, max_seq_length={max_seq!r}{rev_model_args})\n"
+            f"word = st_models.Transformer({provider!r}, max_seq_length={max_seq!r}{rev_model_kwargs})\n"
             f"    get_dim = getattr(word, 'get_embedding_dimension', None) or word.get_word_embedding_dimension\n"
             f"    pool = st_models.Pooling(get_dim(), pooling_mode={pooling_fallback!r})\n"
             f"    model = SentenceTransformer(modules=[word, pool])"
