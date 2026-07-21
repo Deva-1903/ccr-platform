@@ -7,7 +7,7 @@ models:
   - id: all-minilm-l6-v2
     provider_model_id: sentence-transformers/all-MiniLM-L6-v2
     display_name: "MiniLM L6 v2 (default - CCR reference model)"
-    revision: PIN_ME
+    revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
     default: true
     supported_languages: ["en"]
     embedding_dimension: 384
@@ -28,7 +28,7 @@ models:
   - id: e5-large-v2
     provider_model_id: intfloat/e5-large-v2
     display_name: "E5 Large v2 (strong English - slower)"
-    revision: PIN_ME
+    revision: f169b11e22de13617baa190a028a32f3493550b6
     default: false
     supported_languages: ["en"]
     embedding_dimension: 1024
@@ -55,7 +55,7 @@ models:
   - id: multilingual-e5-base
     provider_model_id: intfloat/multilingual-e5-base
     display_name: "Multilingual E5 Base (50+ languages)"
-    revision: PIN_ME
+    revision: d128750597153bb5987e10b1c3493a34e5a4502a
     default: false
     supported_language_set: xlm_roberta_100    # resolved in language_sets.py
     embedding_dimension: 768
@@ -86,7 +86,7 @@ models:
   - id: psyembedding-bert-large
     provider_model_id: Culture-and-Morality-Lab/psyembedding-bert-large-uncased
     display_name: "PsyEmbedding BERT Large (psychology fine-tune)"
-    revision: PIN_ME
+    revision: c5bd80df046c9fe92838b808f14bee34c8a329ae
     default: false
     supported_languages: ["en"]
     embedding_dimension: 1024
@@ -115,7 +115,7 @@ models:
   - id: psyembedding-roberta-large
     provider_model_id: Culture-and-Morality-Lab/psyembedding-roberta-large
     display_name: "PsyEmbedding RoBERTa Large (psychology fine-tune)"
-    revision: PIN_ME
+    revision: b50e9378e31661260958b3f6e1d086cde57ee292
     default: false
     supported_languages: ["en"]
     embedding_dimension: 1024
@@ -144,7 +144,7 @@ models:
   - id: psyembedding-gte-large
     provider_model_id: Culture-and-Morality-Lab/psyembedding-gte-large
     display_name: "PsyEmbedding GTE Large (psychology fine-tune)"
-    revision: PIN_ME
+    revision: cee3a9074921445843265ddbd42b7e156bc92b84
     default: false
     supported_languages: ["en"]
     embedding_dimension: 1024
@@ -173,7 +173,7 @@ models:
   - id: psyembedding-e5-large-v2
     provider_model_id: Culture-and-Morality-Lab/psyembedding-e5-large-v2
     display_name: "PsyEmbedding E5 Large v2 (psychology fine-tune)"
-    revision: PIN_ME
+    revision: fbaa37fe0432bf7620fd1baa20ed4f100b771f3b
     default: false
     supported_languages: ["en"]
     embedding_dimension: 1024
