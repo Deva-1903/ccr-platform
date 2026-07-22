@@ -92,6 +92,35 @@ def _default_literal(value, dialect_name: str) -> str:
     return "'" + str(value).replace("'", "''") + "'"
 
 
+def lock_down_public_schema(target_engine, metadata) -> list[str]:
+    """Enable Row-Level Security on every app table (Postgres only).
+
+    Supabase auto-exposes the public schema through its REST API (PostgREST):
+    any table WITHOUT RLS is readable AND writable by anyone holding the
+    project URL + anon key - which for this app would mean users (password
+    hashes), corpora, jobs, everything. This app never uses that REST API:
+    the backend talks to Postgres directly as the table owner, and owners
+    bypass RLS. So RLS-with-no-policies cleanly closes the public door
+    without touching app behavior (Supabase linter: rls_disabled_in_public).
+
+    Runs at every startup AFTER create_all, so tables added later are locked
+    down the day they appear, not when someone remembers. Idempotent.
+    """
+    import logging
+
+    from sqlalchemy import text
+
+    if target_engine.dialect.name != "postgresql":
+        return []  # SQLite has no exposed REST surface (and no RLS)
+    locked = []
+    with target_engine.begin() as conn:
+        for table in metadata.sorted_tables:
+            conn.execute(text(f'ALTER TABLE "{table.name}" ENABLE ROW LEVEL SECURITY'))
+            locked.append(table.name)
+    logging.getLogger("ccr.db").info("RLS enabled on: %s", ", ".join(locked))
+    return locked
+
+
 def auto_migrate_sqlite(target_engine, metadata) -> list[str]:
     """Add ORM columns missing from existing tables (additive only).
 

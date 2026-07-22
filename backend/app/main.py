@@ -30,7 +30,15 @@ from . import registry
 from .ccr import FAKE_MODEL_NAME
 from .construct_files import parse_construct_file
 from .construct_lib import sync_library
-from .db import DATA_DIR, Base, SessionLocal, auto_migrate_sqlite, engine, get_db
+from .db import (
+    DATA_DIR,
+    Base,
+    SessionLocal,
+    auto_migrate_sqlite,
+    engine,
+    get_db,
+    lock_down_public_schema,
+)
 from .ingest import IngestError, load_corpus, max_rows as corpus_max_rows, suggest_text_column
 from .models import AdminAudit, Construct, Corpus, Invite, Job, Project, RoleAssignment, User
 from .reproducibility import (
@@ -104,6 +112,7 @@ async def lifespan(_: FastAPI):
     """Create tables and sync the construct library (YAML source of truth) at startup."""
     Base.metadata.create_all(engine)
     auto_migrate_sqlite(engine, Base.metadata)  # additive column adds for existing dev DBs
+    lock_down_public_schema(engine, Base.metadata)  # Supabase: RLS on, REST surface closed
     registry.list_models()  # fail fast on an invalid models.yaml
     db = SessionLocal()
     try:

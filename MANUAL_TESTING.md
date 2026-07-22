@@ -164,6 +164,9 @@ Checklist before giving the URL to real users:
 - [ ] `CCR_COOKIE_SECURE=1` (HTTPS only)
 - [ ] `CCR_DATA_DIR` on a persistent volume (default /tmp is ephemeral)
 - [ ] `CCR_ANON_TTL_HOURS=24` (default in the image)
+- [ ] Supabase: RLS shows enabled on all public tables (the app enables it
+      automatically at startup; the Supabase dashboard linter should report
+      zero `rls_disabled_in_public` issues)
 - [ ] Smoke test: sections 2, 4, 6, 7 above
 
 ## 12. Admin page (/admin)
