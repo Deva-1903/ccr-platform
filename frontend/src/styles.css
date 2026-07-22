@@ -469,3 +469,25 @@ button.danger-solid:disabled { background: #c9ccd1; }
   .header .sub { flex-basis: 100%; }
   .stat-grid { grid-template-columns: 1fr; }
 }
+
+/* ------------------------------------------------------------- welcome */
+.welcome { padding-top: 1.2rem; }
+.welcome-hero h2 { margin: 0 0 .6rem; font-size: 1.45rem; }
+.welcome-hero p { max-width: 62ch; }
+.welcome-cta {
+  display: flex; gap: .9rem; align-items: center; flex-wrap: wrap;
+  margin: 1.1rem 0 .6rem;
+}
+.welcome-cta .ghost-link { font-size: .95rem; }
+.welcome-steps {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;
+}
+.welcome-step h3 { margin: .2rem 0 .3rem; }
+.step-n {
+  width: 1.9rem; height: 1.9rem; border-radius: 50%;
+  background: var(--maroon); color: #fff; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+@media (max-width: 700px) {
+  .welcome-steps { grid-template-columns: 1fr; }
+}

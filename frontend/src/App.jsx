@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { api } from "./api.js";
 import AdminPage from "./AdminPage.jsx";
+import WelcomePage from "./WelcomePage.jsx";
 import Workspace from "./Workspace.jsx";
 
 const IS_ADMIN_PATH = window.location.pathname === "/admin";
+// First visit lands on the welcome page; after "Open the dashboard" (or any
+// return visit) the root goes straight to work. /welcome always shows it.
+const WELCOME_SEEN_KEY = "ccr_welcome_seen";
+const IS_WELCOME_PATH = window.location.pathname === "/welcome";
 
 function relativeTime(iso) {
   if (!iso) return "";
@@ -56,6 +61,18 @@ export default function App() {
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
   const [inviteToken, setInviteToken] = useState("");
+  const [showWelcome, setShowWelcome] = useState(
+    IS_WELCOME_PATH ||
+      (!IS_ADMIN_PATH && !localStorage.getItem(WELCOME_SEEN_KEY))
+  );
+
+  function enterDashboard() {
+    localStorage.setItem(WELCOME_SEEN_KEY, "1");
+    if (window.location.pathname !== "/") {
+      window.history.replaceState({}, "", "/");
+    }
+    setShowWelcome(false);
+  }
 
   // Invite links carry their role in the signed payload; decode it for the
   // banner only - the server re-verifies the signature on registration.
@@ -91,6 +108,7 @@ export default function App() {
       setInviteToken(invite);
       setAuthMode("register");
       setShowLogin(true);
+      setShowWelcome(false); // invited people go straight to the signup form
     }
   }, []);
 
@@ -170,6 +188,11 @@ export default function App() {
           Contextualized Construct Representations · theory-driven psychological text analysis
         </span>
         <span className="header-auth">
+          {!showWelcome && (
+            <button className="header-btn" onClick={() => setShowWelcome(true)}>
+              About
+            </button>
+          )}
           {auth?.signed_in ? (
             <>
               <span className="small">Hi, {auth.name}</span>
@@ -295,6 +318,10 @@ export default function App() {
       {IS_ADMIN_PATH ? (
         <main className="main" style={{ maxWidth: 1100, margin: "0 auto", padding: "0 1rem" }}>
           <AdminPage auth={auth} />
+        </main>
+      ) : showWelcome ? (
+        <main className="main" style={{ maxWidth: 920, margin: "0 auto", padding: "0 1rem" }}>
+          <WelcomePage onEnter={enterDashboard} />
         </main>
       ) : (
       <div className="layout">

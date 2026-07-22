@@ -927,6 +927,17 @@ def admin_page():
     return FileResponse(index, media_type="text/html")
 
 
+@app.get("/welcome", include_in_schema=False)
+def welcome_page():
+    """Serve the SPA at /welcome; the frontend renders the landing page there
+    (what CCR is, who runs the platform, links to /guide and /product).
+    First-time visitors to / are shown it automatically."""
+    index = Path(__file__).resolve().parent.parent / "static" / "index.html"
+    if not index.exists():
+        raise HTTPException(404, "UI not built.")
+    return FileResponse(index, media_type="text/html")
+
+
 if SAMPLES_DIR.exists():
     app.mount("/samples", StaticFiles(directory=SAMPLES_DIR), name="samples")
 
