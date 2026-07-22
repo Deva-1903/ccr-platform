@@ -55,6 +55,19 @@ export default function App() {
   const [authName, setAuthName] = useState("");
   const [authError, setAuthError] = useState("");
   const [authBusy, setAuthBusy] = useState(false);
+  const [inviteToken, setInviteToken] = useState("");
+
+  // Invite links carry their role in the signed payload; decode it for the
+  // banner only - the server re-verifies the signature on registration.
+  const inviteRole = (() => {
+    if (!inviteToken) return null;
+    try {
+      const data = JSON.parse(atob(inviteToken.split(".")[0].replace(/-/g, "+").replace(/_/g, "/")));
+      return { lab: "lab member", external: "external user" }[data.invite] || null;
+    } catch {
+      return null;
+    }
+  })();
 
   const loadProjects = () =>
     api.listProjects().then(setProjects).catch((e) => setError(e.message));
@@ -70,6 +83,15 @@ export default function App() {
       setError(`Sign-in problem: ${authFail.replaceAll("-", " ")}.`);
       window.history.replaceState({}, "", "/");
     }
+    // Invite link (?invite=TOKEN): open the signup form with the token
+    // attached. The URL keeps the token until signup succeeds, so a page
+    // refresh doesn't lose the invite.
+    const invite = params.get("invite");
+    if (invite) {
+      setInviteToken(invite);
+      setAuthMode("register");
+      setShowLogin(true);
+    }
   }, []);
 
   async function handleAuthSubmit(e) {
@@ -78,7 +100,14 @@ export default function App() {
     setAuthBusy(true);
     try {
       if (authMode === "register") {
-        await api.register({ email: authEmail.trim(), password: authPassword, name: authName.trim() });
+        await api.register({
+          email: authEmail.trim(), password: authPassword, name: authName.trim(),
+          ...(inviteToken ? { invite_token: inviteToken } : {}),
+        });
+        if (inviteToken) {
+          setInviteToken("");
+          window.history.replaceState({}, "", "/"); // invite consumed
+        }
       } else {
         await api.login({ email: authEmail.trim(), password: authPassword });
       }
@@ -163,6 +192,12 @@ export default function App() {
         <div className="modal-backdrop" onClick={() => setShowLogin(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{authMode === "register" ? "Create an account" : "Sign in"}</h3>
+            {inviteToken && authMode === "register" && (
+              <p className="hint" style={{ fontWeight: 600 }}>
+                🎟 You've been invited{inviteRole ? ` as a ${inviteRole}` : ""} - create
+                your account below and the access comes with it.
+              </p>
+            )}
             <p className="hint">
               Accounts are free. Signing in lifts the anonymous limits
               {auth?.limits?.max_rows

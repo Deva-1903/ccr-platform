@@ -168,15 +168,38 @@ Checklist before giving the URL to real users:
 
 ## 12. Admin page (/admin)
 
-Requires `ADMIN_EMAILS` to include your signed-in email (see .env.example).
+Requires `ADMIN_EMAILS` to include your signed-in email (see .env.example),
+OR a pi/maintainer role. The env allowlist is bootstrap + break-glass; the
+PI role carries the same escalation rights in-app. The full access model is
+documented at /product.
 
-1. Sign in with an allowlisted account: an "Admin" link appears in the header;
-   non-admins (and signed-out visitors) see an access notice at /admin.
+1. Sign in with an allowlisted or staff account: an "Admin" link appears in
+   the header; non-admins (and signed-out visitors) see an access notice.
 2. Overview: account/run/project counters plus scales awaiting verification.
-3. Users: toggle a user to "lab" (their saved-run cap disappears - check
-   /api/auth/me shows max_saved_runs null), reset a password (temporary
-   password shown once; old one stops working), delete a user (removes all
-   their data; self-deletion refused).
+3. Users - four tiers (external user, lab member, maintainer, PI):
+   - Set a user to "lab member" or above: their saved-run cap disappears
+     (check /api/auth/me shows max_saved_runs null).
+   - Set a user to "maintainer" or "PI": they also get this admin page.
+   - Escalation needs PI or env-admin rights: a maintainer gets 403 on
+     granting pi/maintainer, and on resetting the password of, changing the
+     role of, or deleting a pi/maintainer account. A PI-by-role CAN do all
+     of that (no env entry needed). Nobody can change their own role.
+   - Reset a password (temporary password shown once; old one stops working),
+     delete a user (removes all their data; self-deletion refused).
+4. Access before sign-in:
+   - Pre-assign a role to an email (staff roles need PI/env rights): register
+     with that email afterwards - the account lands at that tier, the
+     assignment shows "claimed". Works for Google sign-ins too.
+   - Create an invite link (lab member or external only): open it in a
+     private window - the signup form announces the invite; registering
+     through it grants the role. Expired/garbage tokens refuse registration.
+5. Construct verification is maintainer-only: PI/env admins see the queue
+   read-only (no action buttons; the API returns 403), a maintainer can mark
+   scales verified. Statuses are applied back to the library YAML before
+   production.
+6. Audit trail (PI/env admins only; maintainers get 403 and don't see the
+   card): every role change, reset, deletion, invite, pre-assignment,
+   requeue, and verification appears with actor, target, and time.
 4. Failed runs: a failed job lists with its error tail; Requeue re-runs it
    (refused when the corpus file is already gone - anonymous retention).
 5. Verification: mark a scale Verified; its "unverified" flag disappears

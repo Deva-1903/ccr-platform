@@ -13,6 +13,7 @@ import json
 import os
 import uuid
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, UploadFile
@@ -31,7 +32,7 @@ from .construct_files import parse_construct_file
 from .construct_lib import sync_library
 from .db import DATA_DIR, Base, SessionLocal, auto_migrate_sqlite, engine, get_db
 from .ingest import IngestError, load_corpus, max_rows as corpus_max_rows, suggest_text_column
-from .models import Construct, Corpus, Job, Project, User
+from .models import AdminAudit, Construct, Corpus, Job, Project, RoleAssignment, User
 from .reproducibility import (
     requirements_filename,
     requirements_text,
@@ -255,13 +256,15 @@ def auth_me(
 ):
     if user:
         row = db.get(User, user["id"])
-        role = (row.role if row else None) or "member"
+        role = auth.normalize_role(row.role if row else None)
         return {
             "signed_in": True,
             "name": user["name"],
             "email": user["email"],
             "role": role,
-            "is_admin": auth.is_admin(user["email"]),
+            # effective admin: env allowlist OR staff role (pi/maintainer) -
+            # drives the Admin link in the header
+            "is_admin": auth.is_admin(user["email"]) or auth.role_is_staff(role),
             # max_rows is NOT unlimited for signed-in users: CCR_MAX_ROWS is a
             # global ingest ceiling and is usually the limit that actually
             # binds (deployed instances set it well below the byte ceiling).
@@ -270,8 +273,8 @@ def auth_me(
             "limits": {"max_bytes": max_upload_bytes(), "max_rows": corpus_max_rows()},
             "usage": {
                 "saved_runs": _saved_runs_used(db, user["id"]),
-                # lab accounts: unlimited saved runs (admin-granted role)
-                "max_saved_runs": None if role == "lab" else auth.user_max_saved_runs(),
+                # lab members and above: unlimited saved runs (admin-granted)
+                "max_saved_runs": None if auth.role_unlimited(role) else auth.user_max_saved_runs(),
             },
         }
     return {
@@ -287,6 +290,26 @@ def auth_me(
     }
 
 
+def _initial_role(db: Session, email: str, invite_token: str | None = None) -> str:
+    """Tier a brand-new account lands at. Precedence: an email-bound
+    pre-assignment (may carry staff roles - the 'credentials before first
+    sign-in' case) beats an invite link (bearer token, external/lab only)
+    beats the external default. Claiming is recorded in the audit trail."""
+    pre = db.query(RoleAssignment).filter_by(email=email).first()
+    if pre is not None and not pre.claimed_at:
+        pre.claimed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        role = auth.normalize_role(pre.role)
+        db.add(AdminAudit(actor_email=email, action="role_claimed", target=email,
+                          detail=f"pre-assigned {role} by {pre.assigned_by}"))
+        return role
+    invited = auth.verify_invite_token(invite_token)
+    if invited:
+        db.add(AdminAudit(actor_email=email, action="invite_redeemed",
+                          target=email, detail=invited))
+        return invited
+    return "external"
+
+
 @app.post("/api/auth/register", status_code=201)
 def register(body: RegisterIn, response: Response, db: Session = Depends(get_db)):
     email = body.email.strip().lower()
@@ -296,7 +319,16 @@ def register(body: RegisterIn, response: Response, db: Session = Depends(get_db)
         raise HTTPException(400, f"Password must be at least {auth.MIN_PASSWORD_LEN} characters.")
     if db.query(User).filter_by(email=email).first():
         raise HTTPException(409, "An account with this email already exists. Sign in instead.")
-    user = User(email=email, name=body.name.strip(), password_hash=auth.hash_password(body.password))
+    # A dead invite link should say so, not silently demote to external -
+    # unless a pre-assignment covers the email anyway.
+    has_preassignment = db.query(RoleAssignment).filter_by(email=email).first() is not None
+    if body.invite_token and not auth.verify_invite_token(body.invite_token) and not has_preassignment:
+        raise HTTPException(400, "This invite link is invalid or has expired. Ask for a new one.")
+    user = User(
+        email=email, name=body.name.strip(),
+        password_hash=auth.hash_password(body.password),
+        role=_initial_role(db, email, body.invite_token),
+    )
     db.add(user)
     db.commit()
     _set_session_cookie(response, user)
@@ -356,8 +388,10 @@ def google_callback(request: Request, code: str = "", db: Session = Depends(get_
     user = db.query(User).filter_by(email=info["email"]).first()
     if user is None:
         # Google-verified account: no local password (password login is refused
-        # with a pointer to the Google button).
-        user = User(email=info["email"], name=info["name"], password_hash="")
+        # with a pointer to the Google button). Pre-assigned roles apply here
+        # too - the "credentials before first sign-in" path works either way.
+        user = User(email=info["email"], name=info["name"], password_hash="",
+                    role=_initial_role(db, info["email"].strip().lower()))
         db.add(user)
         db.commit()
 
@@ -677,9 +711,9 @@ def create_job(
             )
     else:
         # Signed-in tier: saved-run cap instead of deletion (their data, their
-        # call). Lab-role accounts (admin-granted) are uncapped.
+        # call). Lab members and above (admin-granted roles) are uncapped.
         row = db.get(User, user["id"])
-        if (row.role if row else "member") != "lab" and (
+        if not auth.role_unlimited(row.role if row else None) and (
             _saved_runs_used(db, user["id"]) >= auth.user_max_saved_runs()
         ):
             raise HTTPException(
@@ -838,6 +872,20 @@ def testing_guide():
     if not GUIDE_HTML.exists():
         raise HTTPException(404, "Guide not available on this instance.")
     return FileResponse(GUIDE_HTML, media_type="text/html")
+
+
+# /product: the under-the-hood companion to /guide - access model (tiers,
+# invites, pre-assignments, audit), architecture, data flow, retention.
+# The guide stays a how-to-use-and-test document; this page holds the
+# product/architecture detail (split requested 2026-07-22).
+PRODUCT_HTML = Path(__file__).resolve().parent / "product.html"
+
+
+@app.get("/product", include_in_schema=False)
+def product_page():
+    if not PRODUCT_HTML.exists():
+        raise HTTPException(404, "Product page not available on this instance.")
+    return FileResponse(PRODUCT_HTML, media_type="text/html")
 
 
 @app.get("/admin", include_in_schema=False)

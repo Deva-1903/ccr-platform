@@ -29,10 +29,49 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(120), default="")
     password_hash: Mapped[str] = mapped_column(Text)  # scrypt$salt$digest (auth.py)
-    role: Mapped[str] = mapped_column(String(16), default="member")  # member | lab
-    # "lab" = unlimited saved runs (set via /admin). Admins are NOT a DB role:
-    # admin access is granted by the ADMIN_EMAILS env allowlist (auth.is_admin).
+    role: Mapped[str] = mapped_column(String(16), default="external")
+    # external | lab | maintainer | pi (auth.ROLES; legacy "member" reads as
+    # external). lab+ = unlimited saved runs; maintainer/pi also get /admin.
+    # Staff roles are grantable only by ADMIN_EMAILS env-allowlisted admins
+    # (admin.py guards), so the API cannot self-escalate; the env allowlist
+    # remains the bootstrap and break-glass admin path.
     created_at: Mapped[str] = mapped_column(String(32), default=_now)
+
+
+class RoleAssignment(Base):
+    """Pre-provisioned access: a role bound to an email BEFORE the account
+    exists (PI request 2026-07-22 - e.g. an external collaborator who must
+    land with full credentials on first sign-in, Google or password).
+
+    Unlike invite links (bearer tokens, external/lab only), assignments are
+    email-bound and may carry staff roles - so creating one for pi/maintainer
+    requires escalation rights. Claimed rows are kept as history."""
+
+    __tablename__ = "role_assignments"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    role: Mapped[str] = mapped_column(String(16))
+    assigned_by: Mapped[str] = mapped_column(String(255), default="")
+    created_at: Mapped[str] = mapped_column(String(32), default=_now)
+    claimed_at: Mapped[str] = mapped_column(String(32), default="")  # "" = pending
+
+
+class AdminAudit(Base):
+    """Append-only trail of admin actions (who did what to whom, when).
+
+    What makes multiple admins trustworthy: role grants, password resets,
+    deletions, invites, requeues, and verification changes all land here.
+    Never updated or deleted from the app."""
+
+    __tablename__ = "admin_audit"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    at: Mapped[str] = mapped_column(String(32), default=_now)
+    actor_email: Mapped[str] = mapped_column(String(255))
+    action: Mapped[str] = mapped_column(String(40))  # e.g. set_role, invite_created
+    target: Mapped[str] = mapped_column(String(300), default="")  # email/name acted on
+    detail: Mapped[str] = mapped_column(Text, default="")
 
 
 class Project(Base):

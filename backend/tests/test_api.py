@@ -78,6 +78,13 @@ def test_health(client):
     assert client.get("/api/health").json()["status"] == "ok"
 
 
+def test_guide_and_product_pages_served(client):
+    for path in ("/guide", "/product"):
+        resp = client.get(path)
+        assert resp.status_code == 200, path
+        assert "text/html" in resp.headers["content-type"]
+
+
 def test_seed_constructs_present(client):
     names = {c["name"] for c in client.get("/api/constructs").json()}
     assert "Satisfaction with Life" in names

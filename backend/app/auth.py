@@ -77,14 +77,51 @@ def cookies_secure() -> bool:
 
 
 def admin_emails() -> set[str]:
-    """Comma-separated allowlist; admin is an env-granted capability, not a DB
-    role, so a compromised database cannot mint admins."""
+    """Comma-separated allowlist; env-granted, so it bootstraps the first
+    admin and can never be locked out by DB state. See roles below for the
+    DB-granted staff tiers (PI decision 2026-07-22)."""
     raw = os.environ.get("ADMIN_EMAILS", "")
     return {e.strip().lower() for e in raw.split(",") if e.strip()}
 
 
 def is_admin(email: str | None) -> bool:
     return bool(email) and email.strip().lower() in admin_emails()
+
+
+# ------------------------------------------------------------- user roles
+# Four tiers (PI decision 2026-07-22): pi | maintainer | lab | external.
+#   * external   - default on signup; saved-run cap applies.
+#   * lab        - lab members: unlimited saved runs.
+#   * maintainer - lab privileges + the /admin operational surface
+#                  (user management for lab/external, resets, requeue,
+#                  verification queue, invites).
+#   * pi         - maintainer surface + escalation rights: grant/revoke
+#                  staff roles and act on staff accounts. The app is
+#                  self-governing; ADMIN_EMAILS is bootstrap + break-glass
+#                  only (seed the first PI, recover a locked-out lab).
+# Escalation therefore requires pi-or-env-admin (admin.py guards), so a
+# maintainer - or a compromised maintainer session - cannot mint staff.
+ROLES = ("external", "lab", "maintainer", "pi")
+UNLIMITED_ROLES = frozenset({"lab", "maintainer", "pi"})
+STAFF_ROLES = frozenset({"maintainer", "pi"})
+INVITABLE_ROLES = frozenset({"external", "lab"})  # staff is granted, never invited
+
+
+def normalize_role(role: str | None) -> str:
+    """Map stored roles to the current scheme ('member' predates 'external')."""
+    role = (role or "").strip().lower()
+    if role == "member":
+        return "external"
+    return role if role in ROLES else "external"
+
+
+def role_unlimited(role: str | None) -> bool:
+    """Lab members and above: no saved-run cap."""
+    return normalize_role(role) in UNLIMITED_ROLES
+
+
+def role_is_staff(role: str | None) -> bool:
+    return normalize_role(role) in STAFF_ROLES
 
 
 # ---------------------------------------------------------- passwords
@@ -150,8 +187,44 @@ def get_current_user(request: Request) -> dict | None:
         "id": data["uid"],
         "email": data.get("email", ""),
         "name": data.get("name", ""),
-        "tier": "member",
+        # placeholder only - real role lives in the users table (queried per
+        # request in main.py/admin.py so role changes apply without re-login)
+        "tier": "external",
     }
+
+
+# ------------------------------------------------------------ invite links
+# Signed, expiring tokens the PI copies into Slack; whoever registers through
+# one lands at the invited tier instead of external. Stateless (no DB row):
+# the cost is that an invite cannot be revoked before it expires - acceptable
+# for a 7-day lab onboarding link, and every creation/redemption is audited.
+INVITE_TTL_DAYS_DEFAULT = 7
+
+
+def invite_ttl_days() -> int:
+    return int(os.environ.get("CCR_INVITE_TTL_DAYS", INVITE_TTL_DAYS_DEFAULT))
+
+
+def create_invite_token(role: str, invited_by: str) -> tuple[str, str]:
+    """Returns (token, expires_at ISO date). Role must be invitable."""
+    from datetime import timedelta
+
+    role = normalize_role(role)
+    if role not in INVITABLE_ROLES:
+        raise ValueError(f"Only these roles can be invited: {', '.join(sorted(INVITABLE_ROLES))}.")
+    expires = (datetime.now(timezone.utc) + timedelta(days=invite_ttl_days())).date().isoformat()
+    return sign_payload({"invite": role, "by": invited_by, "exp": expires}), expires
+
+
+def verify_invite_token(token: str | None) -> str | None:
+    """Role granted by a valid, unexpired invite token; None otherwise."""
+    data = verify_payload(token)
+    if not data or "invite" not in data:
+        return None
+    if str(data.get("exp", "")) < datetime.now(timezone.utc).date().isoformat():
+        return None  # expired (dates are ISO, so string compare is correct)
+    role = normalize_role(str(data["invite"]))
+    return role if role in INVITABLE_ROLES else None
 
 
 # ------------------------------------------- anonymous daily run counter

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCR Platform - Product &amp; Architecture</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
+    --accent: #2456a6; --card: #f7f7f8; --amber-bg: #fff7e0; --amber-border: #e0b84d;
+    --code-bg: #f0f0f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c; --fg: #e6e6e6; --muted: #9a9a9a; --border: #3a3d44;
+      --accent: #7aa7e8; --card: #1f2228; --amber-bg: #2e2810; --amber-border: #8a6d1f;
+      --code-bg: #24272e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1 { font-size: 1.7rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1.25rem; margin: 2.2rem 0 .6rem; padding-top: .6rem; border-top: 1px solid var(--border); }
+  h3 { font-size: 1.02rem; margin: 1.2rem 0 .4rem; }
+  p, li { color: var(--fg); }
+  .sub { color: var(--muted); margin: 0 0 1.2rem; }
+  a { color: var(--accent); }
+  code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+  .note {
+    background: var(--amber-bg); border: 1px solid var(--amber-border);
+    border-radius: 8px; padding: .8rem 1rem; margin: 1rem 0;
+  }
+  .note b { display: block; margin-bottom: .25rem; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: .8rem 0; font-size: .93rem; }
+  th, td { border: 1px solid var(--border); padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: var(--card); }
+  ol li, ul li { margin: .3rem 0; }
+  .top { position: fixed; right: 1rem; bottom: 1rem; background: var(--card);
+    border: 1px solid var(--border); border-radius: 8px; padding: .4rem .7rem;
+    text-decoration: none; font-size: .85rem; }
+  figure { margin: 1rem 0 1.4rem; }
+  figure svg { width: 100%; height: auto; border: 1px solid var(--border);
+    border-radius: 8px; background: var(--card); }
+  figcaption { color: var(--muted); font-size: .85rem; margin-top: .4rem; }
+  .box { fill: var(--bg); stroke: var(--border); stroke-width: 1.5; }
+  .box-accent { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .lbl { fill: var(--fg); font: 600 13px sans-serif; }
+  .lbl-sm { fill: var(--muted); font: 11px sans-serif; }
+  .flow { stroke: var(--muted); stroke-width: 1.5; fill: none; marker-end: url(#arw); }
+  h2[id], h3[id] { scroll-margin-top: 1rem; }
+  .anchor {
+    opacity: 0; text-decoration: none; color: var(--muted); font-weight: 400;
+    margin-left: .4rem; cursor: pointer; transition: opacity .12s;
+  }
+  h2:hover .anchor, h3:hover .anchor, .anchor:focus { opacity: .7; }
+  .anchor:hover { opacity: 1; color: var(--accent); }
+  :target { animation: flash 1.4s ease-out; }
+  @keyframes flash {
+    from { background: var(--amber-bg); }
+    to   { background: transparent; }
+  }
+  .toast {
+    position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
+    background: var(--accent); color: #fff; padding: .5rem .9rem; border-radius: 8px;
+    font-size: .85rem; opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .toast.show { opacity: 1; }
+  .yes { color: var(--accent); font-weight: 600; }
+  .no { color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) {
+    :target { animation: none; }
+    .anchor { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>CCR Platform - Product &amp; Architecture</h1>
+<p class="sub">The under-the-hood companion to the <a href="/guide">testing guide</a>:
+who can do what, how access is governed, what runs where, and the engineering
+decisions behind it. The guide tells you how to <em>use</em> the platform; this
+page tells you how it <em>works</em>.</p>
+
+<h2 id="access">1. Access model: four tiers + break-glass</h2>
+<p>Every account has one of four roles. New sign-ups land as <b>external user</b>
+unless an invite link or a pre-assigned role says otherwise (see
+<a href="#prelogin">§2</a>). Roles are managed entirely in the app, on the
+<code>/admin</code> page - no server configuration involved.</p>
+
+<figure>
+<svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Access model: env allowlist and PI hold escalation rights over maintainer, who manages lab members and external users. Every action is audited.">
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <!-- top row: escalation holders -->
+  <rect class="box" x="40" y="20" width="230" height="64" rx="8" stroke-dasharray="5,4"/>
+  <text class="lbl" x="155" y="44" text-anchor="middle">ADMIN_EMAILS (env)</text>
+  <text class="lbl-sm" x="155" y="62" text-anchor="middle">bootstrap + break-glass only</text>
+  <rect class="box-accent" x="330" y="20" width="180" height="64" rx="8"/>
+  <text class="lbl" x="420" y="44" text-anchor="middle">PI</text>
+  <text class="lbl-sm" x="420" y="62" text-anchor="middle">runs the team from /admin</text>
+  <rect class="box" x="560" y="20" width="170" height="64" rx="8"/>
+  <text class="lbl" x="645" y="44" text-anchor="middle">Audit trail</text>
+  <text class="lbl-sm" x="645" y="62" text-anchor="middle">every action recorded</text>
+  <!-- escalation arrows -->
+  <path class="flow" d="M155,84 L155,120 L330,150"/>
+  <path class="flow" d="M420,84 L420,148"/>
+  <text class="lbl-sm" x="440" y="115">grant / revoke any role,</text>
+  <text class="lbl-sm" x="440" y="130">act on staff accounts</text>
+  <!-- maintainer -->
+  <rect class="box-accent" x="330" y="150" width="180" height="64" rx="8"/>
+  <text class="lbl" x="420" y="174" text-anchor="middle">Maintainer</text>
+  <text class="lbl-sm" x="420" y="192" text-anchor="middle">operations + construct verification</text>
+  <!-- maintainer arrows -->
+  <path class="flow" d="M420,214 L420,248"/>
+  <text class="lbl-sm" x="440" y="238">manage lab / external, invites,</text>
+  <text class="lbl-sm" x="440" y="253">resets, requeues</text>
+  <!-- bottom row -->
+  <rect class="box" x="180" y="250" width="180" height="60" rx="8"/>
+  <text class="lbl" x="270" y="274" text-anchor="middle">Lab member</text>
+  <text class="lbl-sm" x="270" y="292" text-anchor="middle">unlimited saved runs</text>
+  <rect class="box" x="400" y="250" width="180" height="60" rx="8"/>
+  <text class="lbl" x="490" y="274" text-anchor="middle">External user</text>
+  <text class="lbl-sm" x="490" y="292" text-anchor="middle">saved-run cap (15)</text>
+</svg>
+<figcaption>Escalation flows top-down only: PIs (and the env allowlist, as recovery)
+manage staff; maintainers manage members; nobody can raise their own role. The
+audit trail sees everything.</figcaption>
+</figure>
+
+<h3 id="matrix">Capability matrix</h3>
+<div class="tablewrap">
+<table>
+  <tr><th>Capability</th><th>Signed out</th><th>External user</th><th>Lab member</th><th>Maintainer</th><th>PI</th></tr>
+  <tr><td>Run analyses</td><td>3/day, data deleted after</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+  <tr><td>Saved runs</td><td class="no">none kept</td><td>15</td><td class="yes">unlimited</td><td class="yes">unlimited</td><td class="yes">unlimited</td></tr>
+  <tr><td>/admin: manage lab &amp; external users, password resets, requeue failed runs, invites, pre-assignments</td><td class="no">-</td><td class="no">-</td><td class="no">-</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+  <tr><td>Construct verification (mark scales verified)</td><td class="no">-</td><td class="no">-</td><td class="no">-</td><td class="yes">✓ their job</td><td class="no">queue visible, read-only</td></tr>
+  <tr><td>Grant/revoke PI &amp; maintainer; act on staff accounts</td><td class="no">-</td><td class="no">-</td><td class="no">-</td><td class="no">-</td><td class="yes">✓</td></tr>
+  <tr><td>Audit trail (who did what, when)</td><td class="no">-</td><td class="no">-</td><td class="no">-</td><td class="no">-</td><td class="yes">✓</td></tr>
+</table>
+</div>
+<p>Two deliberate asymmetries: <b>verification belongs to maintainers</b> - the
+trail then names the responsible RA, not whichever admin clicked - while
+<b>oversight belongs to the PI</b>, who sees everything (including the audit
+trail) but delegates the hands-on QA. And <b>nobody can change their own
+role</b>, so no session can quietly climb the ladder.</p>
+
+<div class="note">
+  <b>Break-glass: the ADMIN_EMAILS environment variable</b>
+  A short server-side allowlist holds the same powers as the PI role. It exists
+  for exactly two reasons: seeding the very first PI (someone has to grant the
+  first role) and recovering a locked-out lab. Day-to-day it should be one
+  entry - the developer - and everything else lives in the app.
+</div>
+
+<h2 id="prelogin">2. Access before first sign-in</h2>
+<p>Three ways someone has the right access <em>before</em> they ever log in,
+in increasing order of privilege:</p>
+<ol>
+  <li><b>Anonymous use</b> - no account at all: 3 runs/day, small files, uploads
+      deleted right after analysis. The zero-commitment trial tier.</li>
+  <li><b>Invite links</b> - a signed URL an admin copies from /admin into Slack
+      or an email. Whoever registers through it lands as a <b>lab member</b> (or
+      external user). Bearer-style: anyone with the link can use it, so it only
+      carries non-staff roles and expires after 7 days. It cannot be revoked
+      early (it is stateless by design); creation and every redemption are audited.</li>
+  <li><b>Pre-assigned roles</b> - a role bound to a <em>specific email</em>
+      before the account exists. When that person first signs in - password or
+      Google - they land at the assigned tier, staff roles included. This is how
+      an external collaborator gets full credentials on day one: pre-assign
+      <code>maintainer</code> to their email, send them the URL, done. Staff
+      pre-assignments require PI (or break-glass) rights, are listed as pending
+      until claimed, and can be removed any time before the claim.</li>
+</ol>
+
+<h2 id="architecture">3. How it works (architecture &amp; data flow)</h2>
+<p>The whole system is deliberately simple: one application, a few managed
+services around it, and no third-party AI APIs — the embedding models run on
+our own server, so uploaded text never leaves the platform.</p>
+
+<h3>What runs where</h3>
+<figure>
+<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Architecture: browser talks to one app container, which uses Postgres, R2, and Supabase/Google auth.">
+  <defs>
+    <marker id="arw3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <!-- browser -->
+  <rect class="box" x="20" y="120" width="150" height="60" rx="8"/>
+  <text class="lbl" x="95" y="147" text-anchor="middle">Your browser</text>
+  <text class="lbl-sm" x="95" y="165" text-anchor="middle">the web interface</text>
+  <!-- app container -->
+  <rect class="box-accent" x="270" y="90" width="220" height="120" rx="10"/>
+  <text class="lbl" x="380" y="115" text-anchor="middle">One app container</text>
+  <text class="lbl-sm" x="380" y="135" text-anchor="middle">API + interface (FastAPI/React)</text>
+  <text class="lbl-sm" x="380" y="152" text-anchor="middle">embedding models run here</text>
+  <text class="lbl-sm" x="380" y="169" text-anchor="middle">(MiniLM, E5) — no external AI</text>
+  <text class="lbl-sm" x="380" y="190" text-anchor="middle">hosted on Hugging Face</text>
+  <!-- stores -->
+  <rect class="box" x="590" y="30" width="150" height="52" rx="8"/>
+  <text class="lbl" x="665" y="52" text-anchor="middle">Postgres</text>
+  <text class="lbl-sm" x="665" y="69" text-anchor="middle">records (Supabase)</text>
+  <rect class="box" x="590" y="124" width="150" height="52" rx="8"/>
+  <text class="lbl" x="665" y="146" text-anchor="middle">Object storage</text>
+  <text class="lbl-sm" x="665" y="163" text-anchor="middle">files (Cloudflare R2)</text>
+  <rect class="box" x="590" y="218" width="150" height="52" rx="8"/>
+  <text class="lbl" x="665" y="240" text-anchor="middle">Sign-in</text>
+  <text class="lbl-sm" x="665" y="257" text-anchor="middle">Google / Supabase</text>
+  <!-- arrows -->
+  <path class="flow" style="marker-end:url(#arw3)" d="M170,150 L268,150"/>
+  <path class="flow" style="marker-end:url(#arw3)" d="M492,140 L588,58"/>
+  <path class="flow" style="marker-end:url(#arw3)" d="M492,150 L588,150"/>
+  <path class="flow" style="marker-end:url(#arw3)" d="M492,162 L588,244"/>
+</svg>
+<figcaption>The interface, the API, and the embedding models all live in one
+container. Around it: a persistent database for records, object storage for
+uploaded files, and Google/Supabase for sign-in. Every piece is on a free tier.</figcaption>
+</figure>
+
+<h3>What happens during a run</h3>
+<figure>
+<svg viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Data flow: upload, quality checks, embed items and texts, cosine similarity, scores, results and exports.">
+  <defs>
+    <marker id="arw2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <g>
+    <rect class="box" x="15" y="30" width="120" height="54" rx="8"/>
+    <text class="lbl-sm" x="75" y="52" text-anchor="middle">1. Upload</text>
+    <text class="lbl-sm" x="75" y="68" text-anchor="middle">corpus + construct</text>
+
+    <rect class="box" x="165" y="30" width="120" height="54" rx="8"/>
+    <text class="lbl-sm" x="225" y="52" text-anchor="middle">2. Quality checks</text>
+    <text class="lbl-sm" x="225" y="68" text-anchor="middle">language, warnings</text>
+
+    <rect class="box-accent" x="315" y="30" width="130" height="54" rx="8"/>
+    <text class="lbl-sm" x="380" y="52" text-anchor="middle">3. Embed both</text>
+    <text class="lbl-sm" x="380" y="68" text-anchor="middle">items &amp; texts, one model</text>
+
+    <rect class="box-accent" x="475" y="30" width="130" height="54" rx="8"/>
+    <text class="lbl-sm" x="540" y="52" text-anchor="middle">4. Cosine similarity</text>
+    <text class="lbl-sm" x="540" y="68" text-anchor="middle">text × each item</text>
+
+    <rect class="box" x="635" y="30" width="110" height="54" rx="8"/>
+    <text class="lbl-sm" x="690" y="52" text-anchor="middle">5. CCR score</text>
+    <text class="lbl-sm" x="690" y="68" text-anchor="middle">mean of items</text>
+
+    <rect class="box" x="240" y="120" width="280" height="50" rx="8"/>
+    <text class="lbl-sm" x="380" y="141" text-anchor="middle">6. Results: distributions, per-item loadings,</text>
+    <text class="lbl-sm" x="380" y="157" text-anchor="middle">top/bottom texts + CSV, metadata, repro script</text>
+  </g>
+  <path class="flow" style="marker-end:url(#arw2)" d="M135,57 L163,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M285,57 L313,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M445,57 L473,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M605,57 L633,57"/>
+  <path class="flow" style="marker-end:url(#arw2)" d="M690,84 L690,120 L522,145"/>
+</svg>
+<figcaption>CCR in one line: embed the validated scale items and your texts with
+the <em>same</em> model, then each text's cosine similarity to the items is its
+loading; the mean across items is the CCR score. It is deterministic embeddings
+plus arithmetic — no LLM, no prompting, no randomness.</figcaption>
+</figure>
+
+<h3>Where your data lives (and for how long)</h3>
+<ul>
+  <li><b>Records</b> (account, projects, run results and summaries) → the Postgres
+      database. Persistent, backed up.</li>
+  <li><b>Uploaded files</b> → object storage. Signed-in users' files persist;
+      anonymous uploads are deleted the moment their analysis finishes.</li>
+  <li><b>Anonymous sessions</b> are wiped entirely after 24&nbsp;hours; nothing you
+      upload anonymously is kept.</li>
+  <li><b>Reproducibility</b>: every run also records the exact model version, an
+      item-wording hash, and package versions, so the downloadable script
+      reproduces the numbers on any machine.</li>
+</ul>
+
+<h3>A few engineering choices worth knowing</h3>
+<ul>
+  <li><b>Same model for items and texts</b>, always — mixing models makes scores
+      non-comparable, so the platform records the model on every run and warns you.</li>
+  <li><b>MiniLM is the default</b> because it is the reference model in the published
+      CCR work; the stronger E5 models are available and clearly labelled.</li>
+  <li><b>Re-running a new construct on the same corpus is near-instant</b> — the
+      text embeddings are cached and reused (identical every time), so only the
+      cheap similarity step repeats.</li>
+  <li><b>Warnings never silently "fix" your data</b> — the platform surfaces issues
+      (wrong language, truncation, duplicates) and lets you decide.</li>
+  <li><b>Admin power is layered, not global</b> — see <a href="#access">§1</a>:
+      operations are delegated to maintainers, escalation stays with the PI, and
+      one env variable exists purely as the fire escape.</li>
+</ul>
+
+<h2 id="feedback">4. Questions?</h2>
+<p>For how-to and testing scenarios, see the <a href="/guide">testing guide</a>.
+Anything unclear on this page - post in the lab's <b>#ccr Slack channel</b> or email
+<a href="mailto:devaanand@umass.edu">devaanand@umass.edu</a>.</p>
+
+</main>
+<a class="top" href="#">↑ Top</a>
+<div class="toast" id="toast" role="status" aria-live="polite">Link copied</div>
+<script>
+(function () {
+  var toast = document.getElementById('toast'), timer;
+  function ping(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(timer);
+    timer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+  }
+  function share(id) {
+    if (history.replaceState) history.replaceState(null, '', '#' + id);
+    location.hash = id;
+    var url = location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () { ping('Section link copied'); },
+        function () { ping('Link in address bar'); }
+      );
+    } else {
+      ping('Link in address bar');
+    }
+  }
+  var heads = document.querySelectorAll('h2[id], h3[id]');
+  Array.prototype.forEach.call(heads, function (h) {
+    var a = document.createElement('a');
+    a.className = 'anchor';
+    a.href = '#' + h.id;
+    a.textContent = '#';
+    a.setAttribute('aria-label', 'Copy link to this section');
+    a.addEventListener('click', function (e) { e.preventDefault(); share(h.id); });
+    h.appendChild(a);
+    h.style.cursor = 'pointer';
+    h.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') return;
+      share(h.id);
+    });
+  });
+})();
+</script>
+</body>
+</html>
