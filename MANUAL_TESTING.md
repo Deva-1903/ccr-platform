@@ -93,9 +93,12 @@ old result pages don't update.
 3. Downloads: results CSV (input columns + sim_item_N + ccr_score), metadata
    JSON (model revision, construct snapshot + item hash, language block,
    environment pins), reproduction script + requirements file.
-4. Reproduction check: `pip install -r requirements-repro.txt`, then
-   `python reproduce_analysis.py your_corpus.csv` on a machine with no platform
-   access; values should match the export (target ~1e-5 with real models).
+4. Reproduction check: both downloads carry your run's id, e.g.
+   `pip install -r requirements-repro_<run-id>.txt`, then
+   `python reproduce_analysis_<run-id>.py your_corpus.csv` on a machine with no
+   platform access; the exact commands (with your run id and CSV name) are in
+   the script's header. Values should match the export (target ~1e-5 with real
+   models).
 
 ## 6. Accounts
 

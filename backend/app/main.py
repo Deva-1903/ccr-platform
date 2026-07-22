@@ -32,7 +32,12 @@ from .construct_lib import sync_library
 from .db import DATA_DIR, Base, SessionLocal, auto_migrate_sqlite, engine, get_db
 from .ingest import IngestError, load_corpus, max_rows as corpus_max_rows, suggest_text_column
 from .models import Construct, Corpus, Job, Project, User
-from .reproducibility import requirements_text, script_text
+from .reproducibility import (
+    requirements_filename,
+    requirements_text,
+    script_filename,
+    script_text,
+)
 from .schemas import (
     ConstructCreate,
     ConstructOut,
@@ -800,7 +805,7 @@ def export_script(job_id: str, db: Session = Depends(get_db)):
         script_text(json.loads(job.metadata_json)),
         media_type="text/x-python",
         headers={
-            "Content-Disposition": f'attachment; filename="reproduce_analysis_{job_id[:8]}.py"'
+            "Content-Disposition": f'attachment; filename="{script_filename(job_id)}"'
         },
     )
 
@@ -814,7 +819,7 @@ def export_script_requirements(job_id: str, db: Session = Depends(get_db)):
         requirements_text(json.loads(job.metadata_json)),
         media_type="text/plain",
         headers={
-            "Content-Disposition": f'attachment; filename="requirements-repro_{job_id[:8]}.txt"'
+            "Content-Disposition": f'attachment; filename="{requirements_filename(job_id)}"'
         },
     )
 

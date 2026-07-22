@@ -257,9 +257,11 @@ pages don't update.</p>
   <li>Downloads: results CSV (input columns + sim_item_N + ccr_score), metadata JSON
       (model revision, construct snapshot + item hash, language block, environment pins),
       reproduction script + requirements file.</li>
-  <li>Reproduction check: <code>pip install -r requirements-repro.txt</code>, then
-      <code>python reproduce_analysis.py your_corpus.csv</code> on a machine with no
-      platform access; values should match the export (target ~1e-5 with real models).</li>
+  <li>Reproduction check: both downloads carry your run's id, e.g.
+      <code>pip install -r requirements-repro_&lt;run-id&gt;.txt</code>, then
+      <code>python reproduce_analysis_&lt;run-id&gt;.py your_corpus.csv</code> on a machine
+      with no platform access; the exact commands (with your run id and CSV name) are in
+      the script's header. Values should match the export (target ~1e-5 with real models).</li>
 </ol>
 
 <h2 id="accounts">6. Accounts</h2>

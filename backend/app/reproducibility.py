@@ -7,7 +7,29 @@ input CSV + Python + internet for the (pinned) model download. No platform crede
 
 from __future__ import annotations
 
-import json
+
+def script_filename(job_id: str | None) -> str:
+    """Download name for the repro script. Single source of truth: the script's
+    embedded usage instructions must match the Content-Disposition filename."""
+    return f"reproduce_analysis_{job_id[:8]}.py" if job_id else "reproduce_analysis.py"
+
+
+def requirements_filename(job_id: str | None) -> str:
+    return f"requirements-repro_{job_id[:8]}.txt" if job_id else "requirements-repro.txt"
+
+
+def _items_literal(items: list[dict]) -> str:
+    """Python (not JSON) literal for the ITEMS list. json.dumps is tempting but
+    emits lowercase true/false - valid Python *syntax* (bare identifiers), so it
+    survives compile() checks, then NameErrors the moment the script runs."""
+    if not items:
+        return "[]"
+    lines = ["["]
+    for i in items:
+        rev = bool(i.get("reverse_scored", False))
+        lines.append(f'    {{"text": {i["text"]!r}, "reverse_scored": {rev}}},')
+    lines.append("]")
+    return "\n".join(lines)
 
 
 def _pinned_requirements(metadata: dict) -> list[str]:
@@ -26,7 +48,7 @@ def _pinned_requirements(metadata: dict) -> list[str]:
 def requirements_text(metadata: dict) -> str:
     lines = [
         "# Reproduction environment for CCR run " + metadata.get("job_id", "?"),
-        "# Install: pip install -r requirements-repro.txt",
+        f"# Install: pip install -r {requirements_filename(metadata.get('job_id'))}",
     ]
     recorded = metadata.get("environment_pins")
     lines += recorded if recorded else _pinned_requirements(metadata)
@@ -69,10 +91,14 @@ def script_text(metadata: dict) -> str:
     text_column = metadata.get("text_column", "text")
     scoring = metadata.get("scoring", {})
 
-    items_literal = json.dumps(
-        [{"text": i["text"], "reverse_scored": i.get("reverse_scored", False)} for i in items],
-        indent=4, ensure_ascii=False,
-    )
+    items_literal = _items_literal(items)
+
+    # Instructions must name the files exactly as they download (run-id suffix
+    # and all) and use the corpus the run actually analyzed as the example arg.
+    script_name = script_filename(metadata.get("job_id"))
+    reqs_name = requirements_filename(metadata.get("job_id"))
+    corpus_csv = metadata.get("corpus_file") or "your_corpus.csv"
+    corpus_arg = f'"{corpus_csv}"' if any(c.isspace() for c in corpus_csv) else corpus_csv
 
     return f'''#!/usr/bin/env python3
 """Reproduce CCR analysis independently of the platform.
@@ -86,8 +112,8 @@ model:                 {model_id} -> {provider} (revision: {revision or "unpinne
 scoring:               adjustment_strategy={scoring.get("adjustment_strategy", "none")}, aggregate={scoring.get("aggregate", "mean_all_items")}
 
 Usage:
-    pip install -r requirements-repro.txt
-    python reproduce_analysis.py your_corpus.csv
+    pip install -r {reqs_name}
+    python {script_name} {corpus_arg}
 Outputs reproduced_results.csv with the same similarity columns as the platform export.
 """
 
@@ -130,6 +156,6 @@ def main(csv_path: str) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        raise SystemExit("Usage: python reproduce_analysis.py <corpus.csv>")
+        raise SystemExit("Usage: python {script_name} <corpus.csv>")
     main(sys.argv[1])
 '''

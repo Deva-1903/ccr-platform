@@ -256,19 +256,45 @@ def test_short_text_and_model_language_warnings(client, flow):
 
 # --------------------------------------------------- spec 0002: script export
 def test_script_export_is_valid_offline_python(client, flow):
+    import ast
+
     job_id = flow["job"]["id"]
     resp = client.get(f"/api/jobs/{job_id}/script")
     assert resp.status_code == 200
     source = resp.text
-    compile(source, "reproduce_analysis.py", "exec")  # must be valid Python
+    tree = compile(source, "reproduce_analysis.py", "exec", ast.PyCF_ONLY_AST)
+    # ITEMS must be a pure Python literal that *evaluates*, not just parses -
+    # json.dumps once produced `true`/`false`, which compiles (bare identifiers)
+    # but NameErrors at runtime. literal_eval rejects exactly that.
+    items_node = next(
+        n.value for n in ast.walk(tree)
+        if isinstance(n, ast.Assign) and n.targets[0].id == "ITEMS"
+    )
+    items = ast.literal_eval(items_node)
+    assert len(items) == 5  # SWLS
+    assert all(isinstance(i["reverse_scored"], bool) for i in items)
     # embeds the construct items verbatim and never references the platform
     assert "In most ways my life is close to my ideal." in source
     assert "sim_item_" in source and "ccr_score" in source
     assert "127.0.0.1" not in source and "/api/" not in source
 
+
+def test_script_export_instructions_match_download_names(client, flow):
+    """The usage header must name the files exactly as they download (run-id
+    suffix) and use the uploaded corpus as the example argument."""
+    job_id = flow["job"]["id"]
+    resp = client.get(f"/api/jobs/{job_id}/script")
+    script_name = f"reproduce_analysis_{job_id[:8]}.py"
+    assert f'filename="{script_name}"' in resp.headers["content-disposition"]
+    assert f"python {script_name} corpus.csv" in resp.text  # uploaded CSV name
+
     reqs = client.get(f"/api/jobs/{job_id}/script-requirements")
     assert reqs.status_code == 200
     assert "==" in reqs.text  # pinned versions, not ranges
+    reqs_name = f"requirements-repro_{job_id[:8]}.txt"
+    assert f'filename="{reqs_name}"' in reqs.headers["content-disposition"]
+    assert f"pip install -r {reqs_name}" in resp.text  # script points at reqs
+    assert f"pip install -r {reqs_name}" in reqs.text  # reqs header self-refers
 
 
 # ------------------------------------------- uploads must not clobber each other
