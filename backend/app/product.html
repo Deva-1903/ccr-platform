@@ -7,13 +7,13 @@
 <style>
   :root {
     --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
-    --accent: #2456a6; --card: #f7f7f8; --amber-bg: #fff7e0; --amber-border: #e0b84d;
-    --code-bg: #f0f0f2;
+    --accent: #7a1f3d; --card: #f7f7f8; --amber-bg: #fff7e0; --amber-border: #e0b84d;
+    --code-bg: #f0f0f2; --maroon: #7a1f3d;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #16181c; --fg: #e6e6e6; --muted: #9a9a9a; --border: #3a3d44;
-      --accent: #7aa7e8; --card: #1f2228; --amber-bg: #2e2810; --amber-border: #8a6d1f;
+      --accent: #e08aa3; --card: #1f2228; --amber-bg: #2e2810; --amber-border: #8a6d1f;
       --code-bg: #24272e;
     }
   }
@@ -22,6 +22,21 @@
     margin: 0; background: var(--bg); color: var(--fg);
     font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
+  /* Shared top bar: same maroon brand as the app, links back to it. */
+  .topbar {
+    background: var(--maroon); color: #fff;
+    padding: 12px 1.25rem;
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  }
+  .topbar .brand {
+    color: #fff; font-weight: 650; font-size: 1.02rem;
+    text-decoration: none; letter-spacing: .2px; white-space: nowrap;
+  }
+  .topbar .brand:hover { opacity: .88; }
+  .topbar nav { margin-left: auto; display: flex; gap: 1.1rem; flex-wrap: wrap; }
+  .topbar nav a { color: rgba(255,255,255,.82); text-decoration: none; font-size: .88rem; }
+  .topbar nav a:hover { color: #fff; text-decoration: underline; }
+  .topbar nav a.current { color: #fff; font-weight: 600; }
   main { max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
   h1 { font-size: 1.7rem; margin: 0 0 .25rem; }
   h2 { font-size: 1.25rem; margin: 2.2rem 0 .6rem; padding-top: .6rem; border-top: 1px solid var(--border); }
@@ -66,7 +81,7 @@
   }
   .toast {
     position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
-    background: var(--accent); color: #fff; padding: .5rem .9rem; border-radius: 8px;
+    background: var(--maroon); color: #fff; padding: .5rem .9rem; border-radius: 8px;
     font-size: .85rem; opacity: 0; pointer-events: none; transition: opacity .2s;
   }
   .toast.show { opacity: 1; }
@@ -79,9 +94,18 @@
 </style>
 </head>
 <body>
+<header class="topbar">
+  <a class="brand" href="/">CCR Platform</a>
+  <nav>
+    <a href="/">Dashboard</a>
+    <a href="/welcome">About</a>
+    <a href="/guide">Guide</a>
+    <a href="/product" class="current">How it works</a>
+  </nav>
+</header>
 <main>
 
-<h1>CCR Platform - Product &amp; Architecture</h1>
+<h1>Product &amp; architecture</h1>
 <p class="sub">The under-the-hood companion to the <a href="/guide">testing guide</a>:
 who can do what, how access is governed, what runs where, and the engineering
 decisions behind it. The guide tells you how to <em>use</em> the platform; this

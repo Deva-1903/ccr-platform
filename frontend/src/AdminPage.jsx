@@ -15,6 +15,15 @@ const ROLE_LABELS = {
   pi: "PI",
 };
 
+function Stat({ k, v }) {
+  return (
+    <div className="stat">
+      <div className="v">{v}</div>
+      <div className="k">{k}</div>
+    </div>
+  );
+}
+
 // Every admin card is collapsible; the big ones (verification queue, audit)
 // start closed so the page stays scannable.
 function Section({ title, hint, defaultOpen = true, children }) {
@@ -135,23 +144,33 @@ export default function AdminPage({ auth }) {
 
       <div className="project-header">
         <span className="project-title">Admin</span>
-        <a className="ghost header-btn" href="/">Back to platform</a>
+        <a className="ghost" href="/">← Back to dashboard</a>
       </div>
 
       {/* Overview */}
       <Section title="Overview">
         {overview ? (
-          <p className="hint">
-            <b>{overview.users}</b> accounts (
-            {ROLES.filter((r) => overview.users_by_role?.[r])
-              .map((r) => `${overview.users_by_role[r]} ${ROLE_LABELS[r]}`)
-              .join(", ") || "none"}
-            ; {overview.signups_last_7_days} new this week) · <b>{overview.runs_total}</b>{" "}
-            runs total ({overview.runs_last_7_days} this week
-            {overview.runs_by_status?.failed ? `, ${overview.runs_by_status.failed} failed` : ""}) ·{" "}
-            <b>{overview.projects}</b> projects ({overview.anonymous_projects} anonymous) ·{" "}
-            <b>{overview.constructs_unverified}</b> library scales awaiting verification
-          </p>
+          <>
+            <div className="stat-grid">
+              <Stat k="Accounts" v={overview.users} />
+              <Stat k="Runs total" v={overview.runs_total} />
+              <Stat k="Projects" v={overview.projects} />
+              <Stat k="Awaiting verification" v={overview.constructs_unverified} />
+            </div>
+            <p className="small muted" style={{ margin: "10px 0 0" }}>
+              {ROLES.filter((r) => overview.users_by_role?.[r])
+                .map((r) => `${overview.users_by_role[r]} ${ROLE_LABELS[r]}`)
+                .join(", ") || "no accounts yet"}
+              {" "}· {overview.signups_last_7_days} sign-up
+              {overview.signups_last_7_days === 1 ? "" : "s"} and{" "}
+              {overview.runs_last_7_days} run{overview.runs_last_7_days === 1 ? "" : "s"} this week
+              {overview.runs_by_status?.failed
+                ? ` · ${overview.runs_by_status.failed} failed run${overview.runs_by_status.failed === 1 ? "" : "s"} total`
+                : ""}
+              {" "}· {overview.anonymous_projects} anonymous project
+              {overview.anonymous_projects === 1 ? "" : "s"}
+            </p>
+          </>
         ) : (
           <p className="hint">Loading…</p>
         )}

@@ -25,24 +25,28 @@ body {
 
 .app { display: flex; flex-direction: column; min-height: 100vh; }
 
+a { color: var(--maroon); }
+
 /* ---------- header ---------- */
 .header {
   background: var(--maroon);
   color: #fff;
   padding: 14px 28px;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: 14px;
 }
-.header h1 {
+.header .brand {
   flex: 0 0 auto;
   font-size: 17px;
-  margin: 0;
   font-weight: 650;
   letter-spacing: 0.2px;
   white-space: nowrap;
+  color: #fff;
+  text-decoration: none;
 }
+.header .brand:hover { opacity: 0.88; }
 .header .sub { flex: 1 1 280px; min-width: 0; font-size: 12.5px; opacity: 0.85; }
 
 .layout { display: flex; flex: 1; min-width: 0; min-height: 0; }
@@ -112,7 +116,8 @@ div:first-child > .group-label { margin-top: 2px; }
 
 .card {
   background: var(--card); border: 1px solid var(--line);
-  border-radius: 8px; padding: 18px 20px; margin-bottom: 16px;
+  border-radius: 10px; padding: 18px 20px; margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
 .card h3 { margin: 0 0 4px; font-size: 15px; }
 .card .hint { color: var(--muted); font-size: 12.5px; margin: 0 0 12px; }
@@ -135,6 +140,7 @@ button.primary {
   justify-content: center;
   padding: 0 18px; border-radius: 8px; font: inherit; font-weight: 600; cursor: pointer;
   line-height: 1.2;
+  transition: background-color 0.15s ease;
 }
 button.primary:hover { background: var(--maroon-dark); }
 button.primary:disabled { background: #c9ccd1; cursor: not-allowed; }
@@ -147,16 +153,17 @@ a.google-btn {
   box-sizing: border-box;
 }
 a.google-btn:hover { background: var(--maroon-dark); }
-button.ghost {
+button.ghost, a.ghost {
   background: none; border: 1px solid var(--line); color: var(--ink);
   min-height: var(--control-height);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0 14px; border-radius: 8px; font: inherit; cursor: pointer;
-  line-height: 1.2;
+  line-height: 1.2; text-decoration: none;
+  transition: border-color 0.15s ease, color 0.15s ease;
 }
-button.ghost:hover { border-color: var(--maroon); color: var(--maroon); }
+button.ghost:hover, a.ghost:hover { border-color: var(--maroon); color: var(--maroon); }
 button.linkish {
   background: none; border: none; color: var(--maroon);
   font: inherit; cursor: pointer; padding: 0; text-decoration: underline;
@@ -267,6 +274,7 @@ table.docs td {
   overflow-wrap: anywhere;
 }
 table.docs td.score { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+table.docs tbody tr:hover td { background: var(--bg); }
 
 .stat-grid { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
 .stat {
@@ -296,14 +304,23 @@ table.docs td.score { font-variant-numeric: tabular-nums; font-weight: 600; whit
 .small { font-size: 12.5px; }
 .mt { margin-top: 12px; }
 
-/* ---------- header auth ---------- */
-.header-auth {
-  margin-left: auto; display: flex; align-items: center; gap: 10px; color: #fff;
+/* ---------- header nav + auth ---------- */
+.header-nav {
+  margin-left: auto; display: flex; align-items: center; gap: 14px; color: #fff;
+  flex-wrap: wrap;
 }
+.header-link {
+  background: none; border: none; padding: 0;
+  color: rgba(255, 255, 255, 0.82); font: inherit; font-size: 13px;
+  cursor: pointer; text-decoration: none; transition: color 0.15s ease;
+}
+.header-link:hover { color: #fff; text-decoration: underline; }
+.header-link.current { color: #fff; font-weight: 600; }
 .header-btn {
   background: rgba(255, 255, 255, 0.12); color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.45);
   padding: 5px 14px; border-radius: 7px; font: inherit; font-size: 13px; cursor: pointer;
+  text-decoration: none; transition: background-color 0.15s ease;
 }
 .header-btn:hover { background: rgba(255, 255, 255, 0.22); }
 
@@ -386,7 +403,8 @@ button.danger-solid:disabled { background: #c9ccd1; }
     align-items: flex-start;
     gap: 2px 12px;
   }
-  .header h1 { font-size: 16px; }
+  .header .brand { font-size: 16px; }
+  .header-nav { gap: 10px 14px; }
   .header .sub {
     flex: 1 1 210px;
     font-size: 12px;
@@ -470,12 +488,30 @@ button.danger-solid:disabled { background: #c9ccd1; }
   .stat-grid { grid-template-columns: 1fr; }
 }
 
+/* ---------- empty state (no projects yet) ---------- */
+.empty-state {
+  text-align: center;
+  max-width: 560px;
+  margin: 48px auto 0;
+  padding: 36px 28px 28px;
+}
+.empty-state h3 { font-size: 17px; }
+.empty-state .hint { font-size: 13px; }
+.empty-actions {
+  display: flex; gap: 16px; align-items: center; justify-content: center;
+  flex-wrap: wrap; margin: 18px 0 16px;
+}
+
+.ghost-link { color: var(--maroon); font-weight: 600; text-decoration: none; }
+.ghost-link:hover { text-decoration: underline; }
+
 /* ------------------------------------------------------------- welcome */
 .welcome { padding-top: 1.2rem; }
-.welcome-hero h2 { margin: 0 0 .6rem; font-size: 1.45rem; }
+.welcome-hero { padding: 26px 28px; }
+.welcome-hero h2 { margin: 0 0 .6rem; font-size: 1.5rem; }
 .welcome-hero p { max-width: 62ch; }
 .welcome-cta {
-  display: flex; gap: .9rem; align-items: center; flex-wrap: wrap;
+  display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
   margin: 1.1rem 0 .6rem;
 }
 .welcome-cta .ghost-link { font-size: .95rem; }

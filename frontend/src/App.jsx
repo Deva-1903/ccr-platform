@@ -183,16 +183,36 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
-        <h1>CCR Platform</h1>
+        <a
+          className="brand"
+          href="/"
+          onClick={(e) => {
+            // Inside the SPA the brand is an instant way back to the
+            // dashboard; from /admin it's a normal navigation.
+            if (!IS_ADMIN_PATH) {
+              e.preventDefault();
+              enterDashboard();
+            }
+          }}
+        >
+          CCR Platform
+        </a>
         <span className="sub">
           Contextualized Construct Representations · theory-driven psychological text analysis
         </span>
-        <span className="header-auth">
-          {!showWelcome && (
-            <button className="header-btn" onClick={() => setShowWelcome(true)}>
+        <nav className="header-nav">
+          {IS_ADMIN_PATH ? (
+            <a className="header-link" href="/welcome">About</a>
+          ) : (
+            <button
+              className={"header-link" + (showWelcome ? " current" : "")}
+              onClick={() => setShowWelcome(true)}
+            >
               About
             </button>
           )}
+          <a className="header-link" href="/guide">Guide</a>
+          <a className="header-link" href="/product">How it works</a>
           {auth?.signed_in ? (
             <>
               <span className="small">Hi, {auth.name}</span>
@@ -208,7 +228,7 @@ export default function App() {
               Sign in
             </button>
           )}
-        </span>
+        </nav>
       </header>
 
       {showLogin && (
@@ -408,17 +428,24 @@ export default function App() {
               }}
             />
           ) : (
-            <div className="card">
-              <h3>Welcome</h3>
+            <div className="card empty-state">
+              <h3>Create your first project</h3>
               <p className="hint">
-                Create or select a project, upload a corpus (CSV/XLSX), choose a validated
-                construct, and run a CCR analysis. Results include per-item loadings,
-                score distributions, and a reproducibility record for every run.
+                A project holds your datasets and runs. Upload a corpus (CSV/XLSX),
+                choose a validated construct, and run a CCR analysis - results include
+                per-item loadings, score distributions, and a reproducibility record
+                for every run.
               </p>
+              <div className="empty-actions">
+                <button className="primary" onClick={() => setCreating(true)}>
+                  + New project
+                </button>
+                <a className="ghost-link" href="/guide">Read the 5-minute guide</a>
+              </div>
               <p className="small muted">
                 Self-contained by design: embeddings run on this server itself - no
-                third-party AI APIs. Demo instance: storage is ephemeral and may reset;
-                please don&apos;t upload sensitive or identifiable data.
+                third-party AI APIs. Please don&apos;t upload sensitive or identifiable
+                data on this dev instance.
               </p>
             </div>
           )}
