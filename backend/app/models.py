@@ -57,6 +57,27 @@ class RoleAssignment(Base):
     claimed_at: Mapped[str] = mapped_column(String(32), default="")  # "" = pending
 
 
+class Invite(Base):
+    """Invite links, stateful so they can be listed, revoked, and traced.
+
+    The signed token (auth.py) still proves authenticity, but redemption
+    requires this row to be live: not revoked, not expired. Revocation is
+    soft (revoked_at) so history and redemptions stay visible. Redemptions
+    are a read-mostly JSON list [{email, at}], per the repo's JSON-blob
+    convention."""
+
+    __tablename__ = "invites"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    role: Mapped[str] = mapped_column(String(16))
+    token: Mapped[str] = mapped_column(Text)  # stored so admins can re-copy the link
+    created_by: Mapped[str] = mapped_column(String(255), default="")
+    created_at: Mapped[str] = mapped_column(String(32), default=_now)
+    expires_at: Mapped[str] = mapped_column(String(32))  # ISO date, inclusive
+    revoked_at: Mapped[str] = mapped_column(String(32), default="")  # "" = active
+    redemptions_json: Mapped[str] = mapped_column(Text, default="[]")
+
+
 class AdminAudit(Base):
     """Append-only trail of admin actions (who did what to whom, when).
 

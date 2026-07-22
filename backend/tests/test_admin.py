@@ -381,7 +381,7 @@ def test_maintainer_cannot_preassign_staff(client):
 def test_invite_link_grants_role_on_register(client, monkeypatch):
     _as_admin(client)
     invite = client.post("/api/admin/invites", json={"role": "lab"}).json()
-    assert invite["role"] == "lab" and invite["token"]
+    assert invite["role"] == "lab" and invite["token"] and invite["status"] == "active"
     # staff can never be invited by bearer link
     assert client.post("/api/admin/invites", json={"role": "maintainer"}).status_code == 400
     client.post("/api/auth/logout")
@@ -393,6 +393,12 @@ def test_invite_link_grants_role_on_register(client, monkeypatch):
     assert resp.status_code == 201
     me = client.get("/api/auth/me").json()
     assert me["role"] == "lab" and me["usage"]["max_saved_runs"] is None
+    client.post("/api/auth/logout")
+
+    # who used the link is visible on the invite row
+    _as_admin(client)
+    row = next(i for i in client.get("/api/admin/invites").json() if i["id"] == invite["id"])
+    assert [r["email"] for r in row["redemptions"]] == ["invited@lab.test"]
     client.post("/api/auth/logout")
 
     # dead/garbage tokens refuse registration instead of silently demoting
@@ -411,6 +417,21 @@ def test_invite_link_grants_role_on_register(client, monkeypatch):
         "name": "Invited3", "invite_token": expired["token"],
     })
     assert resp.status_code == 400
+
+
+def test_revoked_invite_stops_working(client):
+    _as_admin(client)
+    invite = client.post("/api/admin/invites", json={"role": "lab"}).json()
+    assert client.delete(f"/api/admin/invites/{invite['id']}").status_code == 204
+    row = next(i for i in client.get("/api/admin/invites").json() if i["id"] == invite["id"])
+    assert row["status"] == "revoked" and row["token"] == ""  # dead links aren't re-copyable
+    client.post("/api/auth/logout")
+
+    resp = client.post("/api/auth/register", json={
+        "email": "late@lab.test", "password": "password123",
+        "name": "Late", "invite_token": invite["token"],
+    })
+    assert resp.status_code == 400 and "revoked" in resp.json()["detail"]
 
 
 def test_audit_trail_records_and_is_pi_only(client):

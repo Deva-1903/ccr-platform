@@ -192,7 +192,10 @@ documented at /product.
      assignment shows "claimed". Works for Google sign-ins too.
    - Create an invite link (lab member or external only): open it in a
      private window - the signup form announces the invite; registering
-     through it grants the role. Expired/garbage tokens refuse registration.
+     through it grants the role. The invites table shows each link's status
+     (active/expired/revoked) and who signed up through it ("used by");
+     Copy link re-copies an active link, Revoke kills it immediately.
+     Expired/garbage/revoked tokens refuse registration.
 5. Construct verification is maintainer-only: PI/env admins see the queue
    read-only (no action buttons; the API returns 403), a maintainer can mark
    scales verified. Statuses are applied back to the library YAML before

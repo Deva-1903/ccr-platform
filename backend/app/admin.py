@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 import secrets
+import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -31,7 +32,7 @@ from sqlalchemy.orm import Session
 from . import auth, retention, storage
 from . import jobs as jobs_module
 from .db import get_db
-from .models import AdminAudit, Construct, Corpus, Job, Project, RoleAssignment, User
+from .models import AdminAudit, Construct, Corpus, Invite, Job, Project, RoleAssignment, User
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -194,6 +195,31 @@ def delete_user(
 
 
 # ---------------------------------------------------------------- invites
+def _invite_out(inv: Invite) -> dict:
+    today = datetime.now(timezone.utc).date().isoformat()
+    status = ("revoked" if inv.revoked_at
+              else "expired" if inv.expires_at < today
+              else "active")
+    return {
+        "id": inv.id,
+        "role": auth.normalize_role(inv.role),
+        "token": inv.token if status == "active" else "",  # only live links are copyable
+        "created_by": inv.created_by,
+        "created_at": inv.created_at,
+        "expires_at": inv.expires_at,
+        "status": status,
+        "redemptions": json.loads(inv.redemptions_json or "[]"),
+    }
+
+
+@router.get("/invites")
+def list_invites(db: Session = Depends(get_db), _admin: dict = Depends(require_admin)):
+    return [
+        _invite_out(i)
+        for i in db.query(Invite).order_by(Invite.created_at.desc()).limit(50).all()
+    ]
+
+
 @router.post("/invites", status_code=201)
 def create_invite(
     body: dict,
@@ -202,16 +228,42 @@ def create_invite(
 ):
     """Signed, expiring invite link: whoever registers through it lands at
     the invited tier (external/lab only - staff is granted, never invited).
-    Stateless, so it cannot be revoked early; creation is audited."""
+    Backed by an Invite row, so it can be revoked early and shows who
+    signed up through it."""
     role = str(body.get("role", "")).strip().lower()
+    invite = Invite(id=uuid.uuid4().hex, role=auth.normalize_role(role),
+                    token="", created_by=admin.get("email", ""), expires_at="")
     try:
-        token, expires = auth.create_invite_token(role, admin.get("email", ""))
+        token, expires = auth.create_invite_token(role, admin.get("email", ""), invite.id)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
+    invite.token = token
+    invite.expires_at = expires
+    db.add(invite)
     _audit(db, admin, "invite_created", auth.normalize_role(role), f"expires {expires}")
     db.commit()
-    return {"token": token, "role": auth.normalize_role(role), "expires_at": expires,
-            "ttl_days": auth.invite_ttl_days()}
+    # the creator always gets the token they just minted; the LIST endpoint
+    # is what withholds tokens of expired/revoked links
+    return {**_invite_out(invite), "token": token}
+
+
+@router.delete("/invites/{invite_id}", status_code=204)
+def revoke_invite(
+    invite_id: str,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(require_admin),
+):
+    """Soft revoke: the link stops working immediately; the row stays so
+    history and redemptions remain visible."""
+    invite = db.get(Invite, invite_id)
+    if invite is None:
+        raise HTTPException(404, "Invite not found")
+    if not invite.revoked_at:
+        invite.revoked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        _audit(db, admin, "invite_revoked", auth.normalize_role(invite.role),
+               f"created {invite.created_at[:10]} by {invite.created_by}")
+        db.commit()
+    return None
 
 
 # ------------------------------------------------------ pre-assigned roles

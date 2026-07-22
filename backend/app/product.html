@@ -172,8 +172,10 @@ in increasing order of privilege:</p>
   <li><b>Invite links</b> - a signed URL an admin copies from /admin into Slack
       or an email. Whoever registers through it lands as a <b>lab member</b> (or
       external user). Bearer-style: anyone with the link can use it, so it only
-      carries non-staff roles and expires after 7 days. It cannot be revoked
-      early (it is stateless by design); creation and every redemption are audited.</li>
+      carries non-staff roles and expires after 7 days. Each link is tracked on
+      /admin: revoke it any time (it stops working immediately) and see exactly
+      which accounts signed up through it; creation, revocation, and every
+      redemption are audited.</li>
   <li><b>Pre-assigned roles</b> - a role bound to a <em>specific email</em>
       before the account exists. When that person first signs in - password or
       Google - they land at the assigned tier, staff roles included. This is how

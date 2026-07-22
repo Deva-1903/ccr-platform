@@ -15,6 +15,29 @@ const ROLE_LABELS = {
   pi: "PI",
 };
 
+// Every admin card is collapsible; the big ones (verification queue, audit)
+// start closed so the page stays scannable.
+function Section({ title, hint, defaultOpen = true, children }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="card">
+      <h3
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          cursor: "pointer", userSelect: "none", display: "flex",
+          justifyContent: "space-between", alignItems: "baseline", gap: ".6rem",
+          marginBottom: open ? undefined : 0,
+        }}
+        title={open ? "Click to collapse" : "Click to expand"}
+      >
+        <span>{title}{!open && hint ? <span className="muted small" style={{ fontWeight: 400 }}> · {hint}</span> : null}</span>
+        <span className="muted small" style={{ fontWeight: 400 }}>{open ? "▾" : "▸"}</span>
+      </h3>
+      {open && children}
+    </div>
+  );
+}
+
 async function adminFetch(path, options = {}) {
   const resp = await fetch(path, options);
   if (!resp.ok) {
@@ -40,6 +63,7 @@ export default function AdminPage({ auth }) {
   const [failed, setFailed] = useState([]);
   const [constructs, setConstructs] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [invites, setInvites] = useState([]);
   const [audit, setAudit] = useState(null); // null = not visible (maintainers)
   const [onlyUnverified, setOnlyUnverified] = useState(true);
   const [inviteRole, setInviteRole] = useState("lab");
@@ -58,6 +82,7 @@ export default function AdminPage({ auth }) {
     adminFetch("/api/admin/users").then(setUsers).catch(() => {});
     adminFetch("/api/admin/jobs/failed").then(setFailed).catch(() => {});
     adminFetch("/api/admin/role-assignments").then(setAssignments).catch(() => {});
+    adminFetch("/api/admin/invites").then(setInvites).catch(() => {});
     adminFetch("/api/admin/audit").then(setAudit).catch(() => setAudit(null)); // 403 for maintainers
     adminFetch(
       "/api/admin/constructs" + (onlyUnverified ? "?status=needs_verification" : "")
@@ -89,12 +114,22 @@ export default function AdminPage({ auth }) {
     }
   }
 
+  async function copyInvite(inv) {
+    const url = `${window.location.origin}/?invite=${encodeURIComponent(inv.token)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setNotice(`Invite link copied (${ROLE_LABELS[inv.role]}, expires ${inv.expires_at}). Paste it in Slack.`);
+    } catch {
+      setNotice(`Could not copy automatically - the link: ${url}`);
+    }
+  }
+
   return (
     <>
       {error && <div className="error-banner" onClick={() => setError("")}>{error}</div>}
       {notice && (
         <div className="card" style={{ borderColor: "var(--maroon)" }}>
-          <p><b>{notice}</b> (shown once - copy it now)</p>
+          <p style={{ overflowWrap: "anywhere" }}><b>{notice}</b></p>
         </div>
       )}
 
@@ -104,8 +139,7 @@ export default function AdminPage({ auth }) {
       </div>
 
       {/* Overview */}
-      <div className="card">
-        <h3>Overview</h3>
+      <Section title="Overview">
         {overview ? (
           <p className="hint">
             <b>{overview.users}</b> accounts (
@@ -121,11 +155,10 @@ export default function AdminPage({ auth }) {
         ) : (
           <p className="hint">Loading…</p>
         )}
-      </div>
+      </Section>
 
       {/* Users */}
-      <div className="card">
-        <h3>Users</h3>
+      <Section title="Users" hint={`${users.length} account${users.length === 1 ? "" : "s"}`}>
         <div className="table-wrap">
           <table className="docs">
             <thead>
@@ -185,11 +218,10 @@ export default function AdminPage({ auth }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Section>
 
       {/* Access before sign-in: pre-assigned roles + invite links */}
-      <div className="card">
-        <h3>Access before sign-in</h3>
+      <Section title="Access before sign-in">
         <p className="hint">
           <b>Pre-assign a role to an email</b> (e.g. an external collaborator who
           should land with full credentials): whoever first signs in with that
@@ -220,7 +252,7 @@ export default function AdminPage({ auth }) {
               <option key={r} value={r}>{ROLE_LABELS[r]}</option>
             ))}
           </select>
-          <button type="submit" disabled={!assignEmail.trim()}>Pre-assign</button>
+          <button type="submit" className="ghost" disabled={!assignEmail.trim()}>Pre-assign</button>
         </form>
         {assignments.length > 0 && (
           <div className="table-wrap">
@@ -258,7 +290,8 @@ export default function AdminPage({ auth }) {
         <p className="hint" style={{ marginTop: "1rem" }}>
           <b>Or create an invite link</b> (anyone with the link; lab member /
           external only - staff is granted per person above): paste it in Slack,
-          it expires after a week.
+          it expires after a week. Revoking kills a link immediately; "used by"
+          shows every account created through it.
         </p>
         <div style={{ display: "flex", gap: ".5rem", alignItems: "center" }}>
           <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
@@ -266,24 +299,71 @@ export default function AdminPage({ auth }) {
             <option value="external">external user</option>
           </select>
           <button
+            className="ghost"
             onClick={() =>
               act(async () => {
                 const r = await post("/api/admin/invites", { role: inviteRole });
-                const url = `${window.location.origin}/?invite=${encodeURIComponent(r.token)}`;
-                try { await navigator.clipboard.writeText(url); } catch { /* show below */ }
-                setNotice(`Invite link (${ROLE_LABELS[r.role]}, expires ${r.expires_at}) - copied: ${url}`);
+                await copyInvite(r);
               })
             }
           >
             Create invite link
           </button>
         </div>
-      </div>
+        {invites.length > 0 && (
+          <div className="table-wrap">
+            <table className="docs">
+              <thead>
+                <tr><th>Role</th><th>Created</th><th>Expires</th><th>Status</th><th>Used by</th><th /></tr>
+              </thead>
+              <tbody>
+                {invites.map((inv) => (
+                  <tr key={inv.id}>
+                    <td>{ROLE_LABELS[inv.role] || inv.role}</td>
+                    <td className="muted small">{inv.created_at.slice(0, 10)} · {inv.created_by}</td>
+                    <td className="muted small">{inv.expires_at}</td>
+                    <td>
+                      <span className={`pill ${inv.status === "active" ? "completed" : "queued"}`}>
+                        {inv.status}
+                      </span>
+                    </td>
+                    <td className="small">
+                      {inv.redemptions.length === 0
+                        ? <span className="muted">nobody yet</span>
+                        : inv.redemptions.map((r) => (
+                            <div key={r.email} title={r.at}>{r.email}</div>
+                          ))}
+                    </td>
+                    <td>
+                      {inv.status === "active" && (
+                        <>
+                          <button className="linkish" onClick={() => act(() => copyInvite(inv))}>
+                            Copy link
+                          </button>{" "}
+                          <button
+                            className="linkish danger"
+                            onClick={() => {
+                              if (window.confirm("Revoke this invite link? It stops working immediately.")) {
+                                act(() => adminFetch(`/api/admin/invites/${inv.id}`, { method: "DELETE" }));
+                              }
+                            }}
+                          >
+                            Revoke
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Section>
 
       {/* Audit trail - PI/env-admin only (404s/403s hide it for maintainers) */}
       {audit !== null && (
-        <div className="card">
-          <h3>Audit trail</h3>
+        <Section title="Audit trail" hint={`${audit.length} recent entries`} defaultOpen={false}>
           {audit.length === 0 ? (
             <p className="hint">No admin actions recorded yet.</p>
           ) : (
@@ -306,12 +386,11 @@ export default function AdminPage({ auth }) {
               </table>
             </div>
           )}
-        </div>
+        </Section>
       )}
 
       {/* Failed runs */}
-      <div className="card">
-        <h3>Failed runs</h3>
+      <Section title="Failed runs" hint={failed.length ? `${failed.length} to triage` : "none"}>
         {failed.length === 0 ? (
           <p className="hint">None. 🎉</p>
         ) : (
@@ -345,11 +424,14 @@ export default function AdminPage({ auth }) {
             </table>
           </div>
         )}
-      </div>
+      </Section>
 
       {/* Verification queue */}
-      <div className="card">
-        <h3>Construct verification</h3>
+      <Section
+        title="Construct verification"
+        hint={`${constructs.length} ${onlyUnverified ? "awaiting" : "listed"}`}
+        defaultOpen={false}
+      >
         <p className="hint">
           The maintainer's workflow: mark a scale verified once its wording is
           checked against the original publication (cross-reference the
@@ -401,7 +483,7 @@ export default function AdminPage({ auth }) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Section>
     </>
   );
 }

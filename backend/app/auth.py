@@ -195,9 +195,10 @@ def get_current_user(request: Request) -> dict | None:
 
 # ------------------------------------------------------------ invite links
 # Signed, expiring tokens the PI copies into Slack; whoever registers through
-# one lands at the invited tier instead of external. Stateless (no DB row):
-# the cost is that an invite cannot be revoked before it expires - acceptable
-# for a 7-day lab onboarding link, and every creation/redemption is audited.
+# one lands at the invited tier instead of external. The signature proves the
+# token came from us; the invites TABLE (models.Invite, id = the token's jti)
+# decides whether it is still live - so links can be revoked early and every
+# redemption is traced to the link that granted it.
 INVITE_TTL_DAYS_DEFAULT = 7
 
 
@@ -205,26 +206,31 @@ def invite_ttl_days() -> int:
     return int(os.environ.get("CCR_INVITE_TTL_DAYS", INVITE_TTL_DAYS_DEFAULT))
 
 
-def create_invite_token(role: str, invited_by: str) -> tuple[str, str]:
-    """Returns (token, expires_at ISO date). Role must be invitable."""
+def create_invite_token(role: str, invited_by: str, jti: str) -> tuple[str, str]:
+    """Returns (token, expires_at ISO date). Role must be invitable; jti is
+    the Invite row id the token points back to."""
     from datetime import timedelta
 
     role = normalize_role(role)
     if role not in INVITABLE_ROLES:
         raise ValueError(f"Only these roles can be invited: {', '.join(sorted(INVITABLE_ROLES))}.")
     expires = (datetime.now(timezone.utc) + timedelta(days=invite_ttl_days())).date().isoformat()
-    return sign_payload({"invite": role, "by": invited_by, "exp": expires}), expires
+    return sign_payload({"invite": role, "by": invited_by, "exp": expires, "jti": jti}), expires
 
 
-def verify_invite_token(token: str | None) -> str | None:
-    """Role granted by a valid, unexpired invite token; None otherwise."""
+def verify_invite_token(token: str | None) -> dict | None:
+    """{'role', 'jti'} for a well-signed, unexpired invite token; None
+    otherwise. Liveness (revocation) is the caller's DB check - signature
+    and expiry alone do not make a token redeemable."""
     data = verify_payload(token)
     if not data or "invite" not in data:
         return None
     if str(data.get("exp", "")) < datetime.now(timezone.utc).date().isoformat():
         return None  # expired (dates are ISO, so string compare is correct)
     role = normalize_role(str(data["invite"]))
-    return role if role in INVITABLE_ROLES else None
+    if role not in INVITABLE_ROLES:
+        return None
+    return {"role": role, "jti": str(data.get("jti", ""))}
 
 
 # ------------------------------------------- anonymous daily run counter

@@ -32,7 +32,7 @@ from .construct_files import parse_construct_file
 from .construct_lib import sync_library
 from .db import DATA_DIR, Base, SessionLocal, auto_migrate_sqlite, engine, get_db
 from .ingest import IngestError, load_corpus, max_rows as corpus_max_rows, suggest_text_column
-from .models import AdminAudit, Construct, Corpus, Job, Project, RoleAssignment, User
+from .models import AdminAudit, Construct, Corpus, Invite, Job, Project, RoleAssignment, User
 from .reproducibility import (
     requirements_filename,
     requirements_text,
@@ -290,23 +290,42 @@ def auth_me(
     }
 
 
+def _live_invite(db: Session, invite_token: str | None) -> Invite | None:
+    """The Invite row for a token that is well-signed, unexpired, and still
+    live (exists, not revoked). Tokens from before invites became stateful
+    have no row and are therefore dead."""
+    verified = auth.verify_invite_token(invite_token)
+    if not verified:
+        return None
+    invite = db.get(Invite, verified["jti"])
+    if invite is None or invite.revoked_at:
+        return None
+    return invite
+
+
 def _initial_role(db: Session, email: str, invite_token: str | None = None) -> str:
     """Tier a brand-new account lands at. Precedence: an email-bound
     pre-assignment (may carry staff roles - the 'credentials before first
     sign-in' case) beats an invite link (bearer token, external/lab only)
-    beats the external default. Claiming is recorded in the audit trail."""
+    beats the external default. Claiming is recorded in the audit trail,
+    and invite redemptions also land on the invite row itself."""
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     pre = db.query(RoleAssignment).filter_by(email=email).first()
     if pre is not None and not pre.claimed_at:
-        pre.claimed_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        pre.claimed_at = now
         role = auth.normalize_role(pre.role)
         db.add(AdminAudit(actor_email=email, action="role_claimed", target=email,
                           detail=f"pre-assigned {role} by {pre.assigned_by}"))
         return role
-    invited = auth.verify_invite_token(invite_token)
-    if invited:
+    invite = _live_invite(db, invite_token)
+    if invite is not None:
+        role = auth.normalize_role(invite.role)
+        redemptions = json.loads(invite.redemptions_json or "[]")
+        redemptions.append({"email": email, "at": now})
+        invite.redemptions_json = json.dumps(redemptions)
         db.add(AdminAudit(actor_email=email, action="invite_redeemed",
-                          target=email, detail=invited))
-        return invited
+                          target=email, detail=f"{role} link by {invite.created_by}"))
+        return role
     return "external"
 
 
@@ -319,11 +338,12 @@ def register(body: RegisterIn, response: Response, db: Session = Depends(get_db)
         raise HTTPException(400, f"Password must be at least {auth.MIN_PASSWORD_LEN} characters.")
     if db.query(User).filter_by(email=email).first():
         raise HTTPException(409, "An account with this email already exists. Sign in instead.")
-    # A dead invite link should say so, not silently demote to external -
-    # unless a pre-assignment covers the email anyway.
+    # A dead invite link (bad signature, expired, or revoked) should say so,
+    # not silently demote to external - unless a pre-assignment covers the
+    # email anyway.
     has_preassignment = db.query(RoleAssignment).filter_by(email=email).first() is not None
-    if body.invite_token and not auth.verify_invite_token(body.invite_token) and not has_preassignment:
-        raise HTTPException(400, "This invite link is invalid or has expired. Ask for a new one.")
+    if body.invite_token and _live_invite(db, body.invite_token) is None and not has_preassignment:
+        raise HTTPException(400, "This invite link is invalid, expired, or revoked. Ask for a new one.")
     user = User(
         email=email, name=body.name.strip(),
         password_hash=auth.hash_password(body.password),
