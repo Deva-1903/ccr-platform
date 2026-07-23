@@ -323,6 +323,10 @@ plus arithmetic — no LLM, no prompting, no randomness.</figcaption>
   <li><b>Re-running a new construct on the same corpus is near-instant</b> — the
       text embeddings are cached and reused (identical every time), so only the
       cheap similarity step repeats.</li>
+  <li><b>Multi-construct runs score everything on one pass</b> — select up to 10
+      constructs and the corpus is embedded once, each construct scored against the
+      same embeddings; the results include a correlation matrix of how the
+      constructs interrelate across your texts.</li>
   <li><b>Warnings never silently "fix" your data</b> — the platform surfaces issues
       (wrong language, truncation, duplicates) and lets you decide.</li>
   <li><b>Admin power is layered, not global</b> — see <a href="#access">§1</a>:

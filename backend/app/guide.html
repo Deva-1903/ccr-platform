@@ -131,8 +131,10 @@ synthetic, written for this kit; no real participant data anywhere.</p>
   <li><b>Upload your corpus</b> - any CSV/XLSX with one text per row. Other columns
       (IDs, conditions, demographics) are fine; they pass through untouched into the
       results file.</li>
-  <li><b>Pick your construct</b> - search the library (94 scales from the lab's
-      collection) or click "+ Custom construct" and paste or upload your own items.</li>
+  <li><b>Pick your construct(s)</b> - search the library (94 scales from the lab's
+      collection) or click "+ Custom construct" and paste or upload your own items.
+      Pick several (up to 10) to score them together in a single run and see how
+      they correlate in your texts.</li>
   <li><b>Run.</b> Read the warnings panel first (it tells you if something about your
       data is off), then check the top/bottom scoring texts - if those don't make sense
       for your construct, trust that instinct and report it.</li>
@@ -235,6 +237,26 @@ are deleted after analysis. Upload
       notice (expected for the whole imported library for now).</li>
 </ol>
 
+<h3>Multi-construct runs (new)</h3>
+<ol>
+  <li>Pick a construct, then open the picker again and pick a second - selected ones
+      show a ✓ (clicking again removes). Each selection becomes a collapsible block
+      with its items and a "remove" link. Up to 10 constructs per run.</li>
+  <li>The run button reads "Run CCR analysis (2 constructs)". All constructs are
+      scored on <b>one pass</b> over the corpus, so two constructs take about as long
+      as one.</li>
+  <li>Results open with a <b>"Construct interrelations"</b> card - the Pearson
+      correlation between per-text scores, i.e. how the constructs co-occur in YOUR
+      texts - plus a collapsible per-construct section (histogram, item loadings,
+      top/bottom texts). Try
+      <a href="/samples/moral_foundations_demo.csv" download>moral_foundations_demo.csv</a>
+      with two MFQ-2 foundations.</li>
+  <li>The export CSV keeps one row per text with per-construct prefixed columns
+      (<code>mfq_care_sim_item_1</code> … <code>mfq_care_ccr_score</code>, …), so the
+      correlations are fully recomputable; metadata and the reproduction script cover
+      every construct in the run. Single-construct runs are unchanged.</li>
+</ol>
+
 <h3>Custom construct, typed</h3>
 <ol>
   <li>"+ Custom construct" &gt; name it, paste items one per line.</li>
@@ -277,10 +299,13 @@ pages don't update.</p>
 <h2 id="results">5. Results and reproducibility</h2>
 <ol>
   <li>Run <a href="/samples/moral_foundations_demo.csv" download>moral_foundations_demo.csv</a>
-      against two different MFQ-2 foundations: top texts change per foundation; the 6
+      against two different MFQ-2 foundations (separately, or both in one
+      multi-construct run): top texts change per foundation; the 6
       neutral rows sink to the bottom.</li>
-  <li>Results page: histogram, mean/SD/min/max, per-item loadings, top/bottom texts.</li>
-  <li>Downloads: results CSV (input columns + sim_item_N + ccr_score), metadata JSON
+  <li>Results page: histogram, mean/SD/min/max, per-item loadings, top/bottom texts;
+      multi-construct runs add the correlation matrix up top.</li>
+  <li>Downloads: results CSV (input columns + sim_item_N + ccr_score; multi-construct
+      runs prefix these per construct), metadata JSON
       (model revision, construct snapshot + item hash, language block, environment pins),
       reproduction script + requirements file.</li>
   <li>Reproduction check: both downloads carry your run's id, e.g.
