@@ -148,6 +148,9 @@ class Job(Base):
     project_id: Mapped[str] = mapped_column(ForeignKey("projects.id"))
     corpus_id: Mapped[str] = mapped_column(ForeignKey("corpora.id"))
     construct_id: Mapped[str] = mapped_column(ForeignKey("constructs.id"))
+    # Multi-construct runs: the full ordered id list. construct_id stays the
+    # first entry (FK + legacy rows, whose "[]" here means "just construct_id").
+    construct_ids_json: Mapped[str] = mapped_column(Text, default="[]")
     text_column: Mapped[str] = mapped_column(String(200))
     model_name: Mapped[str] = mapped_column(String(200))  # registry id (or test fake)
     language: Mapped[str] = mapped_column(String(12), default="en")  # selected analysis language

@@ -11,7 +11,7 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
 
   const [corpusId, setCorpusId] = useState("");
   const [textColumn, setTextColumn] = useState("");
-  const [constructId, setConstructId] = useState("");
+  const [constructIds, setConstructIds] = useState([]);
   const [modelName, setModelName] = useState("");
   const [languages, setLanguages] = useState(["en"]);
   const [language, setLanguage] = useState("en");
@@ -72,7 +72,23 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
   }, [anyActive, refreshJobs]);
 
   const corpus = corpora.find((c) => c.id === corpusId) || null;
-  const construct = constructs.find((c) => c.id === constructId) || null;
+  const selectedConstructs = constructIds
+    .map((id) => constructs.find((c) => c.id === id))
+    .filter(Boolean);
+
+  // Server-enforced too; mirrored here so the picker can explain the cap.
+  const MAX_CONSTRUCTS = 10;
+
+  function toggleConstruct(id) {
+    setConstructIds((ids) => {
+      if (ids.includes(id)) return ids.filter((x) => x !== id);
+      if (ids.length >= MAX_CONSTRUCTS) {
+        setError(`At most ${MAX_CONSTRUCTS} constructs per run.`);
+        return ids;
+      }
+      return [...ids, id];
+    });
+  }
 
   async function handleUpload(e) {
     const file = e.target.files?.[0];
@@ -100,7 +116,7 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
       await api.createJob({
         project_id: project.id,
         corpus_id: corpusId,
-        construct_id: constructId,
+        construct_ids: constructIds,
         text_column: textColumn,
         model_name: modelName,
         language,
@@ -128,7 +144,7 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
 
   const fileMissing = corpus && corpus.file_available === false;
   const canRun =
-    corpusId && textColumn && constructId && modelName && !running && !fileMissing;
+    corpusId && textColumn && constructIds.length > 0 && modelName && !running && !fileMissing;
 
   return (
     <>
@@ -287,15 +303,17 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
           <span className="step-badge">2</span>Construct
         </h3>
         <p className="hint">
-          Pick a validated scale from the library, or define custom items. CCR scores each
-          text by its similarity to these items.
+          Pick one or more validated scales from the library, or define custom items. CCR
+          scores each text by its similarity to the items. Selecting several constructs
+          runs them together on one pass over your corpus and adds a score-correlation
+          view of how they interrelate in your texts (up to 10 per run).
         </p>
         <div className="construct-row">
           <div className="grow">
             <ConstructPicker
               constructs={constructs}
-              value={constructId}
-              onChange={setConstructId}
+              selectedIds={constructIds}
+              onToggle={toggleConstruct}
             />
           </div>
           <button className="ghost" onClick={() => setShowNewConstruct((s) => !s)}>
@@ -303,34 +321,52 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
           </button>
         </div>
 
-        {construct && (
-          <>
+        {selectedConstructs.map((c) => (
+          <details className="construct-selected" key={c.id} open={selectedConstructs.length === 1}>
+            <summary>
+              <span className="construct-selected-name">{c.name}</span>
+              <span className="picker-meta">
+                {" "}
+                {c.items.length} item{c.items.length === 1 ? "" : "s"}
+                {c.verification_status !== "verified" ? " · unverified" : ""}
+              </span>
+              <button
+                type="button"
+                className="linkish construct-remove"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleConstruct(c.id);
+                }}
+              >
+                remove
+              </button>
+            </summary>
             <ul className="construct-items">
-              {construct.items.map((item, i) => (
+              {c.items.map((item, i) => (
                 <li key={i}>
                   {item}
-                  {construct.reverse_scored?.[i] ? " (reverse-scored)" : ""}
+                  {c.reverse_scored?.[i] ? " (reverse-scored)" : ""}
                 </li>
               ))}
             </ul>
-            {construct.reference && (
-              <p className="small muted mt">Reference: {construct.reference}</p>
+            {c.reference && (
+              <p className="small muted mt">Reference: {c.reference}</p>
             )}
-            {construct.verification_status !== "verified" && (
+            {c.verification_status !== "verified" && (
               <p className="small muted">
                 ⚠ Item wording not yet verified verbatim against the original publication
-                (status: {construct.verification_status.replace("_", " ")}).
+                (status: {c.verification_status.replace("_", " ")}).
               </p>
             )}
-          </>
-        )}
+          </details>
+        ))}
 
         {showNewConstruct && (
           <NewConstructForm
             onCreated={async (created) => {
               const list = await api.listConstructs();
               setConstructs(list);
-              setConstructId(created.id);
+              toggleConstruct(created.id);
               setShowNewConstruct(false);
             }}
             onError={setError}
@@ -370,7 +406,11 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
             </select>
           </label>
           <button className="primary run-button" disabled={!canRun} onClick={handleRun}>
-            {running ? "Starting…" : "Run CCR analysis"}
+            {running
+              ? "Starting…"
+              : constructIds.length > 1
+                ? `Run CCR analysis (${constructIds.length} constructs)`
+                : "Run CCR analysis"}
           </button>
         </div>
         {auth && !auth.signed_in && auth.usage?.max_runs_per_day != null && (
@@ -418,7 +458,7 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
                       {(j.started_at || j.created_at).replace("T", " ").slice(0, 16)}
                     </td>
                     <td>{j.corpus_filename}</td>
-                    <td>{j.construct_name}</td>
+                    <td>{(j.construct_names?.length ? j.construct_names : [j.construct_name]).join(" + ")}</td>
                     <td className="muted small">{j.model_name}</td>
                     <td className="muted small">{j.language}</td>
                     <td>

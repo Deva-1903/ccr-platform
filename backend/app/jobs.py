@@ -19,6 +19,7 @@ import hashlib
 import json
 import logging
 import os
+import re
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -37,6 +38,10 @@ from . import storage
 
 PLATFORM_VERSION = "0.2.0"
 OUTPUT_SCHEMA_VERSION = "1.0"  # bump on ANY export-column change (CLAUDE.md hard rule)
+# Multi-construct runs export prefixed columns ({slug}_sim_item_N,
+# {slug}_ccr_score) instead of the flat single-construct shape, so they carry
+# their own schema version; single-construct exports are unchanged at 1.0.
+MULTI_OUTPUT_SCHEMA_VERSION = "1.1"
 
 logger = logging.getLogger("ccr.jobs")
 
@@ -104,6 +109,85 @@ def _set(db, job: Job, **kw):
     db.commit()
 
 
+def job_construct_ids(job: Job) -> list[str]:
+    """Ordered construct ids for a job. Legacy rows (and their default "[]")
+    carry only construct_id."""
+    try:
+        ids = json.loads(job.construct_ids_json or "[]")
+    except (json.JSONDecodeError, TypeError):
+        ids = []
+    return ids if ids else [job.construct_id]
+
+
+def _column_prefixes(constructs: list[Construct]) -> list[str]:
+    """Per-construct export-column prefixes: the library slug when there is
+    one, else the sanitized name. Deduplicated (same scale, two versions)
+    with a numeric suffix so columns stay unambiguous."""
+    used: dict[str, int] = {}
+    prefixes = []
+    for c in constructs:
+        base = (
+            c.construct_slug
+            or re.sub(r"[^a-z0-9]+", "_", c.name.lower()).strip("_")
+            or f"construct_{c.id[:8]}"
+        )
+        n = used.get(base, 0) + 1
+        used[base] = n
+        prefixes.append(base if n == 1 else f"{base}_{n}")
+    return prefixes
+
+
+def _score_stats(result, items: list[str], texts: list[str]) -> dict:
+    """Distribution stats, per-item loadings, and top/bottom docs for one
+    construct's scores - the construct-level half of a results summary."""
+    scores = result.scores
+    order = np.argsort(scores)
+    hist_counts, hist_edges = np.histogram(scores, bins=HIST_BINS)
+
+    def doc_entry(i: int) -> dict:
+        return {
+            "row": int(i),
+            "score": round(float(scores[i]), 4),
+            "text": texts[i][:SNIPPET_LEN] + ("…" if len(texts[i]) > SNIPPET_LEN else ""),
+        }
+
+    return {
+        "score_mean": round(float(scores.mean()), 4),
+        "score_sd": round(float(scores.std(ddof=1)), 4) if len(scores) > 1 else 0.0,
+        "score_min": round(float(scores.min()), 4),
+        "score_max": round(float(scores.max()), 4),
+        "histogram": {
+            "counts": hist_counts.tolist(),
+            "edges": [round(float(e), 4) for e in hist_edges],
+        },
+        "item_means": [
+            {"item": items[j], "mean": round(float(result.similarities[:, j].mean()), 4)}
+            for j in range(len(items))
+        ],
+        "top_docs": [doc_entry(i) for i in order[::-1][:TOP_N]],
+        "bottom_docs": [doc_entry(i) for i in order[:TOP_N]],
+    }
+
+
+def _score_correlations(names: list[str], results: list) -> dict:
+    """Pearson r between per-text scores of each construct pair - the
+    interrelation view a multi-construct run exists for. Scores come from the
+    same corpus pass, so rows align by definition. Undefined cells (fewer
+    than 2 texts, or a zero-variance score vector) are null, never NaN."""
+    mat = np.vstack([r.scores for r in results])
+    n_texts = mat.shape[1]
+    if n_texts < 2:
+        cells = [[1.0 if i == j else None for j in range(len(results))] for i in range(len(results))]
+    else:
+        with np.errstate(invalid="ignore", divide="ignore"):
+            r = np.corrcoef(mat)
+        cells = [
+            [round(float(r[i, j]), 4) if np.isfinite(r[i, j]) else None for j in range(len(results))]
+            for i in range(len(results))
+        ]
+    return {"method": "pearson", "n_texts": n_texts, "constructs": names, "matrix": cells}
+
+
 def _run_job_logged(job_id: str) -> None:
     try:
         run_job(job_id)
@@ -122,8 +206,9 @@ def run_job(job_id: str) -> None:
         logger.info("Job %s started (model=%s)", job_id[:8], job.model_name)
 
         corpus = db.get(Corpus, job.corpus_id)
-        construct = db.get(Construct, job.construct_id)
-        items = json.loads(construct.items_json)
+        constructs = [db.get(Construct, cid) for cid in job_construct_ids(job)]
+        items_per_construct = [json.loads(c.items_json) for c in constructs]
+        multi = len(constructs) > 1
         parse_info = json.loads(corpus.parse_info_json or "{}")
 
         # Materialize the corpus locally (a no-op on the local backend; a
@@ -188,11 +273,29 @@ def run_job(job_id: str) -> None:
                     cache_path.unlink(missing_ok=True)  # unreadable cache: recompute
 
         backend = get_backend(job.model_name)
+        run_started = datetime.now(timezone.utc)
+
+        # The first construct pays for embedding the corpus (or reuses the
+        # disk cache); every further construct scores against the SAME document
+        # embeddings. That reuse is the whole point of a multi-construct run -
+        # N constructs cost barely more than one.
+        def first_progress(frac: float):
+            progress(frac * 0.92 if multi else frac)
+
         result = run_ccr(
-            texts, items, backend,
-            progress_cb=progress, item_prefix=item_prefix, text_prefix=text_prefix,
+            texts, items_per_construct[0], backend,
+            progress_cb=first_progress, item_prefix=item_prefix, text_prefix=text_prefix,
             doc_embeddings=cached_embeddings,
         )
+        results = [result]
+        for k in range(1, len(constructs)):
+            results.append(run_ccr(
+                texts, items_per_construct[k], backend,
+                item_prefix=item_prefix, text_prefix=text_prefix,
+                doc_embeddings=result.doc_embeddings,
+            ))
+            progress(0.92 + 0.05 * k / (len(constructs) - 1))
+        run_finished = datetime.now(timezone.utc)
         if (
             cache_enabled and cache_path is not None and cached_embeddings is None
             and not is_anonymous and result.doc_embeddings is not None
@@ -249,73 +352,92 @@ def run_job(job_id: str) -> None:
 
         # Export mirrors ccr_wrapper's shape: input columns + per-item
         # similarity columns + overall score, so it drops into existing
-        # CCR workflows.
+        # CCR workflows. Multi-construct runs prefix each construct's columns
+        # with its slug ({slug}_sim_item_N, {slug}_ccr_score) - one row-aligned
+        # CSV is exactly what correlating constructs downstream needs.
+        prefixes = _column_prefixes(constructs) if multi else [""]
         out = work_df.copy()
-        for j in range(result.similarities.shape[1]):
-            out[f"sim_item_{j + 1}"] = np.round(result.similarities[:, j], 6)
-        out["ccr_score"] = np.round(result.scores, 6)
+        for k, res in enumerate(results):
+            col = f"{prefixes[k]}_" if multi else ""
+            for j in range(res.similarities.shape[1]):
+                out[f"{col}sim_item_{j + 1}"] = np.round(res.similarities[:, j], 6)
+            out[f"{col}ccr_score"] = np.round(res.scores, 6)
         local_result = RESULTS_DIR / f"{job.id}.csv"
         out.to_csv(local_result, index=False)
         result_path = storage.move_local_into_storage("results", f"{job.id}.csv", local_result)
-
-        scores = result.scores
-        order = np.argsort(scores)
-        hist_counts, hist_edges = np.histogram(scores, bins=HIST_BINS)
-
-        def doc_entry(i: int) -> dict:
-            return {
-                "row": int(i),
-                "score": round(float(scores[i]), 4),
-                "text": texts[i][:SNIPPET_LEN] + ("…" if len(texts[i]) > SNIPPET_LEN else ""),
-            }
 
         summary = {
             "n_docs": len(texts),
             "n_dropped_empty": dropped,
             "warnings": warnings,
-            "score_mean": round(float(scores.mean()), 4),
-            "score_sd": round(float(scores.std(ddof=1)), 4) if len(scores) > 1 else 0.0,
-            "score_min": round(float(scores.min()), 4),
-            "score_max": round(float(scores.max()), 4),
-            "histogram": {
-                "counts": hist_counts.tolist(),
-                "edges": [round(float(e), 4) for e in hist_edges],
-            },
-            "item_means": [
-                {"item": items[j], "mean": round(float(result.similarities[:, j].mean()), 4)}
-                for j in range(len(items))
-            ],
-            "top_docs": [doc_entry(i) for i in order[::-1][:TOP_N]],
-            "bottom_docs": [doc_entry(i) for i in order[:TOP_N]],
         }
+        if multi:
+            summary["constructs"] = [
+                {
+                    "construct_id": c.id,
+                    "construct_name": c.name,
+                    "column_prefix": prefixes[k],
+                    "n_items": len(items_per_construct[k]),
+                    **_score_stats(results[k], items_per_construct[k], texts),
+                }
+                for k, c in enumerate(constructs)
+            ]
+            summary["correlations"] = _score_correlations(
+                [c.name for c in constructs], results
+            )
+        else:
+            summary.update(_score_stats(result, items_per_construct[0], texts))
 
         metadata = {
             **result.metadata,
             "job_id": job.id,
             "platform_version": PLATFORM_VERSION,
-            "output_schema_version": OUTPUT_SCHEMA_VERSION,
+            "output_schema_version": MULTI_OUTPUT_SCHEMA_VERSION if multi else OUTPUT_SCHEMA_VERSION,
             "corpus_file": corpus.filename,
             "corpus_parse_info": parse_info,
             "text_column": job.text_column,
             "language": lang_result.as_metadata(),
-            "construct": construct.name,
-            "construct_reference": construct.reference,
-            "construct_snapshot": construct_snapshot(construct),
             "model_registry_id": model_cfg.id if model_cfg else job.model_name,
             "provider_model_id": model_cfg.provider_model_id if model_cfg else job.model_name,
             "model_revision": model_cfg.revision if model_cfg else None,
             "model_pooling_fallback": model_cfg.pooling_fallback if model_cfg else None,
             "model_max_seq_length": model_cfg.max_seq_length if model_cfg else None,
             "scoring": {"adjustment_strategy": "none", "aggregate": "mean_all_items"},
-            "output_schema": (
-                list(work_df.columns)
-                + [f"sim_item_{j + 1}" for j in range(result.similarities.shape[1])]
-                + ["ccr_score"]
-            ),
+            "output_schema": list(out.columns),
             "warnings": warnings,
             "n_rows_input": int(corpus.n_rows),
             "n_rows_dropped_empty": dropped,
         }
+        if multi:
+            # Per-construct identity lives in constructs[]; the first result's
+            # items hash and per-call timings would be misleading at top level.
+            metadata.update({
+                "construct": " + ".join(c.name for c in constructs),
+                "constructs": [
+                    {
+                        "name": c.name,
+                        "reference": c.reference,
+                        "column_prefix": prefixes[k],
+                        "n_items": len(items_per_construct[k]),
+                        "items_sha256_16": results[k].metadata["items_sha256_16"],
+                        "snapshot": construct_snapshot(c),
+                    }
+                    for k, c in enumerate(constructs)
+                ],
+                "n_items": sum(len(i) for i in items_per_construct),
+                "correlations": summary["correlations"],
+                "started_at": run_started.isoformat(timespec="seconds"),
+                "finished_at": run_finished.isoformat(timespec="seconds"),
+                "duration_seconds": round((run_finished - run_started).total_seconds(), 2),
+            })
+            metadata.pop("items_sha256_16", None)
+        else:
+            construct = constructs[0]
+            metadata.update({
+                "construct": construct.name,
+                "construct_reference": construct.reference,
+                "construct_snapshot": construct_snapshot(construct),
+            })
         record_environment(metadata)  # pins exact package versions for the repro bundle
 
         # Retention (PI decision 2026-07-10): anonymous uploads are removed the
@@ -345,10 +467,11 @@ def run_job(job_id: str) -> None:
             metadata_json=json.dumps(metadata),
         )
         logger.info(
-            "Job %s completed: %d texts in %ss",
+            "Job %s completed: %d texts × %d construct(s) in %ss",
             job_id[:8],
             len(texts),
-            result.metadata["duration_seconds"],
+            len(constructs),
+            metadata["duration_seconds"],
         )
     except Exception:
         logger.exception("Job %s failed", job_id[:8])

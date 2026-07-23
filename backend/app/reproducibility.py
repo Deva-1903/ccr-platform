@@ -61,11 +61,9 @@ def record_environment(metadata: dict) -> dict:
     return metadata
 
 
-def script_text(metadata: dict) -> str:
-    """Standalone Python script reproducing the run's similarities and scores."""
-    construct = metadata.get("construct_snapshot", {})
-    items = construct.get("items", [])
-    model_id = metadata.get("model_registry_id", metadata.get("model", ""))
+def _model_loader(metadata: dict) -> tuple[str, str]:
+    """(import lines, loader lines) for the pinned model - shared by the
+    single- and multi-construct script templates."""
     provider = metadata.get("provider_model_id", metadata.get("model", ""))
     revision = metadata.get("model_revision")
     revision_arg = f", revision={revision!r}" if revision and revision != "PIN_ME" else ""
@@ -86,6 +84,21 @@ def script_text(metadata: dict) -> str:
     else:
         model_loader = f"model = SentenceTransformer({provider!r}{revision_arg})"
         st_import = "from sentence_transformers import SentenceTransformer"
+    return st_import, model_loader
+
+
+def script_text(metadata: dict) -> str:
+    """Standalone Python script reproducing the run's similarities and scores."""
+    constructs_meta = metadata.get("constructs")
+    if constructs_meta and len(constructs_meta) > 1:
+        return _script_text_multi(metadata, constructs_meta)
+
+    construct = metadata.get("construct_snapshot", {})
+    items = construct.get("items", [])
+    model_id = metadata.get("model_registry_id", metadata.get("model", ""))
+    provider = metadata.get("provider_model_id", metadata.get("model", ""))
+    revision = metadata.get("model_revision")
+    st_import, model_loader = _model_loader(metadata)
     item_prefix = metadata.get("item_prefix", "")
     text_prefix = metadata.get("text_prefix", "")
     text_column = metadata.get("text_column", "text")
@@ -151,6 +164,117 @@ def main(csv_path: str) -> None:
 
     work.to_csv("reproduced_results.csv", index=False)
     print(f"Wrote reproduced_results.csv ({{len(work)}} rows, {{sims.shape[1]}} items).")
+    print("Compare against the platform export - values should match to ~1e-5.")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        raise SystemExit("Usage: python {script_name} <corpus.csv>")
+    main(sys.argv[1])
+'''
+
+
+def _constructs_literal(constructs_meta: list[dict]) -> str:
+    """Python literal for the multi-construct CONSTRUCTS list (see
+    _items_literal for why json.dumps is unusable here)."""
+    lines = ["["]
+    for c in constructs_meta:
+        items = c.get("snapshot", {}).get("items", [])
+        lines.append("    {")
+        lines.append(f"        \"name\": {c.get('name', '')!r},")
+        lines.append(f"        \"column_prefix\": {c.get('column_prefix', '')!r},")
+        lines.append("        \"items\": [")
+        for i in items:
+            rev = bool(i.get("reverse_scored", False))
+            lines.append(f'            {{"text": {i["text"]!r}, "reverse_scored": {rev}}},')
+        lines.append("        ],")
+        lines.append("    },")
+    lines.append("]")
+    return "\n".join(lines)
+
+
+def _script_text_multi(metadata: dict, constructs_meta: list[dict]) -> str:
+    """Multi-construct variant: the corpus is embedded ONCE, then every
+    construct is scored against the same document embeddings - the exact
+    computation the platform ran, prefixed columns and all."""
+    model_id = metadata.get("model_registry_id", metadata.get("model", ""))
+    provider = metadata.get("provider_model_id", metadata.get("model", ""))
+    revision = metadata.get("model_revision")
+    st_import, model_loader = _model_loader(metadata)
+    item_prefix = metadata.get("item_prefix", "")
+    text_prefix = metadata.get("text_prefix", "")
+    text_column = metadata.get("text_column", "text")
+    scoring = metadata.get("scoring", {})
+
+    construct_lines = "\n".join(
+        f"#   {c.get('name', '?')} (hash {c.get('items_sha256_16', '?')}, "
+        f"columns {c.get('column_prefix', '?')}_*)"
+        for c in constructs_meta
+    )
+
+    script_name = script_filename(metadata.get("job_id"))
+    reqs_name = requirements_filename(metadata.get("job_id"))
+    corpus_csv = metadata.get("corpus_file") or "your_corpus.csv"
+    corpus_arg = f'"{corpus_csv}"' if any(c.isspace() for c in corpus_csv) else corpus_csv
+
+    return f'''#!/usr/bin/env python3
+"""Reproduce CCR analysis independently of the platform (multi-construct run).
+
+run_id:                {metadata.get("job_id", "?")}
+created_at:            {metadata.get("started_at", "?")}
+platform_version:      {metadata.get("platform_version", "?")}
+output_schema_version: {metadata.get("output_schema_version", "1.1")}
+model:                 {model_id} -> {provider} (revision: {revision or "unpinned"})
+scoring:               adjustment_strategy={scoring.get("adjustment_strategy", "none")}, aggregate={scoring.get("aggregate", "mean_all_items")}
+"""
+# Constructs scored in this run:
+{construct_lines}
+#
+# Usage:
+#     pip install -r {reqs_name}
+#     python {script_name} {corpus_arg}
+# Outputs reproduced_results.csv with the same prefixed similarity columns as
+# the platform export ({{prefix}}_sim_item_N, {{prefix}}_ccr_score).
+
+import sys
+
+import numpy as np
+import pandas as pd
+{st_import}
+
+TEXT_COLUMN = {text_column!r}
+ITEM_PREFIX = {item_prefix!r}   # model-required prefix (E5 family); empty = none
+TEXT_PREFIX = {text_prefix!r}
+
+CONSTRUCTS = {_constructs_literal(constructs_meta)}
+
+
+def main(csv_path: str) -> None:
+    df = pd.read_csv(csv_path)
+    texts_all = df[TEXT_COLUMN].astype("string")
+    mask = texts_all.notna() & (texts_all.str.strip() != "")
+    work = df.loc[mask].reset_index(drop=True)          # platform drops empty rows the same way
+    texts = work[TEXT_COLUMN].astype(str).tolist()
+
+    {model_loader}
+    doc_texts = [TEXT_PREFIX + t for t in texts]
+    doc_emb = model.encode(doc_texts, convert_to_numpy=True, normalize_embeddings=True)
+
+    for construct in CONSTRUCTS:                         # corpus embedded once, scored per construct
+        item_texts = [ITEM_PREFIX + i["text"] for i in construct["items"]]
+        item_emb = model.encode(item_texts, convert_to_numpy=True, normalize_embeddings=True)
+        sims = doc_emb @ item_emb.T                      # normalized -> cosine similarity
+        prefix = construct["column_prefix"]
+        for j in range(sims.shape[1]):
+            work[f"{{prefix}}_sim_item_{{j + 1}}"] = np.round(sims[:, j], 6)
+        work[f"{{prefix}}_ccr_score"] = np.round(sims.mean(axis=1), 6)
+
+    score_cols = [c["column_prefix"] + "_ccr_score" for c in CONSTRUCTS]
+    print("Construct score correlations (Pearson):")
+    print(work[score_cols].corr().round(4).to_string())
+
+    work.to_csv("reproduced_results.csv", index=False)
+    print(f"Wrote reproduced_results.csv ({{len(work)}} rows, {{len(CONSTRUCTS)}} constructs).")
     print("Compare against the platform export - values should match to ~1e-5.")
 
 

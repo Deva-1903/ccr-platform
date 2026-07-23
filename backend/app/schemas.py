@@ -74,7 +74,10 @@ class ConstructOut(BaseModel):
 class JobCreate(BaseModel):
     project_id: str
     corpus_id: str
-    construct_id: str
+    # Either a single construct (the original API) or an ordered list for a
+    # multi-construct run. Exactly one of the two must be provided.
+    construct_id: str | None = None
+    construct_ids: list[str] | None = None
     text_column: str
     model_name: str = "all-minilm-l6-v2"  # registry id (spec 0003)
     language: str = "en"
@@ -85,7 +88,9 @@ class JobOut(BaseModel):
     project_id: str
     corpus_id: str
     construct_id: str
+    construct_ids: list[str] = []
     construct_name: str = ""
+    construct_names: list[str] = []
     corpus_filename: str = ""
     text_column: str
     model_name: str

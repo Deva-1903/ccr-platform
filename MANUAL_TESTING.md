@@ -50,6 +50,26 @@ with a "Sign in (top right)" message. Sign in and retry: accepted.
 3. Select any imported construct: items listed, plus the "not yet verified
    verbatim" notice (expected for the whole imported library for now).
 
+### Multi-construct runs (new)
+
+1. Pick a construct, then open the picker again and pick a second (selected
+   ones show a ✓; clicking again removes). Each selected construct is listed
+   as a collapsible block with its items and a "remove" link.
+2. The run button reads "Run CCR analysis (2 constructs)"; a run scores every
+   construct on ONE pass over the corpus, so 2 constructs take roughly as long
+   as 1. The cap is 10 per run.
+3. The runs table shows "Construct A + Construct B"; results open with a
+   "Construct interrelations" card - a Pearson correlation matrix of the
+   per-text scores (this is the point of the feature: how constructs
+   interrelate in YOUR texts) - plus a collapsible per-construct section each
+   with histogram, item loadings, and top/bottom texts.
+4. Downloads: the CSV has per-construct prefixed columns
+   (`satisfaction_with_life_sim_item_1`, `satisfaction_with_life_ccr_score`, …)
+   and no bare `ccr_score`; metadata JSON carries every construct snapshot
+   (`output_schema_version` 1.1); the reproduction script embeds the corpus
+   once, scores all constructs, and prints the same correlation matrix.
+   Single-construct runs are unchanged (flat columns, schema 1.0).
+
 ### Custom construct, typed
 
 1. "+ Custom construct" > name it, paste items one per line.

@@ -70,6 +70,11 @@ ALLOWED_SUFFIXES = (".csv", ".xlsx", ".xls")
 MAX_UPLOAD_BYTES_DEFAULT = 50 * 1024 * 1024
 UPLOAD_CHUNK_BYTES = 1024 * 1024
 
+# Multi-construct runs: bounds the export width (items × constructs columns)
+# and the results-page size; compute is dominated by the single corpus
+# embedding pass either way.
+MAX_CONSTRUCTS_PER_RUN = 10
+
 
 def max_upload_bytes() -> int:
     """Global upload ceiling, env-configurable (CCR_MAX_UPLOAD_BYTES)."""
@@ -171,14 +176,18 @@ def _construct_out(c: Construct) -> ConstructOut:
 
 
 def _job_out(db: Session, j: Job) -> JobOut:
-    construct = db.get(Construct, j.construct_id)
+    construct_ids = jobs_module.job_construct_ids(j)
+    constructs = [db.get(Construct, cid) for cid in construct_ids]
+    names = [c.name if c else "?" for c in constructs]
     corpus = db.get(Corpus, j.corpus_id)
     return JobOut(
         id=j.id,
         project_id=j.project_id,
         corpus_id=j.corpus_id,
         construct_id=j.construct_id,
-        construct_name=construct.name if construct else "",
+        construct_ids=construct_ids,
+        construct_name=names[0] if names else "",
+        construct_names=names,
         corpus_filename=corpus.filename if corpus else "",
         text_column=j.text_column,
         model_name=j.model_name,
@@ -726,7 +735,24 @@ def create_job(
     project = _get_or_404(db, Project, body.project_id)
     _require_project_access(project, user)
     corpus = _get_or_404(db, Corpus, body.corpus_id)
-    _get_or_404(db, Construct, body.construct_id)
+
+    # One run may score several constructs against the same corpus (the corpus
+    # is embedded once, so N constructs cost barely more than one). A run
+    # counts once toward the anonymous/saved-run limits regardless of N;
+    # the per-run construct cap bounds output size, not compute.
+    construct_ids = body.construct_ids if body.construct_ids else (
+        [body.construct_id] if body.construct_id else []
+    )
+    if not construct_ids:
+        raise HTTPException(400, "Provide construct_id or a non-empty construct_ids list.")
+    if len(construct_ids) > MAX_CONSTRUCTS_PER_RUN:
+        raise HTTPException(
+            400, f"At most {MAX_CONSTRUCTS_PER_RUN} constructs per run (got {len(construct_ids)})."
+        )
+    if len(set(construct_ids)) != len(construct_ids):
+        raise HTTPException(400, "Duplicate constructs in one run are not allowed.")
+    for cid in construct_ids:
+        _get_or_404(db, Construct, cid)
 
     # Anonymous tier: N runs per day, then sign-in (PI decision 2026-07-10).
     # Cookie counter = a nudge, not a security boundary (recorded in DECISIONS.md).
@@ -776,7 +802,8 @@ def create_job(
     job = Job(
         project_id=body.project_id,
         corpus_id=body.corpus_id,
-        construct_id=body.construct_id,
+        construct_id=construct_ids[0],
+        construct_ids_json=json.dumps(construct_ids),
         text_column=body.text_column,
         model_name=body.model_name,
         language=language,

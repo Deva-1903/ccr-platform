@@ -527,3 +527,18 @@ button.danger-solid:disabled { background: #c9ccd1; }
 @media (max-width: 700px) {
   .welcome-steps { grid-template-columns: 1fr; }
 }
+
+/* ------------------------------------------- multi-construct runs */
+.construct-selected {
+  margin-top: 8px; border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 12px; background: #fff;
+}
+.construct-selected summary {
+  cursor: pointer; display: flex; align-items: baseline; gap: 8px;
+  list-style-position: inside;
+}
+.construct-selected-name { font-weight: 600; font-size: 13.5px; }
+.construct-remove { margin-left: auto; flex-shrink: 0; }
+.construct-results summary { cursor: pointer; }
+.construct-results summary .picker-meta { margin-left: 6px; }
+.construct-results h4 { margin: 14px 0 4px; font-size: 13.5px; }

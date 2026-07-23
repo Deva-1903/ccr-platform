@@ -75,8 +75,32 @@ Higher = toward the target pole, negative = toward the opposing pole.
 - Should anchored runs also report the plain per-pole similarities
   (cos(T, C), cos(T, C_opp)) in the export for transparency?
 
+## 3. Multi-construct runs — IMPLEMENTED
+
+**Problem.** Each construct had to be run separately, which is slow when the
+goal is to see how two or more constructs are interrelated in the same texts.
+
+**Implemented (2026-07-23).** A run now accepts up to 10 constructs
+(`POST /api/jobs` takes `construct_ids`; `construct_id` still works). The
+corpus is embedded ONCE and every construct is scored against the same
+document embeddings, so N constructs cost barely more than one - and the
+per-text scores are row-aligned by construction.
+
+- Results add a "Construct interrelations" card: Pearson r between per-text
+  CCR scores, plus a collapsible per-construct section (histogram, item
+  loadings, top/bottom texts).
+- Export: per-construct prefixed columns ({slug}_sim_item_N, {slug}_ccr_score)
+  under output_schema_version 1.1; single-construct exports unchanged at 1.0.
+- Metadata records every construct snapshot + item hash and the correlation
+  matrix; the reproduction script embeds the corpus once, scores all
+  constructs, and prints the same correlations.
+- A multi-construct run counts once toward the anonymous/saved-run limits;
+  the constructs-per-run cap (10) bounds export width, not compute.
+
 ## Sequencing
 
 Anchor vectors first (pure scoring change, no ingestion changes), then
 chunking (touches ingestion, warnings, cache keys - chunked and unchunked
-embeddings must not share a cache entry).
+embeddings must not share a cache entry). Multi-construct runs (3) shipped
+first: no scoring or ingestion changes, and the embedding-reuse plumbing it
+added (one corpus pass, N scorings) is what chunking's cache work builds on.

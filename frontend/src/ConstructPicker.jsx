@@ -27,7 +27,10 @@ export function rememberRecent(id) {
   }
 }
 
-export default function ConstructPicker({ constructs, value, onChange }) {
+// Multi-construct runs: `selectedIds` is the ordered selection, `onToggle(id)`
+// adds/removes one. Picking closes the panel (same feel as the old
+// single-select); the Workspace shows the selection as removable chips.
+export default function ConstructPicker({ constructs, selectedIds, onToggle }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -35,7 +38,7 @@ export default function ConstructPicker({ constructs, value, onChange }) {
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
-  const selected = constructs.find((c) => c.id === value) || null;
+  const selected = new Set(selectedIds);
 
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -97,8 +100,8 @@ export default function ConstructPicker({ constructs, value, onChange }) {
   }, [active, open]);
 
   function choose(c) {
-    onChange(c.id);
-    rememberRecent(c.id);
+    onToggle(c.id);
+    if (!selected.has(c.id)) rememberRecent(c.id);
     setOpen(false);
     setQuery("");
   }
@@ -133,15 +136,14 @@ export default function ConstructPicker({ constructs, value, onChange }) {
             setTimeout(() => inputRef.current?.focus(), 0);
           }}
         >
-          {selected ? (
-            <>
-              <span>{selected.name}</span>
-              <span className="picker-meta">
-                {selected.items.length} item{selected.items.length === 1 ? "" : "s"}
-              </span>
-            </>
+          {selected.size > 0 ? (
+            <span>
+              + Add another construct ({selected.size} selected)
+            </span>
           ) : (
-            <span className="muted">Select a construct ({constructs.length} in library)</span>
+            <span className="muted">
+              Select one or more constructs ({constructs.length} in library)
+            </span>
           )}
           <span className="picker-caret" aria-hidden="true">▾</span>
         </button>
@@ -171,27 +173,32 @@ export default function ConstructPicker({ constructs, value, onChange }) {
                 {items.map((c) => {
                   index += 1;
                   const isActive = index === active;
+                  const isSelected = selected.has(c.id);
                   return (
                     <div
                       key={c.id}
                       role="option"
-                      aria-selected={c.id === value}
+                      aria-selected={isSelected}
                       data-active={isActive || undefined}
                       className={
                         "picker-option" +
                         (isActive ? " active" : "") +
-                        (c.id === value ? " selected" : "")
+                        (isSelected ? " selected" : "")
                       }
                       onMouseDown={(e) => {
                         e.preventDefault();
                         choose(c);
                       }}
                     >
-                      <span className="picker-name">{c.name}</span>
+                      <span className="picker-name">
+                        {isSelected ? "✓ " : ""}
+                        {c.name}
+                      </span>
                       <span className="picker-meta">
                         {c.category ? `${c.category} · ` : ""}
                         {c.items.length} item{c.items.length === 1 ? "" : "s"}
                         {c.verification_status !== "verified" ? " · unverified" : ""}
+                        {isSelected ? " · click to remove" : ""}
                       </span>
                     </div>
                   );
