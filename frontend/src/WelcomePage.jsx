@@ -72,9 +72,11 @@ export default function WelcomePage({ onEnter }) {
       <section className="card">
         <h3>Who runs this</h3>
         <p className="hint">
-          This interface is designed, built, and maintained by the Culture &amp;
-          Morality Lab (PI: Mohammad Atari) at the University of Massachusetts
-          Amherst. The CCR pipeline is built based on Atari et al. (2023),
+          This interface is designed, built, and maintained by the{" "}
+          <a href="https://websites.umass.edu/matari/" target="_blank" rel="noopener noreferrer">
+            Culture &amp; Morality Lab
+          </a>{" "}
+          (PI: Mohammad Atari) at the University of Massachusetts Amherst. The CCR pipeline is built based on Atari et al. (2023),
           extended and validated by Chen et al. (2024), and features
           PsyEmbedding language models, which are fine-tuned open-source models
           for psychological text analysis (Atari et al., 2026). For
