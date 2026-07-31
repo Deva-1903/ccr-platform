@@ -136,3 +136,31 @@ def test_delete_removes_files_on_disk(client, tmp_path):
 
     client.delete(f"/api/projects/{project['id']}")
     assert not created.pop().exists()
+
+
+# ------------------------------------------------------------ internal pages
+def test_product_page_gated_to_lab_and_above(client):
+    """/product (architecture + access model) is internal: anonymous and
+    external accounts see the 403 explainer; lab role and above see the page."""
+    assert client.get("/product").status_code == 403  # anonymous
+
+    client.post(
+        "/api/auth/register",
+        json={"email": "product-int@test.edu", "password": "password123", "name": "Ext"},
+    )
+    assert client.get("/product").status_code == 403  # signed in, external
+
+    # Flip the role directly in the DB; granting via the admin API is
+    # test_admin's concern, this test only cares about the gate itself.
+    from app.db import SessionLocal
+    from app.models import User
+
+    db = SessionLocal()
+    row = db.query(User).filter_by(email="product-int@test.edu").one()
+    row.role = "lab"
+    db.commit()
+    db.close()
+
+    resp = client.get("/product")
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers["content-type"]

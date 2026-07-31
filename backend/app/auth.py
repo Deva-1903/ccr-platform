@@ -120,6 +120,13 @@ def role_unlimited(role: str | None) -> bool:
     return normalize_role(role) in UNLIMITED_ROLES
 
 
+def role_lab_or_above(role: str | None) -> bool:
+    """Lab members, maintainers, and the PI - the internal tier. Gates
+    lab-only pages (/product); same set as UNLIMITED_ROLES but a separate
+    helper because docs access and quota policy can diverge."""
+    return normalize_role(role) in UNLIMITED_ROLES
+
+
 def role_is_staff(role: str | None) -> bool:
     return normalize_role(role) in STAFF_ROLES
 

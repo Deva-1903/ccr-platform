@@ -78,11 +78,21 @@ def test_health(client):
     assert client.get("/api/health").json()["status"] == "ok"
 
 
-def test_guide_product_welcome_pages_served(client):
-    for path in ("/guide", "/product", "/welcome"):
+def test_guide_welcome_pages_served(client):
+    for path in ("/guide", "/welcome"):
         resp = client.get(path)
         assert resp.status_code == 200, path
         assert "text/html" in resp.headers["content-type"]
+
+
+def test_product_page_internal_only_for_anonymous(client):
+    # /product is lab-internal (PI request 2026-07-31); anonymous visitors get
+    # a friendly HTML explainer, not the page. Tier coverage lives in
+    # test_auth_tiers_and_lifecycle.
+    resp = client.get("/product")
+    assert resp.status_code == 403
+    assert "text/html" in resp.headers["content-type"]
+    assert "internal" in resp.text.lower()
 
 
 def test_seed_constructs_present(client):

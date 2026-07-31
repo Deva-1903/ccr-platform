@@ -19,7 +19,7 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
@@ -933,12 +933,39 @@ def testing_guide():
 # /product: the under-the-hood companion to /guide - access model (tiers,
 # invites, pre-assignments, audit), architecture, data flow, retention.
 # The guide stays a how-to-use-and-test document; this page holds the
-# product/architecture detail (split requested 2026-07-22).
+# product/architecture detail (split requested 2026-07-22). Internal-only
+# since 2026-07-31 (PI request): lab members, maintainers, and the PI.
 PRODUCT_HTML = Path(__file__).resolve().parent / "product.html"
+
+PRODUCT_FORBIDDEN_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCR Platform - Internal page</title>
+<style>
+  body { margin: 0; background: #f7f7f8; color: #1d2129;
+         font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 520px; margin: 14vh auto 0; padding: 0 1.25rem; text-align: center; }
+  h1 { font-size: 1.25rem; }
+  p { color: #667085; }
+  a { color: #26736f; font-weight: 600; }
+</style></head><body><main>
+<h1>This page is internal to the lab</h1>
+<p>The architecture and access-model docs are limited to Culture &amp; Morality Lab
+members. If you are in the lab, sign in on the
+<a href="/">dashboard</a> with your lab account and come back; accounts are
+granted lab access by the admins.</p>
+<p><a href="/">← Back to the CCR Platform</a></p>
+</main></body></html>"""
 
 
 @app.get("/product", include_in_schema=False)
-def product_page():
+def product_page(
+    db: Session = Depends(get_db),
+    user: dict | None = Depends(auth.get_current_user),
+):
+    row = db.get(User, user["id"]) if user else None
+    if row is None or not auth.role_lab_or_above(row.role):
+        return HTMLResponse(PRODUCT_FORBIDDEN_HTML, status_code=403)
     if not PRODUCT_HTML.exists():
         raise HTTPException(404, "Product page not available on this instance.")
     return FileResponse(PRODUCT_HTML, media_type="text/html")
