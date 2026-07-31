@@ -84,15 +84,19 @@ export default function WelcomePage({ onEnter }) {
       </section>
 
       {/* Open-source disclaimer - the PI's wording verbatim (2026-07-31). */}
-      <p className="small muted welcome-disclaimer">
-        This is an open-source software: use at your own risk. This open-source
-        software is provided &quot;as is,&quot; without warranties or
-        guarantees of accuracy, reliability, security, fitness for a particular
-        purpose, or continued support. Users are responsible for validating
-        outputs, protecting their data, and determining whether the software is
-        appropriate for their intended use. The authors and contributors are
-        not liable for losses or damages resulting from its use.
-      </p>
+      <section className="card">
+        <h3>Open-source disclaimer</h3>
+        <p className="hint">
+          This is an open-source software: use at your own risk. This
+          open-source software is provided &quot;as is,&quot; without
+          warranties or guarantees of accuracy, reliability, security, fitness
+          for a particular purpose, or continued support. Users are
+          responsible for validating outputs, protecting their data, and
+          determining whether the software is appropriate for their intended
+          use. The authors and contributors are not liable for losses or
+          damages resulting from its use.
+        </p>
+      </section>
     </div>
   );
 }

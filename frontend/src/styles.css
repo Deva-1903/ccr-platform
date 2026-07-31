@@ -626,8 +626,3 @@ details[open] > summary::before { transform: rotate(90deg); }
   .construct-results summary::before { transition: none; }
   button.primary:active, button.ghost:active, a.ghost:active { transform: none; }
 }
-
-.welcome-disclaimer {
-  max-width: 72ch; margin: 4px auto 24px; padding: 0 4px;
-  line-height: 1.55;
-}
