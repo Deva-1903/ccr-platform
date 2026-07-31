@@ -137,7 +137,7 @@ export default function AdminPage({ auth }) {
     <>
       {error && <div className="error-banner" onClick={() => setError("")}>{error}</div>}
       {notice && (
-        <div className="card" style={{ borderColor: "var(--maroon)" }}>
+        <div className="card" style={{ borderColor: "var(--brand)" }}>
           <p style={{ overflowWrap: "anywhere" }}><b>{notice}</b></p>
         </div>
       )}

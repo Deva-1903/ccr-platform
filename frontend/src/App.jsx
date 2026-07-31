@@ -195,10 +195,11 @@ export default function App() {
             }
           }}
         >
-          CCR Platform
+          <img className="brand-logo" src="/ccr-logo-white.svg" alt="CCR" />
+          <span>CCR Platform</span>
         </a>
         <span className="sub">
-          Contextualized Construct Representations · theory-driven psychological text analysis
+          Contextualized Construct Representations · Culture &amp; Morality Lab, UMass Amherst
         </span>
         <nav className="header-nav">
           {IS_ADMIN_PATH ? (
@@ -212,7 +213,11 @@ export default function App() {
             </button>
           )}
           <a className="header-link" href="/guide">Guide</a>
-          <a className="header-link" href="/product">How it works</a>
+          {/* /product is lab-internal; the server enforces the gate, the
+              header just doesn't advertise it to everyone else. */}
+          {["lab", "maintainer", "pi"].includes(auth?.role) && (
+            <a className="header-link" href="/product">How it works</a>
+          )}
           {auth?.signed_in ? (
             <>
               <span className="small">Hi, {auth.name}</span>

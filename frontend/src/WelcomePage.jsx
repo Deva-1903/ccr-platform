@@ -39,13 +39,16 @@ export default function WelcomePage({ onEnter }) {
           <button className="primary" onClick={onEnter}>
             Open the dashboard →
           </button>
+          {/* /product (architecture docs) is lab-internal now; the public
+              landing only advertises the guide. Lab members reach it from
+              the header. */}
           <a className="ghost-link" href="/guide">How to use &amp; test it</a>
-          <a className="ghost-link" href="/product">How it works under the hood</a>
         </div>
         <p className="hint">
           No account needed to try it - anonymous visitors get a few runs a day,
           and uploads are deleted right after their analysis. Accounts are free
-          and keep your projects.
+          and keep your projects. Built and maintained by the{" "}
+          <b>Culture &amp; Morality Lab</b> at UMass Amherst.
         </p>
       </section>
 

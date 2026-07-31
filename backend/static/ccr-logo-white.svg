@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- White-stroke variant of CCR_primary.svg for dark headers; teal dots unchanged. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="676" viewBox="188 455 880 338" role="img" aria-labelledby="title desc">
+  <title id="title">CCR logo</title>
+  <desc id="desc">Minimal CCR logo with two C forms, two similarity dots, and a geometric R.</desc>
+
+  <g fill="none" stroke="#ffffff" stroke-width="32" stroke-linecap="butt" stroke-linejoin="miter">
+    <path d="M 458.884 538.509 A 133 133 0 1 0 458.884 709.491"/>
+    <path d="M 563.116 538.509 A 133 133 0 0 1 766.884 538.509"/>
+    <path d="M 563.116 709.491 A 133 133 0 0 0 766.884 709.491"/>
+    <path d="M 846 754 V 496 H 950 A 73 62 0 0 1 950 620 H 846"/>
+    <path d="M 930 620 L 1035 759"/>
+  </g>
+  <circle cx="481" cy="624" r="15" fill="#339B98"/>
+  <circle cx="538" cy="624" r="15" fill="#339B98"/>
+</svg>

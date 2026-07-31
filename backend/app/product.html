@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="/ccr-logo.svg">
 <title>CCR Platform - Product &amp; Architecture</title>
 <style>
   :root {
     --bg: #ffffff; --fg: #1a1a1a; --muted: #666; --border: #ddd;
-    --accent: #7a1f3d; --card: #f7f7f8; --amber-bg: #fff7e0; --amber-border: #e0b84d;
-    --code-bg: #f0f0f2; --maroon: #7a1f3d;
+    --accent: #26736f; --card: #f7f7f8; --amber-bg: #fff7e0; --amber-border: #e0b84d;
+    --code-bg: #f0f0f2; --brand: #151515;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #16181c; --fg: #e6e6e6; --muted: #9a9a9a; --border: #3a3d44;
-      --accent: #e08aa3; --card: #1f2228; --amber-bg: #2e2810; --amber-border: #8a6d1f;
+      --accent: #6cc9c6; --card: #1f2228; --amber-bg: #2e2810; --amber-border: #8a6d1f;
       --code-bg: #24272e;
     }
   }
@@ -22,9 +23,9 @@
     margin: 0; background: var(--bg); color: var(--fg);
     font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
-  /* Shared top bar: same maroon brand as the app, links back to it. */
+  /* Shared top bar: same ink-and-teal brand as the app, links back to it. */
   .topbar {
-    background: var(--maroon); color: #fff;
+    background: var(--brand); color: #fff;
     padding: 12px 1.25rem;
     display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
   }
@@ -32,6 +33,9 @@
     color: #fff; font-weight: 650; font-size: 1.02rem;
     text-decoration: none; letter-spacing: .2px; white-space: nowrap;
   }
+  .topbar .brand { display: inline-flex; align-items: center; gap: .6rem; }
+  .brand-logo { height: 20px; width: auto; display: block; }
+  .topbar .lab { color: rgba(255,255,255,.6); font-size: .82rem; }
   .topbar .brand:hover { opacity: .88; }
   .topbar nav { margin-left: auto; display: flex; gap: 1.1rem; flex-wrap: wrap; }
   .topbar nav a { color: rgba(255,255,255,.82); text-decoration: none; font-size: .88rem; }
@@ -81,7 +85,7 @@
   }
   .toast {
     position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%);
-    background: var(--maroon); color: #fff; padding: .5rem .9rem; border-radius: 8px;
+    background: var(--brand); color: #fff; padding: .5rem .9rem; border-radius: 8px;
     font-size: .85rem; opacity: 0; pointer-events: none; transition: opacity .2s;
   }
   .toast.show { opacity: 1; }
@@ -95,7 +99,18 @@
 </head>
 <body>
 <header class="topbar">
-  <a class="brand" href="/">CCR Platform</a>
+  <a class="brand" href="/"><svg class="brand-logo" viewBox="188 455 880 338" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke="#fff" stroke-width="32">
+      <path d="M 458.884 538.509 A 133 133 0 1 0 458.884 709.491"/>
+      <path d="M 563.116 538.509 A 133 133 0 0 1 766.884 538.509"/>
+      <path d="M 563.116 709.491 A 133 133 0 0 0 766.884 709.491"/>
+      <path d="M 846 754 V 496 H 950 A 73 62 0 0 1 950 620 H 846"/>
+      <path d="M 930 620 L 1035 759"/>
+    </g>
+    <circle cx="481" cy="624" r="15" fill="#339B98"/>
+    <circle cx="538" cy="624" r="15" fill="#339B98"/>
+  </svg>CCR Platform</a>
+  <span class="lab">Culture &amp; Morality Lab · UMass Amherst</span>
   <nav>
     <a href="/">Dashboard</a>
     <a href="/welcome">About</a>

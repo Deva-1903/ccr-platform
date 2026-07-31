@@ -203,8 +203,9 @@ function CorrelationCard({ correlations }) {
   function cellStyle(r, isDiag) {
     if (isDiag || r == null) return { color: "#98a2b3" };
     const alpha = Math.min(0.85, Math.abs(r));
+    // Diverging pair: brand teal for positive, copper for negative.
     return {
-      background: r >= 0 ? `rgba(122, 31, 61, ${alpha})` : `rgba(31, 77, 122, ${alpha})`,
+      background: r >= 0 ? `rgba(38, 115, 111, ${alpha})` : `rgba(178, 96, 43, ${alpha})`,
       color: Math.abs(r) > 0.5 ? "#fff" : undefined,
       textAlign: "center",
     };
@@ -340,7 +341,7 @@ function Histogram({ histogram }) {
             width={Math.max(1, barW - 3)}
             height={h}
             rx="2"
-            fill="#7a1f3d"
+            fill="#339b98"
             opacity="0.85"
           >
             <title>
