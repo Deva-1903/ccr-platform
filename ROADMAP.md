@@ -1,5 +1,45 @@
 # Roadmap
 
+## Backlog (pick one at a time)
+
+Working list as of 2026-07-31 - features, bugs, and chores in rough priority
+order. Detailed specs for the numbered features live in the sections below.
+
+**Features**
+- [ ] LLM-generated construct items (PI idea 2026-07-31): design note first
+      (prompt design, model choice, "AI-generated / unvalidated" labeling),
+      then a v1 with user review before saving; validate by generating items
+      for scales we have (SWLS, MFQ) and correlating vs. the validated items.
+- [ ] Anchor vectors / bipolar constructs (feature 2 below) - next per the
+      original sequencing.
+- [ ] Automatic chunking for over-limit rows (feature 1 below).
+- [ ] Dark mode for the app - /guide and /product already have it; the React
+      app doesn't.
+- [ ] Decide the default model with the PI: MiniLM (CCR reference) vs. a
+      PsyEmbedding model ("prominent or default" was the PI's ask).
+
+**Bugs / fixes**
+- [ ] PsyEmbedding HF repos: push the 1_Pooling fix
+      (scripts/fix_psyembedding_pooling.py) with lab HF credentials, then
+      re-pin the four revisions in models.yaml and drop pooling_fallback.
+      Blocked on lab HF write access (Deva/Dr. Chen).
+- [ ] PsyEmbedding benchmarks: registry still says
+      expected_time_per_1k_texts_cpu: benchmark_required for all four
+      (scripts/bench_models.py exists).
+
+**Updates / chores**
+- [ ] Open-source warning text from the PI: text never reached the repo (not
+      in email either) - get it resent, place it (welcome page / footer /
+      README), and add a LICENSE file (repo has none).
+- [ ] Verify Dr. Chen's maintainer pre-assignment exists on /admin and that
+      she can sign in.
+- [ ] Self-service password reset (currently admin-only; tied to the planned
+      Supabase auth swap).
+- [ ] Invite links: currently ON HOLD behind CCR_INVITES_ENABLED - decide
+      keep/kill permanently.
+- [ ] Celery + Redis job queue - only when multi-instance deployment or retry
+      semantics are needed (see jobs.py docstring).
+
 PI-requested features (Mohammad, 2026-07-18), grounded in Teitelbaum & Simchon
 (2025), *Neural Text Embeddings in Psychological Research*, Psychological
 Methods, https://doi.org/10.1037/met0000768.
