@@ -23,17 +23,20 @@ const STEPS = [
 export default function WelcomePage({ onEnter }) {
   return (
     <div className="welcome">
+      {/* Hero copy is the PI's wording (2026-07-31) - edit only on request. */}
       <section className="welcome-hero card">
-        <h2>Psychological text analysis, grounded in theory</h2>
+        <h2>Theory-Driven Psychological Text Analysis</h2>
         <p>
-          The CCR Platform measures psychological constructs in text using{" "}
-          <b>Contextualized Construct Representations</b> (CCR; Atari, Omrani,
-          et&nbsp;al.) - instead of counting words or prompting a chatbot, it
-          embeds <i>validated questionnaire items</i> and <i>your texts</i> with
-          the same language model and scores each text by its similarity to the
-          scale. Transparent, deterministic, and reproducible: the same input
-          gives the same numbers, every time, and you can take the script home
-          to prove it.
+          <b>Contextualized Construct Representation (CCR)</b> offers a
+          theory-driven way to measure psychological themes in text without
+          relying on simple word counts. CCR uses validated questionnaire items
+          (or prototypical statements) designed to assess psychological
+          constructs such as individualism, moral values, depression,
+          religiosity, or personality traits. A language model then compares
+          the meaning of a passage with the meaning of each input sentence and
+          produces a score indicating how strongly the passage reflects the
+          construct of interest. CCR is free, open-source, publicly available,
+          multilingual, adaptable to new language models, and highly flexible.
         </p>
         <div className="welcome-cta">
           <button className="primary" onClick={onEnter}>
@@ -44,12 +47,6 @@ export default function WelcomePage({ onEnter }) {
               the header. */}
           <a className="ghost-link" href="/guide">How to use &amp; test it</a>
         </div>
-        <p className="hint">
-          No account needed to try it - anonymous visitors get a few runs a day,
-          and uploads are deleted right after their analysis. Accounts are free
-          and keep your projects. Built and maintained by the{" "}
-          <b>Culture &amp; Morality Lab</b> at UMass Amherst.
-        </p>
       </section>
 
       <section className="welcome-steps">
@@ -75,12 +72,27 @@ export default function WelcomePage({ onEnter }) {
       <section className="card">
         <h3>Who runs this</h3>
         <p className="hint">
-          Built and maintained by the Culture &amp; Morality Lab (PI: Mohammad
-          Atari) at the University of Massachusetts Amherst, building on the
-          published CCR method and the lab's PsyEmbedding models. Questions,
-          bugs, ideas: <a href="mailto:devaanand@umass.edu">devaanand@umass.edu</a>.
+          This interface is designed, built, and maintained by the Culture &amp;
+          Morality Lab (PI: Mohammad Atari) at the University of Massachusetts
+          Amherst. The CCR pipeline is built based on Atari et al. (2023),
+          extended and validated by Chen et al. (2024), and features
+          PsyEmbedding language models, which are fine-tuned open-source models
+          for psychological text analysis (Atari et al., 2026). For
+          suggestions, questions, bugs, and ideas, reach out to the maintainer
+          at <a href="mailto:devaanand@umass.edu">devaanand@umass.edu</a>.
         </p>
       </section>
+
+      {/* Open-source disclaimer - the PI's wording verbatim (2026-07-31). */}
+      <p className="small muted welcome-disclaimer">
+        This is an open-source software: use at your own risk. This open-source
+        software is provided &quot;as is,&quot; without warranties or
+        guarantees of accuracy, reliability, security, fitness for a particular
+        purpose, or continued support. Users are responsible for validating
+        outputs, protecting their data, and determining whether the software is
+        appropriate for their intended use. The authors and contributors are
+        not liable for losses or damages resulting from its use.
+      </p>
     </div>
   );
 }

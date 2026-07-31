@@ -28,9 +28,11 @@ order. Detailed specs for the numbered features live in the sections below.
       (scripts/bench_models.py exists).
 
 **Updates / chores**
-- [ ] Open-source warning text from the PI: text never reached the repo (not
-      in email either) - get it resent, place it (welcome page / footer /
-      README), and add a LICENSE file (repo has none).
+- [x] Open-source warning text from the PI: received and placed verbatim on
+      the landing page (2026-07-31), along with his hero copy and "Who runs
+      this" text.
+- [ ] Add a LICENSE file - the repo has none; the landing-page disclaimer is
+      not a license, and "CCR is free, open-source" is now a public claim.
 - [ ] Verify Dr. Chen's maintainer pre-assignment exists on /admin and that
       she can sign in.
 - [ ] Self-service password reset (currently admin-only; tied to the planned
