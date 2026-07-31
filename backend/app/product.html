@@ -34,7 +34,7 @@
     text-decoration: none; letter-spacing: .2px; white-space: nowrap;
   }
   .topbar .brand { display: inline-flex; align-items: center; gap: .6rem; }
-  .brand-logo { height: 20px; width: auto; display: block; }
+  .brand-logo { height: 26px; width: auto; display: block; }
   .topbar .lab { color: rgba(255,255,255,.6); font-size: .82rem; }
   .topbar .brand:hover { opacity: .88; }
   .topbar nav { margin-left: auto; display: flex; gap: 1.1rem; flex-wrap: wrap; }
@@ -109,8 +109,8 @@
     </g>
     <circle cx="481" cy="624" r="15" fill="#339B98"/>
     <circle cx="538" cy="624" r="15" fill="#339B98"/>
-  </svg>CCR Platform</a>
-  <span class="lab">Culture &amp; Morality Lab · UMass Amherst</span>
+  </svg></a>
+  <span class="lab">Psychological Text Analysis with Contextualized Construct Representation</span>
   <nav>
     <a href="/">Dashboard</a>
     <a href="/welcome">About</a>
@@ -128,9 +128,10 @@ page tells you how it <em>works</em>.</p>
 
 <h2 id="access">1. Access model: four tiers + break-glass</h2>
 <p>Every account has one of four roles. New sign-ups land as <b>external user</b>
-unless an invite link or a pre-assigned role says otherwise (see
-<a href="#prelogin">§2</a>). Roles are managed entirely in the app, on the
-<code>/admin</code> page - no server configuration involved.</p>
+unless a pre-assigned role says otherwise (see
+<a href="#prelogin">§2</a>; invite links are currently on hold). Roles are
+managed entirely in the app, on the <code>/admin</code> page - no server
+configuration involved.</p>
 
 <figure>
 <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" role="img"
@@ -208,13 +209,14 @@ in increasing order of privilege:</p>
 <ol>
   <li><b>Anonymous use</b> - no account at all: 3 runs/day, small files, uploads
       deleted right after analysis. The zero-commitment trial tier.</li>
-  <li><b>Invite links</b> - a signed URL an admin copies from /admin into Slack
-      or an email. Whoever registers through it lands as a <b>lab member</b> (or
-      external user). Bearer-style: anyone with the link can use it, so it only
-      carries non-staff roles and expires after 7 days. Each link is tracked on
-      /admin: revoke it any time (it stops working immediately) and see exactly
-      which accounts signed up through it; creation, revocation, and every
-      redemption are audited.</li>
+  <li><b>Invite links</b> <em>(currently on hold - creation and redemption are
+      disabled; use pre-assigned roles below)</em> - a signed URL an admin
+      copies from /admin into Slack or an email. Whoever registers through it
+      lands as a <b>lab member</b> (or external user). Bearer-style: anyone
+      with the link can use it, so it only carries non-staff roles and expires
+      after 7 days. Each link is tracked on /admin: revoke it any time (it
+      stops working immediately) and see exactly which accounts signed up
+      through it; creation, revocation, and every redemption are audited.</li>
   <li><b>Pre-assigned roles</b> - a role bound to a <em>specific email</em>
       before the account exists. When that person first signs in - password or
       Google - they land at the assigned tier, staff roles included. This is how

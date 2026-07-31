@@ -78,7 +78,7 @@ a { color: var(--brand); }
   color: #fff;
   text-decoration: none;
 }
-.brand-logo { height: 24px; width: auto; display: block; }
+.brand-logo { height: 28px; width: auto; display: block; }  /* sole brand mark - no wordmark */
 .header .brand:hover { opacity: 0.88; }
 .header .sub { flex: 1 1 280px; min-width: 0; font-size: 12.5px; opacity: 0.85; }
 

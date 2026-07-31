@@ -15,6 +15,10 @@ ADMIN_EMAIL = "admin@lab.test"
 @pytest.fixture()
 def client(monkeypatch):
     monkeypatch.setenv("ADMIN_EMAILS", f"{ADMIN_EMAIL}, other-admin@lab.test")
+    # Invite links are on hold by default (2026-07-31); these tests cover the
+    # dormant machinery, so switch it on. The on-hold behavior itself is
+    # covered by test_invites_on_hold_by_default.
+    monkeypatch.setenv("CCR_INVITES_ENABLED", "1")
     with TestClient(app) as c:
         yield c
 
@@ -432,6 +436,38 @@ def test_revoked_invite_stops_working(client):
         "name": "Late", "invite_token": invite["token"],
     })
     assert resp.status_code == 400 and "revoked" in resp.json()["detail"]
+
+
+def test_invites_on_hold_by_default(client, monkeypatch):
+    """Invite links are dormant unless CCR_INVITES_ENABLED=1 (2026-07-31):
+    creation is refused, previously minted tokens stop redeeming, and the
+    overview flag tells the admin UI to hide the section. Pre-assigned
+    roles keep working - they are the supported onboarding path."""
+    _as_admin(client)
+    live = client.post("/api/admin/invites", json={"role": "lab"}).json()  # minted while enabled
+
+    monkeypatch.setenv("CCR_INVITES_ENABLED", "0")
+    assert client.get("/api/admin/overview").json()["invites_enabled"] is False
+    resp = client.post("/api/admin/invites", json={"role": "lab"})
+    assert resp.status_code == 409 and "on hold" in resp.json()["detail"]
+    client.post("/api/auth/logout")
+
+    resp = client.post("/api/auth/register", json={
+        "email": "held@lab.test", "password": "password123",
+        "name": "Held", "invite_token": live["token"],
+    })
+    assert resp.status_code == 400 and "on hold" in resp.json()["detail"]
+
+    # pre-assignment still lands the role even while links are frozen
+    _as_admin(client)
+    client.post("/api/admin/role-assignments", json={"email": "held@lab.test", "role": "lab"})
+    client.post("/api/auth/logout")
+    resp = client.post("/api/auth/register", json={
+        "email": "held@lab.test", "password": "password123", "name": "Held",
+    })
+    assert resp.status_code == 201
+    assert client.get("/api/auth/me").json()["role"] == "lab"
+    client.post("/api/auth/logout")
 
 
 def test_audit_trail_records_and_is_pi_only(client):

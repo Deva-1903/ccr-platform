@@ -306,6 +306,10 @@ export default function AdminPage({ auth }) {
             </table>
           </div>
         )}
+        {/* Invite links are ON HOLD (2026-07-31): the server refuses creation
+            and redemption while overview.invites_enabled is false, and this
+            whole block stays hidden. Pre-assignments above are the way in. */}
+        {overview?.invites_enabled && (<>
         <p className="hint" style={{ marginTop: "1rem" }}>
           <b>Or create an invite link</b> (anyone with the link; lab member /
           external only - staff is granted per person above): paste it in Slack,
@@ -378,6 +382,7 @@ export default function AdminPage({ auth }) {
             </table>
           </div>
         )}
+        </>)}
       </Section>
 
       {/* Audit trail - PI/env-admin only (404s/403s hide it for maintainers) */}

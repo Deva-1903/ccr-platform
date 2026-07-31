@@ -195,11 +195,12 @@ export default function App() {
             }
           }}
         >
-          <img className="brand-logo" src="/ccr-logo-white.svg" alt="CCR" />
-          <span>CCR Platform</span>
+          {/* The logo already reads "CCR" - no wordmark next to it, and the
+              tagline says what the tool does instead of re-expanding the acronym. */}
+          <img className="brand-logo" src="/ccr-logo-white.svg" alt="CCR Platform" />
         </a>
         <span className="sub">
-          Contextualized Construct Representations · Culture &amp; Morality Lab, UMass Amherst
+          Psychological Text Analysis with Contextualized Construct Representation
         </span>
         <nav className="header-nav">
           {IS_ADMIN_PATH ? (

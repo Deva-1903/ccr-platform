@@ -99,6 +99,9 @@ def overview(db: Session = Depends(get_db), _admin: dict = Depends(require_admin
         .filter(Construct.verification_status != "verified")
         .filter_by(is_seed=True)
         .count(),
+        # Feature flags the admin UI adapts to (invites are on hold; the
+        # section hides when this is false).
+        "invites_enabled": auth.invites_enabled(),
     }
 
 
@@ -230,6 +233,12 @@ def create_invite(
     the invited tier (external/lab only - staff is granted, never invited).
     Backed by an Invite row, so it can be revoked early and shows who
     signed up through it."""
+    if not auth.invites_enabled():
+        raise HTTPException(
+            409,
+            "Invite links are on hold on this instance. Pre-assign the "
+            "person's email a role instead (Access before sign-in).",
+        )
     role = str(body.get("role", "")).strip().lower()
     invite = Invite(id=uuid.uuid4().hex, role=auth.normalize_role(role),
                     token="", created_by=admin.get("email", ""), expires_at="")

@@ -131,6 +131,14 @@ def role_is_staff(role: str | None) -> bool:
     return normalize_role(role) in STAFF_ROLES
 
 
+def invites_enabled() -> bool:
+    """Invite links are ON HOLD (maintainer decision 2026-07-31): creation and
+    redemption are disabled, existing links stop working, and the admin UI
+    hides the section. Email-bound pre-assigned roles are the supported way
+    to onboard people. Flip CCR_INVITES_ENABLED=1 to bring links back."""
+    return os.environ.get("CCR_INVITES_ENABLED", "0") == "1"
+
+
 # ---------------------------------------------------------- passwords
 def hash_password(password: str) -> str:
     salt = secrets.token_bytes(16)

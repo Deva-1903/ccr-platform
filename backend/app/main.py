@@ -311,7 +311,10 @@ def auth_me(
 def _live_invite(db: Session, invite_token: str | None) -> Invite | None:
     """The Invite row for a token that is well-signed, unexpired, and still
     live (exists, not revoked). Tokens from before invites became stateful
-    have no row and are therefore dead."""
+    have no row and are therefore dead. While invites are on hold
+    (auth.invites_enabled), every token is dead."""
+    if not auth.invites_enabled():
+        return None
     verified = auth.verify_invite_token(invite_token)
     if not verified:
         return None
@@ -361,6 +364,12 @@ def register(body: RegisterIn, response: Response, db: Session = Depends(get_db)
     # email anyway.
     has_preassignment = db.query(RoleAssignment).filter_by(email=email).first() is not None
     if body.invite_token and _live_invite(db, body.invite_token) is None and not has_preassignment:
+        if not auth.invites_enabled():
+            raise HTTPException(
+                400,
+                "Invite links are currently on hold. Ask an admin to grant your "
+                "email access instead - or register normally as an external user.",
+            )
         raise HTTPException(400, "This invite link is invalid, expired, or revoked. Ask for a new one.")
     user = User(
         email=email, name=body.name.strip(),
