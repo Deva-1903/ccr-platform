@@ -6,13 +6,22 @@ Working list as of 2026-07-31 - features, bugs, and chores in rough priority
 order. Detailed specs for the numbered features live in the sections below.
 
 **Features**
+- [x] PsyEmbedding models in the picker (PI short-term ask): all four models
+      in the hub collection are in the registry and live on dev - verified
+      against huggingface.co/collections/Culture-and-Morality-Lab/psyembedding
+      2026-07-31.
 - [ ] LLM-generated construct items (PI idea 2026-07-31): design note first
       (prompt design, model choice, "AI-generated / unvalidated" labeling),
       then a v1 with user review before saving; validate by generating items
       for scales we have (SWLS, MFQ) and correlating vs. the validated items.
 - [ ] Anchor vectors / bipolar constructs (feature 2 below) - next per the
-      original sequencing.
-- [ ] Automatic chunking for over-limit rows (feature 1 below).
+      original sequencing. PI re-sent the full spec 2026-07-31; it matches
+      feature 2 (AV = C - C_opposite centroids, cos(T, AV), items entered or
+      uploaded for both poles).
+- [ ] Automatic chunking for over-limit rows (feature 1 below). PI re-sent
+      the spec 2026-07-31; matches feature 1 (optional, warn about
+      truncation without it, chunk-embedding vs chunk-similarity averaging
+      still an open question for him).
 - [ ] Dark mode for the app - /guide and /product already have it; the React
       app doesn't.
 - [ ] Decide the default model with the PI: MiniLM (CCR reference) vs. a
