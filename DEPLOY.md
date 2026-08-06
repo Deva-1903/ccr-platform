@@ -91,10 +91,15 @@ the password when prompted (or a credential helper).
 
 ## Caveats of the free dev instance
 
-- Ephemeral disk: SQLite resets on rebuild/restart. Google users are recreated
-  on next sign-in automatically; password accounts must re-register. Fine for
-  feedback; a persistent volume or Postgres arrives with the launch decision.
-- The Space sleeps after ~48 h idle; first visit wakes it (~1 min).
+- ~~Ephemeral disk~~ RESOLVED (2026-08-06, verified): the Space now runs with
+  `DATABASE_URL` (Supabase Postgres) and the `CCR_STORAGE=s3` R2 secrets set,
+  so accounts, constructs, runs, AND uploaded files survive rebuilds and
+  restarts. The paragraph below ("Persistent storage") documents that setup
+  for anyone redeploying from scratch. Without those secrets, the old caveat
+  applies: SQLite + local files reset on every rebuild.
+- The Space sleeps after ~48 h idle; first visit wakes it (~1 min). This is
+  the remaining free-tier limitation - an always-on tier or host arrives with
+  the production launch.
 
 ## Persistent storage (make accounts/data survive restarts)
 
