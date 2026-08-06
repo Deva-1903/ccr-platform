@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 
 from . import admin as admin_module
 from . import auth, auth_google, retention, storage
+from . import item_generation
 from . import jobs as jobs_module
 from . import registry
 from .ccr import FAKE_MODEL_NAME
@@ -40,7 +41,17 @@ from .db import (
     lock_down_public_schema,
 )
 from .ingest import IngestError, load_corpus, max_rows as corpus_max_rows, suggest_text_column
-from .models import AdminAudit, Construct, Corpus, Invite, Job, Project, RoleAssignment, User
+from .models import (
+    AdminAudit,
+    Construct,
+    Corpus,
+    GenerationEvent,
+    Invite,
+    Job,
+    Project,
+    RoleAssignment,
+    User,
+)
 from .reproducibility import (
     requirements_filename,
     requirements_text,
@@ -49,8 +60,11 @@ from .reproducibility import (
 )
 from .schemas import (
     ConstructCreate,
+    ConstructGeneration,
     ConstructOut,
     CorpusOut,
+    GenerateItemsIn,
+    GenerateItemsOut,
     JobCreate,
     JobOut,
     LoginIn,
@@ -172,6 +186,7 @@ def _construct_out(c: Construct) -> ConstructOut:
         language=c.language or "en",
         category=c.category or "",
         item_hash=(c.item_hash or "")[:16],
+        ai_generated=bool(getattr(c, "generation_json", "") or ""),
     )
 
 
@@ -255,6 +270,17 @@ def _saved_runs_used(db: Session, user_id: str) -> int:
     )
 
 
+def _generations_used_today(db: Session, user_id: str) -> int:
+    """created_at is an ISO-8601 string, so a date-prefix match is the day
+    filter (UTC, same clock as the run counter)."""
+    today = datetime.now(timezone.utc).date().isoformat()
+    return (
+        db.query(GenerationEvent)
+        .filter(GenerationEvent.user_id == user_id, GenerationEvent.created_at.like(f"{today}%"))
+        .count()
+    )
+
+
 def _set_session_cookie(response: Response, user: User) -> None:
     response.set_cookie(
         auth.COOKIE_NAME,
@@ -293,7 +319,12 @@ def auth_me(
                 "saved_runs": _saved_runs_used(db, user["id"]),
                 # lab members and above: unlimited saved runs (admin-granted)
                 "max_saved_runs": None if auth.role_unlimited(role) else auth.user_max_saved_runs(),
+                "generations_used_today": _generations_used_today(db, user["id"]),
+                "max_generations_per_day": item_generation.user_max_generations_per_day(),
             },
+            # signed-in-only feature (PI decision 2026-08-05); False when the
+            # instance has no ANTHROPIC_API_KEY - the UI hides the button
+            "generation_available": item_generation.configured(),
         }
     return {
         "signed_in": False,
@@ -305,6 +336,10 @@ def auth_me(
             "runs_used_today": auth.runs_used_today(request),
             "max_runs_per_day": auth.anon_max_runs_per_day(),
         },
+        # true configured state: the UI shows anonymous visitors a "sign in to
+        # use AI drafting" nudge only when the feature actually exists here
+        # (the endpoint itself still requires sign-in regardless)
+        "generation_available": item_generation.configured(),
     }
 
 
@@ -699,10 +734,65 @@ def create_construct(body: ConstructCreate, db: Session = Depends(get_db)):
         is_seed=False,
         verification_status="draft",  # user-defined research tools, not validated scales
         language=(body.language or "en").lower(),
+        # AI-generated drafts carry provenance (model, prompt version, date);
+        # the label persists even after the researcher edits items.
+        generation_json=json.dumps(body.generation.model_dump()) if body.generation else "",
     )
     db.add(construct)
     db.commit()
     return _construct_out(construct)
+
+
+@app.post("/api/constructs/generate-items", response_model=GenerateItemsOut)
+def generate_construct_items(
+    body: GenerateItemsIn,
+    db: Session = Depends(get_db),
+    user: dict | None = Depends(auth.get_current_user),
+):
+    """Draft candidate items for a construct with an LLM - a PREVIEW only
+    (nothing saved; the researcher reviews/edits, then saves via POST
+    /api/constructs). Signed-in only with a daily cap: generation spends real
+    API money (PI decisions 2026-08-05; design note ITEM_GENERATION.md)."""
+    if user is None:
+        raise HTTPException(
+            401, "Sign in (top right) to draft items with AI - accounts are free."
+        )
+    if not item_generation.configured():
+        raise HTTPException(503, "Item generation is not configured on this instance.")
+
+    cap = item_generation.user_max_generations_per_day()
+    used = _generations_used_today(db, user["id"])
+    if used >= cap:
+        raise HTTPException(
+            429,
+            f"Daily limit reached ({cap} generations/day). It resets at midnight UTC - "
+            "you can still add or edit items by hand.",
+        )
+
+    try:
+        draft = item_generation.generate_items(
+            name=body.name.strip(),
+            description=body.description.strip(),
+            n_items=body.n_items,
+            language=(body.language or "en").strip() or "en",
+        )
+    except item_generation.GenerationError as exc:
+        raise HTTPException(exc.status_code, str(exc)) from exc
+
+    stamp = item_generation.generation_stamp()
+    # Count only successful generations (failures cost ~nothing and shouldn't
+    # burn quota); recorded before returning so the cap can't be raced past
+    # its budget by much.
+    db.add(GenerationEvent(user_id=user["id"], model=stamp["model"]))
+    db.commit()
+
+    return GenerateItemsOut(
+        items=draft.items,
+        notes=draft.notes,
+        generation=ConstructGeneration(**stamp),
+        generations_used_today=used + 1,
+        max_generations_per_day=cap,
+    )
 
 
 @app.post("/api/constructs/parse-file")

@@ -197,7 +197,11 @@ export default function ConstructPicker({ constructs, selectedIds, onToggle }) {
                       <span className="picker-meta">
                         {c.category ? `${c.category} · ` : ""}
                         {c.items.length} item{c.items.length === 1 ? "" : "s"}
-                        {c.verification_status !== "verified" ? " · unverified" : ""}
+                        {c.ai_generated
+                          ? " · AI-generated · not validated"
+                          : c.verification_status !== "verified"
+                            ? " · unverified"
+                            : ""}
                         {isSelected ? " · click to remove" : ""}
                       </span>
                     </div>

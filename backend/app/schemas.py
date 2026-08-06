@@ -47,6 +47,16 @@ class CorpusOut(BaseModel):
     created_at: str
 
 
+class ConstructGeneration(BaseModel):
+    """Provenance for constructs saved from an AI-generated draft (echoed back
+    by the frontend from the generate-items response; informational, not a
+    security boundary)."""
+
+    model: str = Field(min_length=1, max_length=120)
+    prompt_version: str = Field(min_length=1, max_length=40)
+    generated_at: str = Field(min_length=1, max_length=40)
+
+
 class ConstructCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     description: str = ""
@@ -54,6 +64,7 @@ class ConstructCreate(BaseModel):
     items: list[str] = Field(min_length=1)
     reverse_scored: list[bool] | None = None  # parallel to items; defaults to all False
     language: str = "en"
+    generation: ConstructGeneration | None = None  # present = AI-generated draft
 
 
 class ConstructOut(BaseModel):
@@ -69,6 +80,25 @@ class ConstructOut(BaseModel):
     language: str = "en"
     category: str = ""
     item_hash: str = ""  # first 16 hex chars for display
+    ai_generated: bool = False  # drives the "AI-generated · not validated" label
+
+
+class GenerateItemsIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    description: str = Field(min_length=1, max_length=4000)
+    n_items: int = Field(default=10, ge=5, le=20)
+    language: str = "en"
+
+
+class GenerateItemsOut(BaseModel):
+    """PREVIEW only - nothing is saved. The researcher reviews/edits in the
+    construct form, then saves via POST /api/constructs with `generation`."""
+
+    items: list[str]
+    notes: str | None = None
+    generation: ConstructGeneration
+    generations_used_today: int
+    max_generations_per_day: int
 
 
 class JobCreate(BaseModel):

@@ -57,6 +57,16 @@ export default function ResultsView({ jobId, onBack }) {
           {multi &&
             " All constructs were scored on the same pass over the corpus, so scores are row-aligned and directly comparable."}
         </p>
+        {/* Cautionary wording approved by the PI (2026-08-05); source_type
+            comes from the construct snapshot in the run metadata (top-level
+            construct_snapshot on single runs, constructs[].snapshot on multi). */}
+        {[metadata.construct_snapshot, ...(metadata.constructs || []).map((c) => c.snapshot)]
+          .some((s) => s?.source_type === "llm_generated") && (
+          <p className="small muted">
+            ⚠ This run uses a construct whose items were AI-generated and have not been
+            psychometrically validated. Interpret scores with appropriate caution.
+          </p>
+        )}
 
         <div className="stat-grid">
           <Stat k="Texts scored" v={summary.n_docs.toLocaleString()} />

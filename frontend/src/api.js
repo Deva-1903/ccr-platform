@@ -46,6 +46,8 @@ export const api = {
 
   listConstructs: () => request("/api/constructs"),
   createConstruct: (body) => request("/api/constructs", json("POST", body)),
+  generateConstructItems: (body) =>
+    request("/api/constructs/generate-items", json("POST", body)),
   parseConstructFile: (file) => {
     const form = new FormData();
     form.append("file", file);

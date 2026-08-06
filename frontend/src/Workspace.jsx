@@ -328,7 +328,11 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
               <span className="picker-meta">
                 {" "}
                 {c.items.length} item{c.items.length === 1 ? "" : "s"}
-                {c.verification_status !== "verified" ? " · unverified" : ""}
+                {c.ai_generated
+                  ? " · AI-generated · not validated"
+                  : c.verification_status !== "verified"
+                    ? " · unverified"
+                    : ""}
               </span>
               <button
                 type="button"
@@ -352,17 +356,27 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
             {c.reference && (
               <p className="small muted mt">Reference: {c.reference}</p>
             )}
-            {c.verification_status !== "verified" && (
+            {c.ai_generated ? (
+              /* Cautionary wording approved by the PI (2026-08-05) */
               <p className="small muted">
-                ⚠ Item wording not yet verified verbatim against the original publication
-                (status: {c.verification_status.replace("_", " ")}).
+                ⚠ This construct's items were AI-generated and have not been
+                psychometrically validated. Interpret scores with appropriate caution.
               </p>
+            ) : (
+              c.verification_status !== "verified" && (
+                <p className="small muted">
+                  ⚠ Item wording not yet verified verbatim against the original
+                  publication (status: {c.verification_status.replace("_", " ")}).
+                </p>
+              )
             )}
           </details>
         ))}
 
         {showNewConstruct && (
           <NewConstructForm
+            auth={auth}
+            constructs={constructs}
             onCreated={async (created) => {
               const list = await api.listConstructs();
               setConstructs(list);
@@ -498,14 +512,66 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
 
 const REVERSE_SUFFIX = /\s*\((r|rev|reversed)\)\s*$/i;
 
-function NewConstructForm({ onCreated, onError }) {
+function NewConstructForm({ auth, constructs, onCreated, onError }) {
   const [name, setName] = useState("");
   const [reference, setReference] = useState("");
+  const [description, setDescription] = useState("");
   const [itemsText, setItemsText] = useState("");
   const [saving, setSaving] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [parseNotes, setParseNotes] = useState([]);
+  // AI drafting (ITEM_GENERATION.md): genInfo is the provenance stamp echoed
+  // back on save; it survives manual edits (the seed was AI) but is cleared
+  // when items come from a file upload instead.
+  const [nItems, setNItems] = useState(10);
+  const [generating, setGenerating] = useState(false);
+  const [genInfo, setGenInfo] = useState(null);
+  const [genNotes, setGenNotes] = useState("");
+  const [genUsage, setGenUsage] = useState(null);
   const itemFileRef = useRef(null);
+
+  // Simple library name-match (v1 guardrail, PI-approved): if a validated
+  // scale with a similar name exists, say so before anyone generates.
+  const nameQuery = name.trim().toLowerCase();
+  const libraryMatch =
+    nameQuery.length >= 3
+      ? (constructs || []).find(
+          (c) =>
+            c.is_seed &&
+            (c.name.toLowerCase().includes(nameQuery) ||
+              nameQuery.includes(c.name.toLowerCase()))
+        )
+      : null;
+
+  async function handleGenerate() {
+    if (!name.trim() || !description.trim()) {
+      onError(
+        "AI drafting needs the construct's name and a few sentences explaining " +
+          "what it means (the Description field)."
+      );
+      return;
+    }
+    setGenerating(true);
+    setGenNotes("");
+    try {
+      const resp = await api.generateConstructItems({
+        name: name.trim(),
+        description: description.trim(),
+        n_items: nItems,
+      });
+      setItemsText(resp.items.join("\n"));
+      setGenInfo(resp.generation);
+      setGenNotes(resp.notes || "");
+      setGenUsage({
+        used: resp.generations_used_today,
+        max: resp.max_generations_per_day,
+      });
+    } catch (err) {
+      onError(err.message);
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   // Convention shared with the file parser and the lab's own spreadsheets:
   // a trailing (R) marks a reverse-scored item.
@@ -532,6 +598,8 @@ function NewConstructForm({ onCreated, onError }) {
           .map((i) => (i.reverse_scored ? `${i.text} (R)` : i.text))
           .join("\n")
       );
+      setGenInfo(null); // items now come from the file, not an AI draft
+      setGenNotes("");
       if (!name.trim() && parsed.suggested_name) setName(parsed.suggested_name);
       setParseNotes(parsed.warnings || []);
     } catch (err) {
@@ -554,8 +622,10 @@ function NewConstructForm({ onCreated, onError }) {
       const created = await api.createConstruct({
         name: name.trim(),
         reference,
+        description: description.trim(),
         items: parsed.map((i) => i.text),
         reverse_scored: parsed.map((i) => i.reverse),
+        generation: genInfo || undefined, // provenance stamp when AI-drafted
       });
       onCreated(created);
     } catch (err) {
@@ -588,6 +658,15 @@ function NewConstructForm({ onCreated, onError }) {
         </div>
       </div>
       <label className="field">
+        Description - what this construct means (a few sentences; used for AI drafting
+        and saved with the construct)
+        <textarea
+          rows={2}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </label>
+      <label className="field">
         Upload items from CSV/XLSX (optional) - an "item" column, or one item per row;
         reverse-scored via a "reverse" column or a trailing (R)
         <input
@@ -602,6 +681,64 @@ function NewConstructForm({ onCreated, onError }) {
       {parseNotes.map((w, i) => (
         <p key={i} className="small muted">⚠ {w}</p>
       ))}
+
+      {/* AI drafting (ITEM_GENERATION.md): signed-in only; hidden entirely
+          when the instance has no API key configured. */}
+      {auth?.signed_in && auth?.generation_available && (
+        <div className="mt">
+          <p className="hint">
+            <strong>Draft items with AI (optional).</strong> These items are drafted by
+            an AI language model. They are a starting point, not a validated
+            questionnaire. Review every item, edit or remove weak ones, and prefer a
+            validated scale whenever one exists.
+          </p>
+          {libraryMatch && (
+            <p className="small muted">
+              ⚠ The library already has “{libraryMatch.name}” ({libraryMatch.items.length}{" "}
+              validated items). Prefer the library scale unless you specifically need
+              custom items.
+            </p>
+          )}
+          <div className="row">
+            <label className="field">
+              Number of items
+              <select
+                value={nItems}
+                onChange={(e) => setNItems(Number(e.target.value))}
+              >
+                {Array.from({ length: 16 }, (_, i) => i + 5).map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="ghost"
+              onClick={handleGenerate}
+              disabled={generating || saving || parsing}
+            >
+              {generating ? "Drafting…" : "Draft items with AI"}
+            </button>
+          </div>
+          {genUsage && (
+            <p className="small muted">
+              {genUsage.used} of {genUsage.max} AI generations used today.
+            </p>
+          )}
+          {genInfo && (
+            <p className="small muted">
+              ⚠ AI-generated · not validated - drafted by {genInfo.model}. Review and
+              edit above before saving; the construct will be labeled as AI-generated.
+            </p>
+          )}
+          {genNotes && <p className="small muted">Model notes: {genNotes}</p>}
+        </div>
+      )}
+      {auth && !auth.signed_in && auth.generation_available && (
+        <p className="small muted">
+          Sign in (top right) to draft items with AI - accounts are free.
+        </p>
+      )}
       <label className="field">
         Scale items - one per line, verbatim from the validated instrument; append (R) to
         mark a reverse-scored item

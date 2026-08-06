@@ -10,10 +10,14 @@ order. Detailed specs for the numbered features live in the sections below.
       in the hub collection are in the registry and live on dev - verified
       against huggingface.co/collections/Culture-and-Morality-Lab/psyembedding
       2026-07-31.
-- [ ] LLM-generated construct items (PI idea 2026-07-31): design note first
-      (prompt design, model choice, "AI-generated / unvalidated" labeling),
-      then a v1 with user review before saving; validate by generating items
-      for scales we have (SWLS, MFQ) and correlating vs. the validated items.
+- [x] LLM-generated construct items (PI idea 2026-07-31): BUILT 2026-08-05
+      (see ITEM_GENERATION.md). Design note + PI-approved prompt and
+      cautionary wording; POST /api/constructs/generate-items (signed-in,
+      20/day cap, Claude Haiku, preview-only into the existing review-and-save
+      flow); provenance on construct + run metadata; badges in picker/results.
+      Remaining before Friday launch: ANTHROPIC_API_KEY on the Space (billing),
+      live smoke test, then the SWLS/MFQ validation run (correlate per-text
+      CCR scores from generated vs. validated items).
 - [ ] Anchor vectors / bipolar constructs (feature 2 below) - next per the
       original sequencing. PI re-sent the full spec 2026-07-31; it matches
       feature 2 (AV = C - C_opposite centroids, cos(T, AV), items entered or

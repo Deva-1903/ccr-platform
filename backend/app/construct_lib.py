@@ -106,7 +106,14 @@ def construct_snapshot(construct: Construct) -> dict:
     """Immutable snapshot embedded in every run's metadata (design §10.1)."""
     items = json.loads(construct.items_json)
     flags = json.loads(construct.reverse_flags_json or "[]") or [False] * len(items)
-    return {
+    generation_raw = getattr(construct, "generation_json", "") or ""
+    if construct.is_seed:
+        source_type = "predefined"
+    elif generation_raw:
+        source_type = "llm_generated"  # AI-drafted, researcher-reviewed (ITEM_GENERATION.md)
+    else:
+        source_type = "user_custom"
+    snapshot = {
         "construct_id": construct.construct_slug or f"custom_{construct.id[:8]}",
         "version": construct.version or 1,
         "name": construct.name,
@@ -117,5 +124,16 @@ def construct_snapshot(construct: Construct) -> dict:
         "item_hash": construct.item_hash or "",
         "citation": construct.reference or "",
         "verification_status": construct.verification_status or "draft",
-        "source_type": "predefined" if construct.is_seed else "user_custom",
+        "source_type": source_type,
     }
+    if generation_raw:
+        # Cautionary provenance travels with every run, export, and repro
+        # script that uses this construct (PI-approved wording lives in the
+        # UI; this is the machine-readable half).
+        snapshot["generation"] = json.loads(generation_raw)
+        snapshot["items_source_note"] = (
+            "Items were AI-generated (drafted by the model on the recorded date, "
+            "then reviewed and saved by the researcher). They are not from a "
+            "validated questionnaire; interpret scores accordingly."
+        )
+    return snapshot

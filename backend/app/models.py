@@ -138,6 +138,27 @@ class Construct(Base):
     # draft | needs_verification | verified | archived
     language: Mapped[str] = mapped_column(String(12), default="en")
     category: Mapped[str] = mapped_column(String(80), default="")
+    # AI-generated provenance: "" for typed/uploaded/library constructs; else
+    # {"model", "prompt_version", "generated_at"} (ITEM_GENERATION.md). Set
+    # when the construct was saved from a generated draft - the label persists
+    # even after the researcher edits items (the seed was AI; item_hash covers
+    # as-generated vs edited).
+    generation_json: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[str] = mapped_column(String(32), default=_now)
+
+
+class GenerationEvent(Base):
+    """One row per successful LLM item generation - the per-user daily cap
+    (CCR_USER_MAX_GENERATIONS_PER_DAY) counts today's rows. DB-backed rather
+    than a cookie counter because generation spends real API money, and
+    signed-in users could clear cookies; a table survives that (and restarts
+    on Postgres deployments). Rows are tiny and append-only."""
+
+    __tablename__ = "generation_events"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(String(32), index=True)
+    model: Mapped[str] = mapped_column(String(120), default="")
     created_at: Mapped[str] = mapped_column(String(32), default=_now)
 
 
