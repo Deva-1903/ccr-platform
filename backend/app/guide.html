@@ -181,6 +181,7 @@ what you hit first, not the file size.</p>
   <tr><td>Rows per file</td><td>200</td><td>50,000</td><td>50,000</td></tr>
   <tr><td>Runs per day</td><td>3, then sign in</td><td>unlimited</td><td>unlimited</td></tr>
   <tr><td>Saved runs kept</td><td>none (file deleted after each run)</td><td>15</td><td>unlimited</td></tr>
+  <tr><td>AI item drafts per day</td><td>0 (sign in to use)</td><td>20</td><td>20</td></tr>
 </table>
 </div>
 <p>Every model below is available on all three, including signed out.</p>
@@ -291,7 +292,7 @@ are deleted after analysis. Upload
 
 <h3>Custom construct, from file</h3>
 <ol>
-  <li>"+ Custom construct" &gt; "Upload items from CSV/XLSX".</li>
+  <li>"+ Custom construct" &gt; the "Upload CSV/XLSX" tab.</li>
   <li>Try <a href="/samples/construct_items_demo.csv" download>construct_items_demo.csv</a>
       (<code>item,reverse</code> columns - 1/true/yes/R = reverse),
       <a href="/samples/construct_items_marker_demo.csv" download>construct_items_marker_demo.csv</a>
@@ -301,6 +302,49 @@ are deleted after analysis. Upload
       the suggested name, and parse notes list skipped duplicates. Nothing is saved
       until you review and press Save. Item files are never retained on the server.</li>
 </ol>
+
+<h3 id="ai-draft">Custom construct, drafted with AI (new)</h3>
+<p>For constructs with no validated questionnaire: the platform can draft candidate
+items from the construct's name and a short explanation. The draft is a starting
+point, <b>not</b> a validated scale - you review, edit, and delete before saving, and
+everything the construct touches is labeled "AI-generated · not validated".
+Signed-in users only, 20 drafts/day.</p>
+<ol>
+  <li><b>Happy path:</b> sign in &gt; "+ Custom construct" &gt; the "Draft with AI"
+      tab. Name: <code>Digital overwhelm</code>. Description: <i>"Feeling that
+      screens, notifications, and online demands exceed one's capacity to keep
+      up."</i> Press "Draft items". Expect in a few seconds: ~10 first-person,
+      positively-worded items in the textarea (no <code>(R)</code> items - by
+      design), a "0 of 20 used today" style counter, an amber "AI-generated · not
+      validated - drafted by &lt;model&gt;" notice, and sometimes short model notes
+      (e.g. which facets it covered).</li>
+  <li><b>Review is the point:</b> edit one item, delete a weak one, then Save.
+      The construct appears in the picker under "My custom constructs" with an
+      <b>AI-generated · not validated</b> tag - the tag stays even though you
+      edited, because the seed was AI (the item hash records your edits).</li>
+  <li><b>Library guardrail:</b> on the same tab, type <code>Satisfaction with
+      Life</code> as the name. Expect a warning that the library already has this
+      scale with validated items - use that instead of generating.</li>
+  <li><b>It follows your definition:</b> draft the same name twice with two
+      different descriptions (e.g. define "resilience" once as bouncing back from
+      setbacks, once as tolerating discomfort). The items should track YOUR
+      wording, not a generic textbook version - that is the feature working.</li>
+  <li><b>Vague input:</b> give a nonsense name (<code>Zorblex</code>) with a vague
+      description. Expect items anyway, plus model notes explaining it could not
+      identify a standard construct - refine the description and redraft.</li>
+  <li><b>Run + provenance:</b> run any corpus against your saved AI construct.
+      The results page shows a caution line; the metadata JSON download has
+      <code>source_type: "llm_generated"</code>, the drafting model + prompt
+      version + date, and a machine-readable cautionary note. This travels into
+      the reproduction script too.</li>
+  <li><b>Signed out:</b> the "Draft with AI" tab shows a sign-in nudge instead of
+      controls; the API refuses anonymous calls outright.</li>
+</ol>
+<div class="note">These items are drafted by an AI language model and have not been
+psychometrically validated. Where a validated scale exists, prefer it; interpret
+scores from AI-drafted constructs with appropriate caution. (Validation study -
+AI-drafted vs. validated SWLS/MFQ items on the same texts - is planned before
+public launch.)</div>
 
 <h2 id="warnings">4. Language, models, and warnings (Step 3 card + results)</h2>
 <p>Run each of these and open the results page; the amber warnings panel should show exactly:</p>

@@ -88,6 +88,36 @@ with a "Sign in (top right)" message. Sign in and retry: accepted.
    Nothing is saved until you review and press Save. Item files are never
    retained on the server.
 
+### Custom construct, drafted with AI (new)
+
+Needs a generation key on the instance (`GROQ_API_KEY` or `ANTHROPIC_API_KEY`);
+without one the "Draft with AI" tab is hidden entirely. Signed-in only, 20/day
+(tune locally with `CCR_USER_MAX_GENERATIONS_PER_DAY=2` to test the cap fast).
+
+1. Happy path: sign in > "+ Custom construct" > "Draft with AI" tab. Enter a
+   name + a 1-2 sentence description, press "Draft items". Expect ~10
+   first-person, positively-worded items in the textarea (no (R) items - by
+   design), a "N of 20 used today" counter, the amber "AI-generated · not
+   validated - drafted by <model>" notice, and (sometimes) model notes.
+2. Review-edit-save: edit one item, delete one, Save. Picker shows the
+   construct under "My custom constructs" with the "AI-generated · not
+   validated" tag; the selected-construct block shows the caution paragraph.
+   The tag persists despite the edits (seed was AI; item hash records edits).
+3. Library guardrail: name it "Satisfaction with Life" - expect the warning
+   pointing at the existing library scale before you generate.
+4. Vague input: nonsense name + vague description still returns items, with
+   model notes explaining the problem.
+5. Run + provenance: run a corpus against the saved AI construct. Results page
+   shows the caution line; metadata JSON has `source_type: "llm_generated"`,
+   `generation` (model, prompt_version, generated_at), and `items_source_note`.
+6. Cap: with `CCR_USER_MAX_GENERATIONS_PER_DAY=2`, the third draft returns a
+   friendly 429 ("resets at midnight UTC"); failed drafts do NOT burn quota.
+7. Signed out: the tab shows a sign-in nudge; `POST
+   /api/constructs/generate-items` returns 401.
+8. No key set: unset both keys - the tab disappears; the endpoint returns 503.
+9. One-shot live check without the UI:
+   `cd backend && GROQ_API_KEY=... .venv/bin/python ../scripts/smoke_test_generation.py`
+
 ## 4. Language, models, and warnings (Step 3 card + results)
 
 Run each of these and open the results page; the amber warnings panel should
