@@ -520,6 +520,9 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
   const [saving, setSaving] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [parseNotes, setParseNotes] = useState([]);
+  // Item source chooser: "type" | "upload" | "ai" - one source's controls
+  // visible at a time (the flat everything-stacked form read as clutter).
+  const [source, setSource] = useState("type");
   // AI drafting (ITEM_GENERATION.md): genInfo is the provenance stamp echoed
   // back on save; it survives manual edits (the seed was AI) but is cleared
   // when items come from a file upload instead.
@@ -658,39 +661,69 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
         </div>
       </div>
       <label className="field">
-        Description - what this construct means (a few sentences; used for AI drafting
-        and saved with the construct)
+        Description (optional) - what this construct means; used for AI drafting and
+        saved with the construct
         <textarea
           rows={2}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </label>
-      <label className="field">
-        Upload items from CSV/XLSX (optional) - an "item" column, or one item per row;
-        reverse-scored via a "reverse" column or a trailing (R)
-        <input
-          ref={itemFileRef}
-          type="file"
-          accept=".csv,.xlsx,.xls"
-          onChange={handleItemFile}
-          disabled={parsing}
-        />
-      </label>
-      {parsing && <p className="small muted">Parsing…</p>}
-      {parseNotes.map((w, i) => (
-        <p key={i} className="small muted">⚠ {w}</p>
-      ))}
 
-      {/* AI drafting (ITEM_GENERATION.md): signed-in only; hidden entirely
-          when the instance has no API key configured. */}
-      {auth?.signed_in && auth?.generation_available && (
-        <div className="mt">
+      {/* One item source at a time; the textarea below is the shared review
+          surface however items arrive. The AI tab shows whenever the instance
+          has generation configured (signed-out users get a sign-in nudge). */}
+      <div className="seg" role="tablist" aria-label="How to add items">
+        {[
+          ["type", "Type or paste"],
+          ["upload", "Upload CSV/XLSX"],
+          ...(auth?.generation_available ? [["ai", "Draft with AI"]] : []),
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            className={"ghost" + (source === key ? " seg-active" : "")}
+            aria-selected={source === key}
+            onClick={() => setSource(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {source === "upload" && (
+        <>
+          <label className="field">
+            CSV/XLSX with an "item" column, or one item per row; reverse-scored via a
+            "reverse" column or a trailing (R)
+            <input
+              ref={itemFileRef}
+              type="file"
+              accept=".csv,.xlsx,.xls"
+              onChange={handleItemFile}
+              disabled={parsing}
+            />
+          </label>
+          {parsing && <p className="small muted">Parsing…</p>}
+          {parseNotes.map((w, i) => (
+            <p key={i} className="small muted">⚠ {w}</p>
+          ))}
+        </>
+      )}
+
+      {source === "ai" && !auth?.signed_in && (
+        <p className="small muted">
+          Sign in (top right) to draft items with AI - accounts are free.
+        </p>
+      )}
+      {source === "ai" && auth?.signed_in && (
+        <>
           <p className="hint">
-            <strong>Draft items with AI (optional).</strong> These items are drafted by
-            an AI language model. They are a starting point, not a validated
-            questionnaire. Review every item, edit or remove weak ones, and prefer a
-            validated scale whenever one exists.
+            These items are drafted by an AI language model. They are a starting point,
+            not a validated questionnaire. Review every item, edit or remove weak ones,
+            and prefer a validated scale whenever one exists. Drafting uses the Name and
+            Description fields above.
           </p>
           {libraryMatch && (
             <p className="small muted">
@@ -699,7 +732,7 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
               custom items.
             </p>
           )}
-          <div className="row">
+          <div className="field-row">
             <label className="field">
               Number of items
               <select
@@ -713,11 +746,11 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
             </label>
             <button
               type="button"
-              className="ghost"
+              className="primary"
               onClick={handleGenerate}
               disabled={generating || saving || parsing}
             >
-              {generating ? "Drafting…" : "Draft items with AI"}
+              {generating ? "Drafting…" : "Draft items"}
             </button>
           </div>
           {genUsage && (
@@ -728,20 +761,16 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
           {genInfo && (
             <p className="small muted">
               ⚠ AI-generated · not validated - drafted by {genInfo.model}. Review and
-              edit above before saving; the construct will be labeled as AI-generated.
+              edit below before saving; the construct will be labeled as AI-generated.
             </p>
           )}
           {genNotes && <p className="small muted">Model notes: {genNotes}</p>}
-        </div>
+        </>
       )}
-      {auth && !auth.signed_in && auth.generation_available && (
-        <p className="small muted">
-          Sign in (top right) to draft items with AI - accounts are free.
-        </p>
-      )}
+
       <label className="field">
-        Scale items - one per line, verbatim from the validated instrument; append (R) to
-        mark a reverse-scored item
+        Items - one per line{source === "type" ? " (or paste a whole scale)" : ""};
+        append (R) to mark a reverse-scored item
         <textarea rows={6} value={itemsText} onChange={(e) => setItemsText(e.target.value)} />
       </label>
       {nReverse > 0 && (

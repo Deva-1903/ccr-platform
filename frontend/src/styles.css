@@ -619,6 +619,21 @@ details[open] > summary::before { transform: rotate(90deg); }
 .construct-results summary .picker-meta { margin-left: 6px; }
 .construct-results h4 { margin: 14px 0 4px; font-size: 13.5px; }
 
+/* Custom-construct form: item-source chooser (type / upload / AI draft).
+   One source's controls show at a time; the items textarea below stays the
+   shared review surface whichever way items arrive. */
+.seg { display: inline-flex; gap: 6px; margin: 2px 0 12px; flex-wrap: wrap; }
+.seg .ghost.seg-active {
+  border-color: var(--brand);
+  color: var(--brand);
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+/* Controls + button on one baseline (the plain .row leaves the button 10px
+   low because label.field carries a bottom margin). */
+.field-row { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; }
+.field-row .field { margin-bottom: 0; }
+
 @media (prefers-reduced-motion: reduce) {
   .picker-panel, .modal { animation: none; }
   .pill.running::before { animation: none; }
