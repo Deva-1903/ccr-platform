@@ -72,14 +72,14 @@ with a "Sign in (top right)" message. Sign in and retry: accepted.
 
 ### Custom construct, typed
 
-1. "+ Custom construct" > name it, paste items one per line.
+1. "+ Your own items" > name it, paste items one per line ("Type or paste" tab).
 2. Append `(R)` to one line: the form shows "1 item(s) marked reverse-scored".
 3. Save: it appears in the picker under "My custom constructs"; run metadata
    will carry the reverse flag (check via Results > metadata download).
 
 ### Custom construct, from file (new)
 
-1. "+ Custom construct" > "Upload items from CSV/XLSX".
+1. "+ Your own items" > the "Upload CSV/XLSX" tab.
 2. Try a CSV with `item,reverse` columns (1/true/yes/R = reverse) or a
    single-column file with `(R)` markers.
 3. Expect: items fill the textarea ((R) appended where flagged), the filename
@@ -94,7 +94,7 @@ Needs a generation key on the instance (`GROQ_API_KEY` or `ANTHROPIC_API_KEY`);
 without one the "Draft with AI" tab is hidden entirely. Signed-in only, 20/day
 (tune locally with `CCR_USER_MAX_GENERATIONS_PER_DAY=2` to test the cap fast).
 
-1. Happy path: sign in > "+ Custom construct" > "Draft with AI" tab. Enter a
+1. Happy path: sign in > "✦ Draft with AI" (next to the picker). Enter a
    name + a 1-2 sentence description, press "Draft items". Expect ~10
    first-person, positively-worded items in the textarea (no (R) items - by
    design), a "N of 20 used today" counter, the amber "AI-generated · not
@@ -261,3 +261,13 @@ documented at /product.
 5. Verification: mark a scale Verified; its "unverified" flag disappears
    platform-wide. Statuses are applied back to the library YAML before
    production.
+
+### Step 2 layout + Save gating (PI feedback 2026-08-07)
+
+1. The Step 2 hint enumerates the three paths (library / own items / AI);
+   two buttons sit next to the picker: "+ Your own items" and "✦ Draft with
+   AI" (the AI one only when a generation key is configured).
+2. Save is DISABLED until the form has a name and at least one item; a line
+   under the button says what's missing. No more silent dead click.
+3. After "Draft items", the page scrolls to the items box, and the notice
+   reads "N items drafted - they're in the box below."

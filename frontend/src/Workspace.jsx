@@ -18,7 +18,10 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
   const [uploading, setUploading] = useState(false);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState("");
-  const [showNewConstruct, setShowNewConstruct] = useState(false);
+  // Custom-construct form: null = closed, else the item source it opens on
+  // ("type" | "upload" | "ai"). Lifted here so the Step 2 card can expose the
+  // three acquisition paths as explicit buttons (PI feedback 2026-08-07).
+  const [constructFormTab, setConstructFormTab] = useState(null);
   const [viewJobId, setViewJobId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteText, setDeleteText] = useState("");
@@ -303,10 +306,12 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
           <span className="step-badge">2</span>Construct
         </h3>
         <p className="hint">
-          Pick one or more validated scales from the library, or define custom items. CCR
-          scores each text by its similarity to the items. Selecting several constructs
-          runs them together on one pass over your corpus and adds a score-correlation
-          view of how they interrelate in your texts (up to 10 per run).
+          Three ways to add a construct: <b>1)</b> pick validated scales from our
+          library of {constructs.filter((c) => c.is_seed).length || "90+"} questionnaires,{" "}
+          <b>2)</b> type or upload your own items, or <b>3)</b> draft items with AI from
+          a name and description (when no validated scale exists). CCR scores each text
+          by its similarity to the items; selecting several constructs runs them
+          together on one pass and adds a score-correlation view (up to 10 per run).
         </p>
         <div className="construct-row">
           <div className="grow">
@@ -316,9 +321,22 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
               onToggle={toggleConstruct}
             />
           </div>
-          <button className="ghost" onClick={() => setShowNewConstruct((s) => !s)}>
-            {showNewConstruct ? "Close" : "+ Custom construct"}
+          <button
+            className={"ghost" + (constructFormTab && constructFormTab !== "ai" ? " seg-active" : "")}
+            onClick={() =>
+              setConstructFormTab((t) => (t && t !== "ai" ? null : "type"))
+            }
+          >
+            {constructFormTab && constructFormTab !== "ai" ? "Close" : "+ Your own items"}
           </button>
+          {auth?.generation_available && (
+            <button
+              className={"ghost" + (constructFormTab === "ai" ? " seg-active" : "")}
+              onClick={() => setConstructFormTab((t) => (t === "ai" ? null : "ai"))}
+            >
+              {constructFormTab === "ai" ? "Close" : "✦ Draft with AI"}
+            </button>
+          )}
         </div>
 
         {selectedConstructs.map((c) => (
@@ -373,15 +391,17 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
           </details>
         ))}
 
-        {showNewConstruct && (
+        {constructFormTab && (
           <NewConstructForm
             auth={auth}
             constructs={constructs}
+            source={constructFormTab}
+            onSourceChange={setConstructFormTab}
             onCreated={async (created) => {
               const list = await api.listConstructs();
               setConstructs(list);
               toggleConstruct(created.id);
-              setShowNewConstruct(false);
+              setConstructFormTab(null);
             }}
             onError={setError}
           />
@@ -512,7 +532,7 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
 
 const REVERSE_SUFFIX = /\s*\((r|rev|reversed)\)\s*$/i;
 
-function NewConstructForm({ auth, constructs, onCreated, onError }) {
+function NewConstructForm({ auth, constructs, source, onSourceChange, onCreated, onError }) {
   const [name, setName] = useState("");
   const [reference, setReference] = useState("");
   const [description, setDescription] = useState("");
@@ -520,9 +540,6 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
   const [saving, setSaving] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [parseNotes, setParseNotes] = useState([]);
-  // Item source chooser: "type" | "upload" | "ai" - one source's controls
-  // visible at a time (the flat everything-stacked form read as clutter).
-  const [source, setSource] = useState("type");
   // AI drafting (ITEM_GENERATION.md): genInfo is the provenance stamp echoed
   // back on save; it survives manual edits (the seed was AI) but is cleared
   // when items come from a file upload instead.
@@ -532,6 +549,8 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
   const [genNotes, setGenNotes] = useState("");
   const [genUsage, setGenUsage] = useState(null);
   const itemFileRef = useRef(null);
+  const itemsRef = useRef(null);
+  const setSource = onSourceChange;
 
   // Simple library name-match (v1 guardrail, PI-approved): if a validated
   // scale with a similar name exists, say so before anyone generates.
@@ -563,12 +582,19 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
         n_items: nItems,
       });
       setItemsText(resp.items.join("\n"));
-      setGenInfo(resp.generation);
+      setGenInfo({ ...resp.generation, n: resp.items.length });
       setGenNotes(resp.notes || "");
       setGenUsage({
         used: resp.generations_used_today,
         max: resp.max_generations_per_day,
       });
+      // The drafted items land in the textarea below the controls - scroll
+      // there so it's obvious they arrived (PI feedback: "how can they see
+      // all 10 items generated under the hood?").
+      setTimeout(() => {
+        itemsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        itemsRef.current?.focus({ preventScroll: true });
+      }, 50);
     } catch (err) {
       onError(err.message);
     } finally {
@@ -628,7 +654,14 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
         description: description.trim(),
         items: parsed.map((i) => i.text),
         reverse_scored: parsed.map((i) => i.reverse),
-        generation: genInfo || undefined, // provenance stamp when AI-drafted
+        // provenance stamp when AI-drafted (schema fields only)
+        generation: genInfo
+          ? {
+              model: genInfo.model,
+              prompt_version: genInfo.prompt_version,
+              generated_at: genInfo.generated_at,
+            }
+          : undefined,
       });
       onCreated(created);
     } catch (err) {
@@ -759,9 +792,10 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
             </p>
           )}
           {genInfo && (
-            <p className="small muted">
-              ⚠ AI-generated · not validated - drafted by {genInfo.model}. Review and
-              edit below before saving; the construct will be labeled as AI-generated.
+            <p className="small">
+              ✓ <b>{genInfo.n} items drafted — they're in the box below.</b> Review and
+              edit each one, then Save. AI-generated · not validated (model:{" "}
+              {genInfo.model}); the saved construct will carry that label.
             </p>
           )}
           {genNotes && <p className="small muted">Model notes: {genNotes}</p>}
@@ -771,14 +805,37 @@ function NewConstructForm({ auth, constructs, onCreated, onError }) {
       <label className="field">
         Items - one per line{source === "type" ? " (or paste a whole scale)" : ""};
         append (R) to mark a reverse-scored item
-        <textarea rows={6} value={itemsText} onChange={(e) => setItemsText(e.target.value)} />
+        <textarea
+          ref={itemsRef}
+          rows={6}
+          value={itemsText}
+          onChange={(e) => setItemsText(e.target.value)}
+        />
       </label>
       {nReverse > 0 && (
         <p className="small muted">{nReverse} item(s) marked reverse-scored.</p>
       )}
-      <button className="primary" type="submit" disabled={saving || parsing}>
+      {/* Save stays disabled until it can actually succeed - a clickable
+          button that silently fails read as broken (PI feedback 2026-08-07;
+          the error banner sits at the top of the page, out of view here). */}
+      <button
+        className="primary"
+        type="submit"
+        disabled={saving || parsing || !name.trim() || parseLines().length === 0}
+      >
         {saving ? "Saving…" : "Save construct"}
       </button>
+      {(!name.trim() || parseLines().length === 0) && (
+        <p className="small muted">
+          To save, this construct still needs
+          {!name.trim() ? " a name" : ""}
+          {!name.trim() && parseLines().length === 0 ? " and" : ""}
+          {parseLines().length === 0
+            ? " at least one item - type items above, upload a file, or draft with AI"
+            : ""}
+          .
+        </p>
+      )}
     </form>
   );
 }
