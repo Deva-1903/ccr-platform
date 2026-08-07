@@ -193,12 +193,15 @@ def test_saved_generated_construct_carries_provenance(client, monkeypatch):
     register(client, "genprov@test.edu")
 
     draft = client.post("/api/constructs/generate-items", json=GEN_BODY).json()
+    # The stamp carries the as-drafted items (the audit record).
+    assert draft["generation"]["items"] == FAKE_DRAFT.items
+    edited = [draft["items"][0] + " (edited)"] + draft["items"][1:]
     created = client.post(
         "/api/constructs",
         json={
             "name": "Gratitude (generated)",
             "description": GEN_BODY["description"],
-            "items": draft["items"],
+            "items": edited,  # researcher edits; original draft stays in generation
             "generation": draft["generation"],
         },
     ).json()
@@ -220,6 +223,9 @@ def test_saved_generated_construct_carries_provenance(client, monkeypatch):
     assert snapshot["source_type"] == "llm_generated"
     assert snapshot["generation"]["prompt_version"] == item_generation.PROMPT_VERSION
     assert "AI-generated" in snapshot["items_source_note"]
+    # Audit trail: metadata shows BOTH the original draft and the saved items.
+    assert snapshot["generation"]["items"] == FAKE_DRAFT.items
+    assert snapshot["items"][0]["text"].endswith("(edited)")
     client.cookies.clear()
 
 

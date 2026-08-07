@@ -789,7 +789,10 @@ def generate_construct_items(
     return GenerateItemsOut(
         items=draft.items,
         notes=draft.notes,
-        generation=ConstructGeneration(**stamp),
+        # items ride inside the stamp so the client echoes the full audit
+        # record on save: what the AI drafted, distinct from what the
+        # researcher edits and saves.
+        generation=ConstructGeneration(**stamp, items=draft.items),
         generations_used_today=used + 1,
         max_generations_per_day=cap,
     )

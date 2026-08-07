@@ -447,6 +447,22 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
                 : "Run CCR analysis"}
           </button>
         </div>
+        {/* Disabled-until-valid with the reason inline (same pattern as the
+            construct form's Save) - a dead button with no visible cause is
+            the top tester confusion. */}
+        {!canRun && !running && !fileMissing && (
+          <p className="small muted">
+            To run, still needed:{" "}
+            {[
+              !corpusId && "a dataset (Step 1)",
+              corpusId && !textColumn && "a text column (Step 1)",
+              constructIds.length === 0 && "at least one construct (Step 2)",
+            ]
+              .filter(Boolean)
+              .join(", ")}
+            .
+          </p>
+        )}
         {auth && !auth.signed_in && auth.usage?.max_runs_per_day != null && (
           <p className="small muted">
             {Math.min(auth.usage.runs_used_today, auth.usage.max_runs_per_day)} of{" "}
@@ -552,6 +568,17 @@ function NewConstructForm({ auth, constructs, source, onSourceChange, onCreated,
   const itemsRef = useRef(null);
   const setSource = onSourceChange;
 
+  // Quota shown from the first tab-open (auth/me carries it), replaced by the
+  // fresher count from each generate response.
+  const quotaInfo =
+    genUsage ||
+    (auth?.usage?.max_generations_per_day != null
+      ? {
+          used: auth.usage.generations_used_today,
+          max: auth.usage.max_generations_per_day,
+        }
+      : null);
+
   // Simple library name-match (v1 guardrail, PI-approved): if a validated
   // scale with a similar name exists, say so before anyone generates.
   const nameQuery = name.trim().toLowerCase();
@@ -654,12 +681,15 @@ function NewConstructForm({ auth, constructs, source, onSourceChange, onCreated,
         description: description.trim(),
         items: parsed.map((i) => i.text),
         reverse_scored: parsed.map((i) => i.reverse),
-        // provenance stamp when AI-drafted (schema fields only)
+        // provenance stamp when AI-drafted (schema fields only); `items` is
+        // the ORIGINAL draft - the audit record of what the AI produced
+        // before the researcher's edits
         generation: genInfo
           ? {
               model: genInfo.model,
               prompt_version: genInfo.prompt_version,
               generated_at: genInfo.generated_at,
+              items: genInfo.items,
             }
           : undefined,
       });
@@ -777,18 +807,32 @@ function NewConstructForm({ auth, constructs, source, onSourceChange, onCreated,
                 ))}
               </select>
             </label>
+            {/* Disabled-until-valid with the reason inline - same pattern as
+                Save; a clickable button whose error lands in the far-away top
+                banner reads as broken. */}
             <button
               type="button"
               className="primary"
               onClick={handleGenerate}
-              disabled={generating || saving || parsing}
+              disabled={
+                generating || saving || parsing || !name.trim() || !description.trim()
+              }
             >
               {generating ? "Drafting…" : "Draft items"}
             </button>
           </div>
-          {genUsage && (
+          {(!name.trim() || !description.trim()) && (
             <p className="small muted">
-              {genUsage.used} of {genUsage.max} AI generations used today.
+              To draft, first fill in
+              {!name.trim() ? " the Name" : ""}
+              {!name.trim() && !description.trim() ? " and" : ""}
+              {!description.trim() ? " the Description (a few sentences on what the construct means)" : ""}
+              {" "}above.
+            </p>
+          )}
+          {quotaInfo && (
+            <p className="small muted">
+              {quotaInfo.used} of {quotaInfo.max} AI generations used today.
             </p>
           )}
           {genInfo && (

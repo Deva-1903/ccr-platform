@@ -55,6 +55,10 @@ class ConstructGeneration(BaseModel):
     model: str = Field(min_length=1, max_length=120)
     prompt_version: str = Field(min_length=1, max_length=40)
     generated_at: str = Field(min_length=1, max_length=40)
+    # The items exactly as drafted, BEFORE the researcher's edits - the audit
+    # trail that lets metadata show original draft vs. saved items (PI request
+    # 2026-08-07). Caps sized to the generation limits, not user needs.
+    items: list[str] | None = Field(default=None, max_length=30)
 
 
 class ConstructCreate(BaseModel):
