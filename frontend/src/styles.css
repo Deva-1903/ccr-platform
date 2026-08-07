@@ -619,20 +619,48 @@ details[open] > summary::before { transform: rotate(90deg); }
 .construct-results summary .picker-meta { margin-left: 6px; }
 .construct-results h4 { margin: 14px 0 4px; font-size: 13.5px; }
 
-/* Custom-construct form: item-source chooser (type / upload / AI draft).
-   One source's controls show at a time; the items textarea below stays the
-   shared review surface whichever way items arrive. */
-.seg { display: inline-flex; gap: 6px; margin: 2px 0 12px; flex-wrap: wrap; }
-.seg .ghost.seg-active {
-  border-color: var(--brand);
-  color: var(--brand);
-  background: var(--accent-soft);
-  font-weight: 600;
+/* New-construct panel: a contained sub-card so the form reads as one unit,
+   visually separate from the picker above it. */
+.new-construct {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px 16px;
+  margin-top: 12px;
+  background: var(--bg);
 }
+.new-construct-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+/* The three item sources as radio-cards - one glance, one choice, and only
+   the chosen path's fields render below (tester feedback: the flat form with
+   every path's controls stacked read as clutter). */
+.source-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 0 0 14px;
+}
+.source-card {
+  text-align: left;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+  transition: border-color .12s, background .12s;
+}
+.source-card:hover { border-color: var(--accent); }
+.source-card.active { border-color: var(--brand); background: var(--accent-soft); }
+.source-card b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+.source-card span { display: block; font-size: 12px; color: var(--muted); line-height: 1.35; }
 /* Controls + button on one baseline (the plain .row leaves the button 10px
    low because label.field carries a bottom margin). */
 .field-row { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; }
 .field-row .field { margin-bottom: 0; }
+.field-row > .small { align-self: center; margin: 0 0 8px; }
 
 @media (prefers-reduced-motion: reduce) {
   .picker-panel, .modal { animation: none; }

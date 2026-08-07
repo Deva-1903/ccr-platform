@@ -306,12 +306,10 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
           <span className="step-badge">2</span>Construct
         </h3>
         <p className="hint">
-          Three ways to add a construct: <b>1)</b> pick validated scales from our
-          library of {constructs.filter((c) => c.is_seed).length || "90+"} questionnaires,{" "}
-          <b>2)</b> type or upload your own items, or <b>3)</b> draft items with AI from
-          a name and description (when no validated scale exists). CCR scores each text
-          by its similarity to the items; selecting several constructs runs them
-          together on one pass and adds a score-correlation view (up to 10 per run).
+          Three ways to add a construct: pick validated scales from the library, add
+          your own items (typed or uploaded), or draft items with AI when no validated
+          scale exists. Selecting several runs them together in one pass (up to 10) and
+          shows how they correlate in your texts.
         </p>
         <div className="construct-row">
           <div className="grow">
@@ -322,21 +320,11 @@ export default function Workspace({ project, auth, onAuthRefresh, onProjectChang
             />
           </div>
           <button
-            className={"ghost" + (constructFormTab && constructFormTab !== "ai" ? " seg-active" : "")}
-            onClick={() =>
-              setConstructFormTab((t) => (t && t !== "ai" ? null : "type"))
-            }
+            className="ghost"
+            onClick={() => setConstructFormTab((t) => (t ? null : "type"))}
           >
-            {constructFormTab && constructFormTab !== "ai" ? "Close" : "+ Your own items"}
+            {constructFormTab ? "✕ Close" : "+ New construct"}
           </button>
-          {auth?.generation_available && (
-            <button
-              className={"ghost" + (constructFormTab === "ai" ? " seg-active" : "")}
-              onClick={() => setConstructFormTab((t) => (t === "ai" ? null : "ai"))}
-            >
-              {constructFormTab === "ai" ? "Close" : "✦ Draft with AI"}
-            </button>
-          )}
         </div>
 
         {selectedConstructs.map((c) => (
@@ -702,183 +690,201 @@ function NewConstructForm({ auth, constructs, source, onSourceChange, onCreated,
   }
 
   const nReverse = parseLines().filter((i) => i.reverse).length;
+  const hasItems = parseLines().length > 0;
+  // On the AI path the items box appears once there is something to review -
+  // an empty box + disabled Save before drafting is just noise.
+  const showItemsBox = source !== "ai" || Boolean(itemsText.trim() || genInfo);
+
+  const SOURCE_CARDS = [
+    ["type", "Type or paste", "Enter a scale's items yourself, one per line"],
+    ["upload", "Upload a file", "CSV/XLSX with an item column - review, then save"],
+    ...(auth?.generation_available
+      ? [["ai", "Draft with AI", "From a name + description, when no validated scale exists"]]
+      : []),
+  ];
 
   return (
-    <form onSubmit={save} className="mt">
-      <div className="row">
-        <div className="grow">
-          <label className="field">
-            Name
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
-          </label>
-        </div>
-        <div className="grow">
-          <label className="field">
-            Reference (publication, optional)
-            <input
-              type="text"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-            />
-          </label>
-        </div>
+    <form onSubmit={save} className="new-construct mt">
+      <div className="new-construct-head">
+        <strong>New construct</strong>
+        <button type="button" className="linkish" onClick={() => setSource(null)}>
+          ✕ Close
+        </button>
       </div>
-      <label className="field">
-        Description (optional) - what this construct means; used for AI drafting and
-        saved with the construct
-        <textarea
-          rows={2}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </label>
 
-      {/* One item source at a time; the textarea below is the shared review
-          surface however items arrive. The AI tab shows whenever the instance
-          has generation configured (signed-out users get a sign-in nudge). */}
-      <div className="seg" role="tablist" aria-label="How to add items">
-        {[
-          ["type", "Type or paste"],
-          ["upload", "Upload CSV/XLSX"],
-          ...(auth?.generation_available ? [["ai", "Draft with AI"]] : []),
-        ].map(([key, label]) => (
+      {/* The three paths as one visible choice (PI: "make the options
+          explicit") - each card shows only its own fields below. */}
+      <div className="source-cards" role="tablist" aria-label="How to add items">
+        {SOURCE_CARDS.map(([key, title, desc]) => (
           <button
             key={key}
             type="button"
             role="tab"
-            className={"ghost" + (source === key ? " seg-active" : "")}
             aria-selected={source === key}
+            className={"source-card" + (source === key ? " active" : "")}
             onClick={() => setSource(key)}
           >
-            {label}
+            <b>{source === key ? "● " : "○ "}{title}</b>
+            <span>{desc}</span>
           </button>
         ))}
       </div>
 
-      {source === "upload" && (
-        <>
-          <label className="field">
-            CSV/XLSX with an "item" column, or one item per row; reverse-scored via a
-            "reverse" column or a trailing (R)
-            <input
-              ref={itemFileRef}
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              onChange={handleItemFile}
-              disabled={parsing}
-            />
-          </label>
-          {parsing && <p className="small muted">Parsing…</p>}
-          {parseNotes.map((w, i) => (
-            <p key={i} className="small muted">⚠ {w}</p>
-          ))}
-        </>
-      )}
-
-      {source === "ai" && !auth?.signed_in && (
+      {source === "ai" && !auth?.signed_in ? (
         <p className="small muted">
           Sign in (top right) to draft items with AI - accounts are free.
         </p>
-      )}
-      {source === "ai" && auth?.signed_in && (
+      ) : (
         <>
-          <p className="hint">
-            These items are drafted by an AI language model. They are a starting point,
-            not a validated questionnaire. Review every item, edit or remove weak ones,
-            and prefer a validated scale whenever one exists. Drafting uses the Name and
-            Description fields above.
-          </p>
-          {libraryMatch && (
-            <p className="small muted">
-              ⚠ The library already has “{libraryMatch.name}” ({libraryMatch.items.length}{" "}
-              validated items). Prefer the library scale unless you specifically need
-              custom items.
-            </p>
-          )}
-          <div className="field-row">
-            <label className="field">
-              Number of items
-              <select
-                value={nItems}
-                onChange={(e) => setNItems(Number(e.target.value))}
-              >
-                {Array.from({ length: 16 }, (_, i) => i + 5).map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </label>
-            {/* Disabled-until-valid with the reason inline - same pattern as
-                Save; a clickable button whose error lands in the far-away top
-                banner reads as broken. */}
-            <button
-              type="button"
-              className="primary"
-              onClick={handleGenerate}
-              disabled={
-                generating || saving || parsing || !name.trim() || !description.trim()
-              }
-            >
-              {generating ? "Drafting…" : "Draft items"}
-            </button>
+          <div className="row">
+            <div className="grow">
+              <label className="field">
+                Name
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
+              </label>
+            </div>
+            {source !== "ai" && (
+              <div className="grow">
+                <label className="field">
+                  Reference (publication, optional)
+                  <input
+                    type="text"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                  />
+                </label>
+              </div>
+            )}
           </div>
-          {(!name.trim() || !description.trim()) && (
-            <p className="small muted">
-              To draft, first fill in
-              {!name.trim() ? " the Name" : ""}
-              {!name.trim() && !description.trim() ? " and" : ""}
-              {!description.trim() ? " the Description (a few sentences on what the construct means)" : ""}
-              {" "}above.
-            </p>
-          )}
-          {quotaInfo && (
-            <p className="small muted">
-              {quotaInfo.used} of {quotaInfo.max} AI generations used today.
-            </p>
-          )}
-          {genInfo && (
-            <p className="small">
-              ✓ <b>{genInfo.n} items drafted — they're in the box below.</b> Review and
-              edit each one, then Save. AI-generated · not validated (model:{" "}
-              {genInfo.model}); the saved construct will carry that label.
-            </p>
-          )}
-          {genNotes && <p className="small muted">Model notes: {genNotes}</p>}
-        </>
-      )}
 
-      <label className="field">
-        Items - one per line{source === "type" ? " (or paste a whole scale)" : ""};
-        append (R) to mark a reverse-scored item
-        <textarea
-          ref={itemsRef}
-          rows={6}
-          value={itemsText}
-          onChange={(e) => setItemsText(e.target.value)}
-        />
-      </label>
-      {nReverse > 0 && (
-        <p className="small muted">{nReverse} item(s) marked reverse-scored.</p>
-      )}
-      {/* Save stays disabled until it can actually succeed - a clickable
-          button that silently fails read as broken (PI feedback 2026-08-07;
-          the error banner sits at the top of the page, out of view here). */}
-      <button
-        className="primary"
-        type="submit"
-        disabled={saving || parsing || !name.trim() || parseLines().length === 0}
-      >
-        {saving ? "Saving…" : "Save construct"}
-      </button>
-      {(!name.trim() || parseLines().length === 0) && (
-        <p className="small muted">
-          To save, this construct still needs
-          {!name.trim() ? " a name" : ""}
-          {!name.trim() && parseLines().length === 0 ? " and" : ""}
-          {parseLines().length === 0
-            ? " at least one item - type items above, upload a file, or draft with AI"
-            : ""}
-          .
-        </p>
+          {source === "ai" && (
+            <>
+              <label className="field">
+                Description - a few sentences on what this construct means (the AI
+                drafts from this)
+                <textarea
+                  rows={2}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+              </label>
+              {libraryMatch && (
+                <p className="small muted">
+                  ⚠ The library already has “{libraryMatch.name}” (
+                  {libraryMatch.items.length} validated items). Prefer the library scale
+                  unless you specifically need custom items.
+                </p>
+              )}
+              <div className="field-row">
+                <label className="field">
+                  Number of items
+                  <select
+                    value={nItems}
+                    onChange={(e) => setNItems(Number(e.target.value))}
+                  >
+                    {Array.from({ length: 16 }, (_, i) => i + 5).map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </label>
+                {/* Disabled-until-valid, reason inline - errors in the
+                    top-of-page banner go unseen from down here. */}
+                <button
+                  type="button"
+                  className="primary"
+                  onClick={handleGenerate}
+                  disabled={
+                    generating || saving || parsing || !name.trim() || !description.trim()
+                  }
+                >
+                  {generating ? "Drafting…" : "Draft items"}
+                </button>
+                {quotaInfo && (
+                  <span className="small muted">
+                    {quotaInfo.used} of {quotaInfo.max} used today
+                  </span>
+                )}
+              </div>
+              {(!name.trim() || !description.trim()) && (
+                <p className="small muted">
+                  To draft, fill in
+                  {!name.trim() ? " the Name" : ""}
+                  {!name.trim() && !description.trim() ? " and" : ""}
+                  {!description.trim() ? " the Description" : ""} above.
+                </p>
+              )}
+              {/* Cautionary wording approved by the PI (2026-08-05) */}
+              <p className="small muted">
+                These items are drafted by an AI language model. They are a starting
+                point, not a validated questionnaire. Review every item, edit or remove
+                weak ones, and prefer a validated scale whenever one exists.
+              </p>
+              {genInfo && (
+                <p className="small">
+                  ✓ <b>{genInfo.n} items drafted — review them below.</b> Edit or remove
+                  weak ones, then Save. The saved construct will be labeled
+                  “AI-generated · not validated” (model: {genInfo.model}).
+                </p>
+              )}
+              {genNotes && <p className="small muted">Model notes: {genNotes}</p>}
+            </>
+          )}
+
+          {source === "upload" && (
+            <>
+              <label className="field">
+                CSV/XLSX with an "item" column, or one item per row; reverse-scored via
+                a "reverse" column or a trailing (R)
+                <input
+                  ref={itemFileRef}
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={handleItemFile}
+                  disabled={parsing}
+                />
+              </label>
+              {parsing && <p className="small muted">Parsing…</p>}
+              {parseNotes.map((w, i) => (
+                <p key={i} className="small muted">⚠ {w}</p>
+              ))}
+            </>
+          )}
+
+          {showItemsBox && (
+            <>
+              <label className="field">
+                Items - one per line{source === "type" ? " (or paste a whole scale)" : ""};
+                append (R) to mark a reverse-scored item
+                <textarea
+                  ref={itemsRef}
+                  rows={6}
+                  value={itemsText}
+                  onChange={(e) => setItemsText(e.target.value)}
+                />
+              </label>
+              {nReverse > 0 && (
+                <p className="small muted">{nReverse} item(s) marked reverse-scored.</p>
+              )}
+              {/* Save stays disabled until it can actually succeed (PI
+                  feedback 2026-08-07: a silent dead click reads as broken). */}
+              <button
+                className="primary"
+                type="submit"
+                disabled={saving || parsing || !name.trim() || !hasItems}
+              >
+                {saving ? "Saving…" : "Save construct"}
+              </button>
+              {(!name.trim() || !hasItems) && (
+                <p className="small muted">
+                  To save, this construct still needs
+                  {!name.trim() ? " a name" : ""}
+                  {!name.trim() && !hasItems ? " and" : ""}
+                  {!hasItems ? " at least one item" : ""}.
+                </p>
+              )}
+            </>
+          )}
+        </>
       )}
     </form>
   );
