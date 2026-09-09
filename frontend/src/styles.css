@@ -653,6 +653,36 @@ button.danger-solid:disabled { background: #c9ccd1; }
   }
   table.docs.runs-table td[data-label=""] { padding-top: 8px; }
   table.docs.runs-table td[data-label=""]::before { content: none; }
+
+  /* Results tables on a phone (reported 2026-09-09, same complaint as the runs
+     table). The 820px block sets `table.docs { min-width: 520px }` so wide
+     tables scroll rather than squash - right for the admin tables, wrong for
+     these two, which sit in a 328px card and so ALWAYS needed a sideways drag:
+       - texts-table is Score + Text. Two columns fit once the text is allowed
+         to wrap, so there is nothing to scroll to.
+       - corr-table is the interrelations matrix. Two or three constructs now
+         fit; a wider matrix still scrolls inside .table-wrap, which is what a
+         matrix has to do on any screen.
+     Score stays on one line so the numbers keep their column. */
+  table.docs.texts-table,
+  table.docs.corr-table { min-width: 0; }
+  table.docs.texts-table th:first-child,
+  table.docs.texts-table td.score { width: 52px; }
+  table.docs.corr-table th,
+  table.docs.corr-table td { padding: 6px 5px; }
+
+  /* Disclosure rows (a selected construct in Step 2, a construct's section in
+     multi-construct results). The meta line after the name is nowrap, so on a
+     phone it ran past the right edge and took the WHOLE PAGE sideways with it -
+     the multi-construct results page scrolled to 485px inside a 390px screen.
+     It gets its own line under the name instead. */
+  .construct-selected summary,
+  .construct-results summary { flex-wrap: wrap; }
+  .construct-selected summary .picker-meta,
+  .construct-results summary .picker-meta {
+    white-space: normal; margin-left: 0; flex: 1 1 100%;
+  }
+  .construct-selected summary .construct-remove { margin-left: auto; }
 }
 
 /* ------------------------------------------- multi-construct runs */

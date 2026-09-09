@@ -329,7 +329,7 @@ function CorrelationCard({ correlations }) {
         per-text score, so these are fully recomputable.
       </p>
       <div className="table-wrap">
-        <table className="docs">
+        <table className="docs corr-table">
           <thead>
             <tr>
               <th />
@@ -394,7 +394,7 @@ function ItemBars({ itemMeans }) {
 function DocTable({ docs }) {
   return (
     <div className="table-wrap">
-      <table className="docs">
+      <table className="docs texts-table">
         <thead>
           <tr>
             <th style={{ width: 60 }}>Score</th>
