@@ -51,6 +51,10 @@ order. Detailed specs for the numbered features live in the sections below.
       seconds per 1k texts, measured on an Apple M4 Pro at 2 threads and
       labelled as such. Still worth a re-run on the Space before the numbers
       are shown to users: a shared vCPU is roughly 2-4x slower.
+- [ ] /admin on a phone: the users table still needs a sideways drag (six
+      columns, and the role dropdown squashes to "exter"). Left as it is on
+      2026-09-09 because admin is a staff tool used on a laptop; the fix is the
+      same data-label stacking the runs table uses.
 
 **Updates / chores**
 - [x] Open-source warning text from the PI: received and placed verbatim on

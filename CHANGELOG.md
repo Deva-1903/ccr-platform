@@ -90,8 +90,19 @@ Format: [Keep a Changelog](https://keepachangelog.com/). User-visible changes on
   people looking for it by name did not find it.
 - Runs table on phones: Status and View results were off the right edge and
   needed a sideways scroll to reach. Each run is now a stacked card with every
-  field labelled, so nothing is cut off and nothing is hidden. Results tables
-  still scroll as before.
+  field labelled, so nothing is cut off and nothing is hidden.
+- The rest of the app fits a phone screen too (reported by Ali Hajian
+  2026-09-09, after the runs table). The results tables no longer need a
+  sideways drag: the highest and lowest scoring texts wrap their text beside
+  the score, and an interrelations matrix of two or three constructs fits the
+  screen (a wider matrix still scrolls inside its own box, as a matrix must).
+  A multi-construct results page previously scrolled sideways as a whole,
+  because each construct's summary line (mean, SD, items, CSV columns) was set
+  never to wrap; it now sits under the construct name. On the public guide, the
+  reproduction commands wrap inside their code block instead of widening every
+  paragraph on the page. Checked at 360 and 390 px across the landing page,
+  dashboard, all three steps, the pickers and dialogs, single, multi-construct
+  and anchored results, and the guide.
 - The full CAMEL corpus now loads on the lab's deployment. Copying it into a
   project used a server-side storage copy, which that account's object storage
   does not support; it now falls back to uploading the copy the server already
