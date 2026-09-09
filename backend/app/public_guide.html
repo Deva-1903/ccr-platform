@@ -58,6 +58,18 @@
   .sub { color: var(--muted); margin: 0 0 1.2rem; }
   a { color: var(--accent); }
   code { background: var(--code-bg); padding: .1em .35em; border-radius: 4px; font-size: .9em; }
+  /* The reproduction commands are longer than a phone is wide. Unstyled, the
+     <pre> pushed the whole page to 485px inside a 390px screen (reported
+     2026-09-09), so every paragraph on the page then scrolled sideways. The
+     block wraps at its own edge instead; long paths break rather than overflow. */
+  pre {
+    background: var(--code-bg); border-radius: 8px; padding: .7rem .9rem;
+    margin: .8rem 0; overflow-x: auto;
+  }
+  pre code {
+    background: none; padding: 0; font-size: .88em;
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
   .note {
     background: var(--amber-bg); border: 1px solid var(--amber-border);
     border-radius: 8px; padding: .8rem 1rem; margin: 1rem 0;
