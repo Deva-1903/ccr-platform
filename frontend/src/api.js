@@ -27,6 +27,8 @@ export const api = {
   models: () => request("/api/models"),
   languages: () => request("/api/languages"),
 
+  citation: () => request("/api/citation"),
+
   listProjects: () => request("/api/projects"),
   createProject: (body) => request("/api/projects", json("POST", body)),
   patchProject: (projectId, body) => request(`/api/projects/${projectId}`, json("PATCH", body)),

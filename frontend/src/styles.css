@@ -874,3 +874,80 @@ button.info-button {
 .modal-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .modal-head h3 { margin: 0; }
 .corpus-logo { height: 34px; width: auto; flex-shrink: 0; }
+
+/* ---------- cite dialog ----------
+   Google Scholar's Cite panel, in this app's language (Ali Hajian, 2026-09-09):
+   a style name on the left, the reference on the right, the whole row a copy
+   button. Rows are <button>s rather than a div with a click handler, so they
+   are reachable by keyboard and announce themselves. */
+.cite-modal { max-width: 620px; max-height: min(86vh, 900px); overflow-y: auto; }
+.cite-modal .modal-head { justify-content: space-between; align-items: baseline; }
+.cite-close {
+  font-size: 15px; color: var(--muted); line-height: 1; text-decoration: none;
+}
+.cite-close:hover { color: var(--ink); }
+/* The dialog takes focus on open so Escape and the arrow keys land somewhere
+   sensible; that is a programmatic focus, not a keyboard one, so it should not
+   paint a ring around the whole panel. Rows keep their own focus ring. */
+.cite-modal:focus { outline: none; }
+
+.cite-list { border-top: 1px solid var(--line); margin-top: 6px; }
+.cite-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) 52px;
+  gap: 12px;
+  align-items: start;
+  width: 100%;
+  padding: 11px 6px;
+  border: 0; border-bottom: 1px solid var(--line);
+  background: none; font: inherit; text-align: left; cursor: pointer;
+  /* the base `button { white-space: nowrap }` would push the reference out
+     of the dialog instead of wrapping it */
+  white-space: normal;
+}
+.cite-row:hover { background: var(--bg); }
+.cite-style {
+  color: var(--muted); font-size: 11.5px; text-transform: uppercase;
+  letter-spacing: 0.5px; text-align: right; padding-top: 2px;
+}
+.cite-text { font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+.cite-copied {
+  color: var(--ok); font-size: 11.5px; font-weight: 600; text-align: right;
+  padding-top: 2px;
+}
+
+.cite-also {
+  margin-top: 14px; padding: 10px 14px;
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px; line-height: 1.55; color: var(--muted);
+}
+.cite-also b { color: var(--ink); }
+.cite-also ul { margin: 8px 0 0; padding-left: 18px; }
+.cite-also li { margin-bottom: 6px; overflow-wrap: anywhere; }
+
+.cite-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.cite-export { margin-top: 12px; }
+.cite-export pre {
+  background: var(--bg); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px; margin: 0 0 10px;
+  font-size: 11.5px; line-height: 1.5;
+  max-height: 260px; overflow: auto;
+  /* wrap rather than scroll sideways: these are long author lines, and a
+     phone should not need two directions of scrolling to read them */
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+
+/* Cite dialog on a phone. This block has to live AFTER the base .cite-* rules
+   rather than in the 700px block above: same specificity, so whichever comes
+   last in the file wins, and the overrides silently lost from up there
+   (measured, not assumed). A 74px style column leaves the reference about
+   110px wide at 360px, so the style name moves above the reference and
+   "Copied" sits beside the style name. */
+@media (max-width: 700px) {
+  .cite-row { grid-template-columns: minmax(0, 1fr) 56px; gap: 2px 10px; }
+  .cite-style { text-align: left; grid-column: 1; grid-row: 1; }
+  .cite-copied { grid-column: 2; grid-row: 1; }
+  .cite-text { grid-column: 1 / -1; }
+  .cite-actions > button { flex: 1 1 100%; }
+}

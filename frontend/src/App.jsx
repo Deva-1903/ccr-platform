@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api.js";
 import AdminPage from "./AdminPage.jsx";
+import CiteDialog from "./CiteDialog.jsx";
 import WelcomePage from "./WelcomePage.jsx";
 import Workspace from "./Workspace.jsx";
 
@@ -54,6 +55,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [auth, setAuth] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [showCite, setShowCite] = useState(false);
   const [authMode, setAuthMode] = useState("signin"); // signin | register
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
@@ -491,9 +493,19 @@ export default function App() {
           </a>
           {" · "}
           <a href="/guide">How this tool works</a>
+          {" · "}
+          {/* Ali Hajian, 2026-09-09: somewhere inconspicuous to get a
+              citation, the way Google Scholar's Cite button works. The footer
+              is that place - present for anyone writing a paper, invisible to
+              anyone who is not. */}
+          <button className="linkish" onClick={() => setShowCite(true)}>
+            Cite this platform
+          </button>
         </p>
       </footer>
       )}
+
+      {showCite && <CiteDialog onClose={() => setShowCite(false)} />}
     </div>
   );
 }
