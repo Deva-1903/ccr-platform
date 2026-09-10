@@ -25,6 +25,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from . import admin as admin_module
+from . import citation as citation_module
 from . import auth, auth_google, example_corpora, languages as lang_names, retention, storage
 from . import item_generation
 from . import jobs as jobs_module
@@ -241,6 +242,17 @@ def health():
     except ImportError:
         st = False
     return {"status": "ok", "sentence_transformers_available": st}
+
+
+@app.get("/api/citation")
+def how_to_cite():
+    """How to cite the platform, plus the two CCR method papers.
+
+    Public and unauthenticated: it backs the "Cite" dialog on the landing
+    page, which anonymous visitors see. Everything is static text from
+    citation.py, so there is nothing per-user here and nothing to log.
+    """
+    return citation_module.payload()
 
 
 @app.get("/api/models")

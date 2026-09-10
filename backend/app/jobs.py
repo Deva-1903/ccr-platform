@@ -34,9 +34,9 @@ from .ingest import load_corpus
 from .models import Construct, Corpus, Job, Project
 from .reproducibility import record_environment
 from .retention import EMB_CACHE_DIR, remove_corpus_files
+from .version import PLATFORM_VERSION
 from . import storage
 
-PLATFORM_VERSION = "0.2.0"
 OUTPUT_SCHEMA_VERSION = "1.0"  # bump on ANY export-column change (CLAUDE.md hard rule)
 # Multi-construct runs export prefixed columns ({slug}_sim_item_N,
 # {slug}_ccr_score) instead of the flat single-construct shape, so they carry

@@ -1,0 +1,65 @@
+# Citation File Format (https://citation-file-format.github.io/). GitHub reads
+# this and shows a "Cite this repository" button on the repo page.
+#
+# It must agree with backend/app/citation.py, which is what the platform's own
+# Cite dialog serves. backend/tests/test_citation.py fails if the two drift.
+cff-version: 1.2.0
+message: "If you use this platform in research, please cite it and the CCR method papers below."
+type: software
+title: "CCR Platform: Theory-Driven Psychological Text Analysis with Contextualized Construct Representation"
+abstract: >-
+  A web platform for Contextualized Construct Representation (CCR): upload a
+  corpus, choose validated psychological scale items, embed items and texts
+  locally, and score every text by cosine similarity, with per-run metadata and
+  a script that reproduces the numbers offline.
+authors:
+  - family-names: Anand
+    given-names: Deva
+    email: devaanand@umass.edu
+    affiliation: "Culture and Morality Lab, University of Massachusetts Amherst"
+  - family-names: Atari
+    given-names: Mohammad
+    affiliation: "Culture and Morality Lab, University of Massachusetts Amherst"
+version: 0.2.0
+date-released: "2026-09-10"
+license: MIT
+url: "https://psychologicaltextanalysis.com"
+repository-code: "https://github.com/Culture-and-Morality-Lab/ccr-platform"
+keywords:
+  - psychology
+  - text analysis
+  - natural language processing
+  - sentence embeddings
+  - psychometrics
+references:
+  - type: article
+    title: "Contextualized Construct Representation: Leveraging Psychometric Scales to Advance Theory-Driven Text Analysis"
+    authors:
+      - family-names: Atari
+        given-names: Mohammad
+      - family-names: Omrani
+        given-names: Ali
+      - family-names: Dehghani
+        given-names: Morteza
+    year: 2023
+    publisher:
+      name: PsyArXiv
+    doi: 10.31234/osf.io/m93pd
+  - type: conference-paper
+    title: "Surveying the Dead Minds: Historical-Psychological Text Analysis with Contextualized Construct Representation (CCR) for Classical Chinese"
+    authors:
+      - family-names: Chen
+        given-names: Yuqi
+      - family-names: Li
+        given-names: Sixuan
+      - family-names: Li
+        given-names: Ying
+      - family-names: Atari
+        given-names: Mohammad
+    year: 2024
+    collection-title: "Proceedings of the 2024 Conference on Empirical Methods in Natural Language Processing"
+    publisher:
+      name: "Association for Computational Linguistics"
+    start: 2597
+    end: 2615
+    doi: 10.18653/v1/2024.emnlp-main.151
