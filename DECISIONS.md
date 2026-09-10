@@ -244,3 +244,17 @@ a comment naming the host and date. Rejected: a single representative figure (40
 end of the range) and recording laptop numbers unlabelled (the script's own docstring warns a
 shared cloud vCPU runs 2-4x slower). Revisit: re-run on the Space before these are shown to
 users anywhere in the UI.
+
+## 2026-09-10 - One canonical citation, served from the backend (Deva)
+The Cite dialog, the BibTeX/RIS exports and the repo's CITATION.cff all read
+`backend/app/citation.py`; a test fails if the .cff drifts from it. The platform's
+version comes from the new `app/version.py`, which jobs.py also stamps into run metadata,
+so a citation and the reproducibility record of the run it describes cannot disagree.
+Rejected: formatting the styles in the React component (the strings would then live in
+two places, and only one of them is testable) and hand-keeping a separate .cff.
+The two CCR papers were taken from Crossref rather than memory (10.31234/osf.io/m93pd,
+10.18653/v1/2024.emnlp-main.151). OPEN: the author line on the software citation is
+currently "Anand, D., & Atari, M." with the lab as publisher - developer first, PI second.
+That is a credit decision, not a code one; Mohammad should confirm it before the button is
+announced. Revisit: a tagged release or a Zenodo DOI would give the citation a version and
+a DOI of its own, which is the usual way to make research software citable.

@@ -58,8 +58,33 @@ Configuration: copy `.env.example` to `.env` and fill what you need.
   and review date. The other 6 stay flagged in the interface pending two wording
   decisions (the IPIP scales and the K10). See
   `docs/specs/0007-construct-library-verification-pass.md`.
-- Tests: `cd backend && CCR_FAKE_EMBEDDINGS=1 python -m pytest -q` (137 tests, no ML
+- Tests: `cd backend && CCR_FAKE_EMBEDDINGS=1 python -m pytest -q` (174 tests, no ML
   downloads needed).
+
+## How to cite
+
+If you use the platform in research, cite it and the CCR method papers. The app's
+landing page has a "Cite this platform" link (APA, MLA, Chicago, Harvard, Vancouver,
+BibTeX, RIS), GitHub reads `CITATION.cff` for the same details, and the strings all
+come from `backend/app/citation.py`.
+
+> Anand, D., & Atari, M. (2026). CCR Platform: Theory-driven psychological text
+> analysis with contextualized construct representation (Version 0.2.0) [Computer
+> software]. Culture and Morality Lab, University of Massachusetts Amherst.
+> https://psychologicaltextanalysis.com
+
+> Atari, M., Omrani, A., & Dehghani, M. (2023). Contextualized construct
+> representation: Leveraging psychometric scales to advance theory-driven text
+> analysis. PsyArXiv. https://doi.org/10.31234/osf.io/m93pd
+
+> Chen, Y., Li, S., Li, Y., & Atari, M. (2024). Surveying the dead minds:
+> Historical-psychological text analysis with contextualized construct
+> representation (CCR) for classical Chinese. In Proceedings of the 2024 Conference
+> on Empirical Methods in Natural Language Processing (pp. 2597-2615). Association
+> for Computational Linguistics. https://doi.org/10.18653/v1/2024.emnlp-main.151
+
+Analyses run on a bundled example corpus also need that corpus's own citation, which
+the run metadata carries.
 
 ## License
 

@@ -35,6 +35,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/). User-visible changes on
   (spec 0007)
 
 ### Added
+- "Cite this platform" in the landing-page footer, asked for by Ali Hajian
+  (2026-09-09) and modelled on Google Scholar's Cite button: the reference in
+  APA, MLA, Chicago, Harvard and Vancouver, click one to copy it, plus BibTeX
+  and RIS for EndNote, Zotero and Mendeley. The dialog also names the two CCR
+  papers a methods section needs beside the platform, and the BibTeX and RIS
+  carry all three entries. The version in the citation is the same one stamped
+  into every run's metadata, so a paper and its reproducibility record agree.
+  The repository gained a CITATION.cff, so GitHub shows a "Cite this
+  repository" button with the same details.
 - Example corpora now state their licence, in the info dialog and in the run
   metadata alongside the citation. The CAMEL corpus is CC BY-NC 4.0, which the
   repository's MIT licence does not cover, and the README and sample_data notes
