@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 import { api } from "./api.js";
+import CiteDialog from "./CiteDialog.jsx";
 
 export default function ResultsView({ jobId, onBack }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  // The Cite dialog also hangs off the landing-page footer. It is mounted
+  // here as well rather than lifted into App, because nothing above this
+  // component needs to know it exists (Ali Hajian, 2026-09-10: the
+  // reproducibility record is where someone is already writing their methods
+  // section, so it is the second place the citation should be within reach).
+  const [showCite, setShowCite] = useState(false);
 
   useEffect(() => {
     api.jobResults(jobId).then(setData).catch((e) => setError(e.message));
@@ -256,7 +263,15 @@ export default function ResultsView({ jobId, onBack }) {
             Construct reference: {metadata.construct_reference || "-"}
           </div>
         )}
+        <div className="mt small">
+          Publishing these numbers?{" "}
+          <button className="linkish" onClick={() => setShowCite(true)}>
+            Cite this platform
+          </button>
+        </div>
       </div>
+
+      {showCite && <CiteDialog onClose={() => setShowCite(false)} />}
     </>
   );
 }

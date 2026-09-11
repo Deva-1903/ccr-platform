@@ -42,8 +42,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/). User-visible changes on
   papers a methods section needs beside the platform, and the BibTeX and RIS
   carry all three entries. The version in the citation is the same one stamped
   into every run's metadata, so a paper and its reproducibility record agree.
-  The repository gained a CITATION.cff, so GitHub shows a "Cite this
-  repository" button with the same details.
+  The same dialog opens from the end of a result's reproducibility record,
+  which is where someone is already writing up their methods. The repository
+  gained a CITATION.cff, so GitHub shows a "Cite this repository" button with
+  the same details.
 - Example corpora now state their licence, in the info dialog and in the run
   metadata alongside the citation. The CAMEL corpus is CC BY-NC 4.0, which the
   repository's MIT licence does not cover, and the README and sample_data notes
