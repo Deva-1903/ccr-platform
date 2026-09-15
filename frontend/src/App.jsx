@@ -11,6 +11,26 @@ const IS_ADMIN_PATH = window.location.pathname === "/admin";
 const WELCOME_SEEN_KEY = "ccr_welcome_seen";
 const IS_WELCOME_PATH = window.location.pathname === "/welcome";
 
+// Collapsible project sidebar (asked for 2026-09-15: "closable like ChatGPT or
+// Claude"). Two behaviours behind one piece of state:
+//   wide   - the sidebar slides out of the row and the workspace takes the
+//            space; the choice is remembered.
+//   narrow - it is a drawer over the workspace, always starting closed. It
+//            used to be a block stacked above the workspace, so on a phone you
+//            scrolled past the project list to reach the thing you opened.
+const SIDEBAR_KEY = "ccr_sidebar_open";
+const NARROW_QUERY = "(max-width: 820px)";
+const isNarrow = () => window.matchMedia(NARROW_QUERY).matches;
+
+function initialSidebarOpen() {
+  if (isNarrow()) return false;
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) !== "0";
+  } catch {
+    return true;  // private mode with storage blocked: open, as it always was
+  }
+}
+
 function relativeTime(iso) {
   if (!iso) return "";
   const then = new Date(iso.endsWith("Z") || iso.includes("+") ? iso : iso + "Z");
@@ -56,6 +76,7 @@ export default function App() {
   const [auth, setAuth] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showCite, setShowCite] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(initialSidebarOpen);
   const [authMode, setAuthMode] = useState("signin"); // signin | register
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
@@ -153,6 +174,32 @@ export default function App() {
   }
 
   useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_KEY, sidebarOpen ? "1" : "0");
+    } catch {
+      /* storage blocked: the choice just does not survive a reload */
+    }
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    // Escape closes the drawer, and so does crossing into narrow width: a
+    // drawer left open across a resize would cover the workspace.
+    function onKey(e) {
+      if (e.key === "Escape" && isNarrow()) setSidebarOpen(false);
+    }
+    const mq = window.matchMedia(NARROW_QUERY);
+    const onNarrow = (e) => {
+      if (e.matches) setSidebarOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onNarrow);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onNarrow);
+    };
+  }, []);
+
+  useEffect(() => {
     if (projects.length === 0) {
       setSelectedId(null);
       return;
@@ -170,10 +217,15 @@ export default function App() {
       setNewName("");
       setCreating(false);
       await loadProjects();
-      setSelectedId(p.id);
+      selectProject(p.id);
     } catch (err) {
       setError(err.message);
     }
+  }
+
+  function selectProject(id) {
+    setSelectedId(id);
+    if (isNarrow()) setSidebarOpen(false);  // the drawer covers what you picked
   }
 
   const selected = projects.find((p) => p.id === selectedId) || null;
@@ -185,6 +237,27 @@ export default function App() {
   return (
     <div className="app">
       <header className="header">
+        {!IS_ADMIN_PATH && !showWelcome && (
+          <button
+            className="sidebar-toggle"
+            onClick={() => setSidebarOpen((open) => !open)}
+            aria-expanded={sidebarOpen}
+            aria-controls="project-sidebar"
+            aria-label={sidebarOpen ? "Hide projects" : "Show projects"}
+            title={sidebarOpen ? "Hide projects" : "Show projects"}
+          >
+            {/* "Panel left", the same mark ChatGPT and Claude use, so the
+                gesture is recognisable without a label. */}
+            <svg
+              width="17" height="17" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"
+              strokeLinejoin="round" aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <line x1="9" y1="4" x2="9" y2="20" />
+            </svg>
+          </button>
+        )}
         <a
           className="brand"
           href="/"
@@ -356,11 +429,20 @@ export default function App() {
           <WelcomePage onEnter={enterDashboard} />
         </main>
       ) : (
-      <div className="layout">
-        <aside className="sidebar">
+      <div className={"layout" + (sidebarOpen ? "" : " sidebar-closed")}>
+        <aside className="sidebar" id="project-sidebar">
           <h2>
             Projects
             {projects.length > 0 && <span className="count">{projects.length}</span>}
+            {/* Only shown while the sidebar is a drawer: there it covers the
+                header's toggle, so it has to carry its own way out. */}
+            <button
+              className="sidebar-close"
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Hide projects"
+            >
+              ✕
+            </button>
           </h2>
           <input
             type="text"
@@ -377,7 +459,7 @@ export default function App() {
                   <button
                     key={p.id}
                     className={"project-item" + (p.id === selectedId ? " active" : "")}
-                    onClick={() => setSelectedId(p.id)}
+                    onClick={() => selectProject(p.id)}
                     title={p.name}
                   >
                     <span className="project-name">{p.name}</span>
@@ -420,6 +502,16 @@ export default function App() {
             )}
           </div>
         </aside>
+
+        {/* Tapping beside an open drawer closes it. Hidden above 820px, where
+            the sidebar sits in the row rather than over it. */}
+        {sidebarOpen && (
+          <div
+            className="sidebar-backdrop"
+            onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
+          />
+        )}
 
         <main className="main">
           {error && (

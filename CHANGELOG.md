@@ -5,6 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/). User-visible changes on
 ## [Unreleased]
 
 ### Changed
+- The project sidebar closes, the way it does in ChatGPT and Claude (asked for
+  2026-09-15). A panel button at the left of the header hides and shows it, and
+  the choice is remembered between visits. On a phone the sidebar is now a
+  drawer that slides over the workspace and starts closed, instead of a block
+  stacked above it: the project list used to sit between you and the analysis
+  you had just opened on every visit. Tapping a project, tapping beside the
+  drawer, or pressing Escape closes it.
 - Every construct in the library now carries a verification decision. The two
   wording questions left open by the August review were settled: the IPIP Big
   Five scales keep the leading "I" on their items (that wording came from the

@@ -84,6 +84,27 @@ a { color: var(--brand); }
 
 .layout { display: flex; flex: 1; min-width: 0; min-height: 0; }
 
+/* ---------- collapsible sidebar ----------
+   Closed, the sidebar slides out of the row on its own negative margin rather
+   than animating to width 0: it keeps its 250px, so nothing inside reflows on
+   the way out, and off-screen-left content adds no page scroll. */
+.sidebar { transition: margin-left 0.18s ease; }
+.layout.sidebar-closed .sidebar { margin-left: -250px; }
+
+.sidebar-toggle {
+  flex: 0 0 auto; order: -1;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0;
+  background: rgba(255, 255, 255, 0.1); color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.28); border-radius: 8px;
+  cursor: pointer; transition: background-color 0.15s ease;
+}
+.sidebar-toggle:hover { background: rgba(255, 255, 255, 0.22); }
+
+/* The in-drawer close button and the backdrop exist only under 820px. */
+.sidebar-close { display: none; }
+.sidebar-backdrop { display: none; }
+
 /* ---------- sidebar ---------- */
 .sidebar {
   width: 250px;
@@ -502,18 +523,37 @@ button.danger-solid:disabled { background: #c9ccd1; }
   }
 
   .layout { display: block; }
+  /* The sidebar becomes a drawer over the workspace. It used to be a
+     full-width block stacked above it, which put the project list between you
+     and the thing you had just opened on every phone visit. */
   .sidebar {
-    width: 100%;
-    border-right: 0;
-    border-bottom: 1px solid var(--line);
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 45;
+    width: min(290px, 84vw);
+    margin-left: 0;
     padding: 14px;
+    border-right: 1px solid var(--line);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
   }
-  .project-list {
-    max-height: 220px;
-    margin-right: 0;
-    flex: none;
-  }
+  .layout:not(.sidebar-closed) .sidebar { transform: translateX(0); }
+  /* the desktop collapse rule must not also apply here */
+  .layout.sidebar-closed .sidebar { margin-left: 0; }
+  .project-list { margin-right: 0; }
   .project-create { border-top: 0; }
+
+  .sidebar-close {
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-left: auto; padding: 0 2px;
+    border: 0; background: none; cursor: pointer;
+    color: var(--muted); font-size: 14px; line-height: 1;
+  }
+  .sidebar-close:hover { color: var(--ink); }
+  .sidebar-backdrop {
+    display: block; position: fixed; inset: 0; z-index: 44;
+    background: rgba(20, 22, 26, 0.4);
+    backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  }
   .main {
     width: 100%;
     padding: 16px 14px 28px;
@@ -818,6 +858,7 @@ details[open] > summary::before { transform: rotate(90deg); }
 .site-footer a:hover { text-decoration: underline; }
 
 @media (prefers-reduced-motion: reduce) {
+  .sidebar { transition: none; }
   .infotip-pop { transition: none; }
   .picker-panel, .modal { animation: none; }
   .pill.running::before { animation: none; }
